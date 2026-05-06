@@ -676,6 +676,14 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 <div class="app">
 <div class="site-hdr"></div>
 <div id="dashboardView" style="display:none">
+  <!-- Dashboard tab switcher (Mailers / Users — Users only for admin) -->
+  <div id="dashTabBar" style="display:flex;gap:4px;background:#f5f0e8;border-radius:12px;padding:4px;margin-bottom:16px">
+    <button class="dash-tab on" id="dashTabMailers" onclick="switchDashTab('mailers')" style="flex:1;padding:10px 16px;background:#0f2a1c;color:#fdf6e8;border:none;border-radius:9px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.04em;transition:all 0.15s">&#128202; Mailers</button>
+    <button class="dash-tab" id="dashTabUsers" onclick="switchDashTab('users')" style="flex:1;padding:10px 16px;background:transparent;color:#888;border:none;border-radius:9px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.04em;transition:all 0.15s;display:none">&#128101; Users</button>
+  </div>
+
+  <!-- Mailers section -->
+  <div id="dashMailersSection">
   <div class="panel">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:10px">
       <div>
@@ -693,17 +701,34 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
       </div>
     </div>
   </div>
+  </div>
+
+  <!-- Users section (admin only) -->
+  <div id="dashUsersSection" style="display:none">
+  <div class="panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="plbl" style="margin-bottom:2px">&#128101; All Users</div>
+        <p style="font-size:11px;color:#888;margin:0">Complete list of all registered users across the platform. <span style="font-size:9px;font-weight:700;background:#d4873a;color:#fff;padding:2px 8px;border-radius:4px;letter-spacing:0.08em;vertical-align:middle">ADMIN ONLY</span></p>
+      </div>
+      <button onclick="renderAdminUsers()" style="font-size:11px;padding:5px 14px;background:var(--lightg);border:1.5px solid var(--g);border-radius:6px;cursor:pointer;font-family:DM Sans,sans-serif;color:var(--g);font-weight:700;flex-shrink:0">&#8635; Refresh</button>
+    </div>
+    <div id="adminUsersList">
+      <div style="text-align:center;padding:32px 16px;color:#bbb">Loading users...</div>
+    </div>
+  </div>
+  </div>
 </div>
 <div id="createView">
 <div class="steps" id="stepFlow">
-  <div class="step"><div class="step-n active" id="sn1">1</div><div class="step-l active" id="sl1">Brief &amp; Products</div></div>
+  <div class="step"><div class="step-n active" id="sn1">1</div><div class="step-l active" id="sl1">Input</div></div>
   <div class="step-line" id="sc1"></div>
   <div class="step"><div class="step-n" id="sn2">2</div><div class="step-l" id="sl2">Products</div></div>
-  <div class="step-line" id="sc4"></div>
-  <div class="step"><div class="step-n" id="sn5">3</div><div class="step-l" id="sl5">Mailer</div></div>
+  <div class="step-line" id="sc2"></div>
+  <div class="step"><div class="step-n" id="sn3">3</div><div class="step-l" id="sl3">Images</div></div>
+  <div class="step-line" id="sc3"></div>
+  <div class="step"><div class="step-n" id="sn4">4</div><div class="step-l" id="sl4">Mailer</div></div>
 </div>
-<!-- Hidden anchor nodes — setStep() references sn3/sn4/sc2/sc3 internally; these satisfy those lookups without rendering anything -->
-<div style="display:none" aria-hidden="true"><span id="sn3"></span><span id="sl3"></span><span id="sc2"></span><span id="sn4"></span><span id="sl4"></span><span id="sc3"></span></div>
 <div id="p1" class="panel" style="padding:0;overflow:hidden">
 
   <!-- Panel hero strip -->
@@ -806,19 +831,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
       </select>
     </div>
 
-    <!-- ⑤ Auto-Picked Products Preview -->
-    <div id="p1ProductPreview" style="display:none;margin-bottom:18px;border:1.5px solid var(--border2);border-radius:12px;overflow:hidden">
-      <div style="background:linear-gradient(90deg,#0f2a1c,#1a3a28);padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#d4873a">Auto-Selected Products</div>
-          <div id="p1ProductCount" style="font-size:11px;color:rgba(253,246,232,0.8)">Loading catalog...</div>
-        </div>
-        <button onclick="go2()" style="background:none;border:1px solid rgba(253,246,232,0.3);color:#fdf6e8;padding:4px 12px;border-radius:6px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;letter-spacing:0.04em;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">Edit Selection</button>
-      </div>
-      <div id="p1ProductStrip" style="padding:12px 16px;display:flex;gap:12px;overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
-    </div>
-
-    <!-- ⑥ Suggested prompts accordion -->
+    <!-- ⑤ Suggested prompts accordion -->
     <div class="sugg-wrap" style="margin-bottom:22px">
       <div class="sugg-hdr" onclick="toggleSuggestedPrompts()">
         <div style="display:flex;align-items:center;gap:10px">
@@ -833,13 +846,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
       <div id="suggGrid" class="sugg-grid" style="display:none"></div>
     </div>
 
-    <!-- ⑦ CTA — Generate Mailer -->
-    <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center;gap:10px;font-size:14px" onclick="go3FromBrief()">
-      <span>Generate Mailer</span>
+    <!-- ⑥ CTA — Select Products -->
+    <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center;gap:10px;font-size:14px" onclick="go2()">
+      <span>Select Products</span>
       <span style="font-size:18px;line-height:1">&rarr;</span>
     </button>
     <p style="text-align:center;font-size:11px;color:#bbb;margin:10px 0 0;line-height:1.5">
-      Products are auto-selected from the VAHDAM catalog. Click <strong>Edit Selection</strong> above to customise.
+      Products will be auto-picked based on your campaign description. You can edit the selection in the next step.
     </p>
 
   </div>
@@ -901,14 +914,85 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     <button class="btn btn-outline btn-sm" onclick="clearSel()">Clear</button>
     <div style="flex:1"></div>
     <button class="btn btn-outline btn-sm" onclick="activateAutoPick()">&#10024; Auto-Pick</button>
-    <button class="btn btn-primary" style="flex:1" onclick="go3()">Generate Mailer &rarr;</button>
+    <button class="btn btn-primary" style="flex:1" onclick="go3Images()">Generate Images &rarr;</button>
   </div>
 </div>
-<div id="p3" class="panel" style="display:none">
-  <div class="plbl">Step 3 — Generating Your Campaign</div>
-  <!-- Campaign context injected by go3() -->
-  <div id="p3CampaignCtx" style="display:none;background:linear-gradient(90deg,#0f2a1c,#1a3a28);border-radius:10px;padding:12px 16px;margin-bottom:16px;align-items:flex-start;gap:12px;flex-wrap:wrap"></div>
-  <div class="stages" id="stagesList"></div>
+<div id="p3" class="panel" style="display:none;padding:0;overflow:hidden">
+  <!-- Hero strip -->
+  <div style="background:linear-gradient(135deg,var(--g3) 0%,var(--g) 55%,#006b3e 100%);padding:22px 28px 18px;position:relative;overflow:hidden">
+    <div style="position:absolute;top:-20px;right:-20px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.04)"></div>
+    <div style="position:relative">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0">3</div>
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.6)">Creative Images</span>
+      </div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#fdf6e8;margin-bottom:6px;line-height:1.2">Campaign Image Generation</div>
+      <p style="font-size:12px;color:rgba(251,245,234,0.7);margin:0;line-height:1.6;max-width:520px">AI-generated hero, product, and lifestyle images for both variants. Review, give feedback, and regenerate before building the HTML mailer.</p>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div id="p3ImgLoading" style="text-align:center;padding:48px 24px">
+    <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#0f2a1c,#1a3a28);margin-bottom:18px">
+      <div style="width:28px;height:28px;border:3px solid rgba(212,135,58,0.25);border-top-color:#d4873a;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+    </div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#0f2a1c;margin-bottom:8px">Generating creative images...</div>
+    <div id="p3ImgLoadingStatus" style="font-size:12px;color:#6b7280;line-height:1.6;max-width:420px;margin:0 auto">Running strategy analysis, creative plans, and image generation. This takes 30-60 seconds.</div>
+    <div style="margin-top:20px;display:flex;align-items:center;justify-content:center;gap:6px">
+      <div style="width:8px;height:8px;border-radius:50%;background:#d4873a;animation:pulse 1.4s ease-in-out infinite"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#d4873a;animation:pulse 1.4s ease-in-out 0.2s infinite"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#d4873a;animation:pulse 1.4s ease-in-out 0.4s infinite"></div>
+    </div>
+  </div>
+
+  <!-- Image results (hidden until images are ready) -->
+  <div id="p3ImgContent" style="display:none;padding:24px 28px">
+    <!-- Strategy summary -->
+    <div id="p3StrategySummary" style="background:linear-gradient(135deg,#f0faf4,#e8f5ee);border:1.5px solid #2d6b4a;border-radius:12px;padding:14px 18px;margin-bottom:20px">
+      <div style="font-size:9px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#2d6b4a;margin-bottom:6px">&#10003; Strategy Locked</div>
+      <div id="p3StrategyText" style="font-size:12px;color:#1a3a28;line-height:1.6"></div>
+    </div>
+
+    <!-- Image grid — Variant A -->
+    <div style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:10px;font-weight:800;color:#fff;background:#0f2a1c;padding:3px 10px;border-radius:4px;letter-spacing:0.16em">A</span>
+        <span style="font-size:13px;font-weight:700;color:#0f2a1c">Variant A — Editorial Hero</span>
+      </div>
+      <div id="p3ImgsA" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px"></div>
+    </div>
+
+    <!-- Image grid — Variant B -->
+    <div style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:10px;font-weight:800;color:#fff;background:#d4873a;padding:3px 10px;border-radius:4px;letter-spacing:0.16em">B</span>
+        <span style="font-size:13px;font-weight:700;color:#d4873a">Variant B — Narrative Story</span>
+      </div>
+      <div id="p3ImgsB" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px"></div>
+    </div>
+
+    <!-- Feedback + actions -->
+    <div style="background:#f8f6f2;border:1.5px solid var(--border2);border-radius:12px;padding:16px 20px;margin-bottom:20px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin-bottom:8px">Feedback &amp; Regenerate</div>
+      <textarea id="p3Feedback" rows="3" placeholder="e.g. Make the hero image warmer, use a morning ritual setting, add more gold tones..." style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;resize:vertical;outline:none;transition:border-color 0.15s;box-sizing:border-box" onfocus="this.style.borderColor='#0f2a1c'" onblur="this.style.borderColor=''"></textarea>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="regenerateImages()" style="gap:6px">&#8635; Regenerate Images</button>
+        <span id="p3RegenCount" style="font-size:10px;color:#9ca3af"></span>
+        <div style="flex:1"></div>
+        <span style="font-size:10px;color:#9ca3af">Not happy? Add feedback above and regenerate.</span>
+      </div>
+    </div>
+
+    <!-- CTA row -->
+    <div class="btn-row" style="gap:10px">
+      <button class="btn btn-outline btn-sm" onclick="goBack(2)">&larr; Back to Products</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-primary btn-lg" style="gap:10px;font-size:14px" onclick="go4Mailer()">
+        <span>Build HTML Mailer</span>
+        <span style="font-size:18px;line-height:1">&rarr;</span>
+      </button>
+    </div>
+  </div>
 </div>
 <div id="p4" class="panel" style="display:none">
   <div class="plbl">Step 4 — Review &amp; Refine</div>
@@ -1202,7 +1286,7 @@ async function loadCatalog(market){
 }
 const S={step:1,prompt:'',market:'US',markets:['US'],marketMailers:{},activeMarket:'US',type:'',manualProds:[],finalProds:[],regenCount:0,finalHTML:'',lastImagePrompt:'',generatedPrompt:'',canvasDataUrl:'',uploadedDesignUrl:null,precomputedStrategy:null};
 window.S=S; // Make S accessible via window so the `window.S&&...` safety guards in helper functions actually work (const declarations at top-level do NOT auto-create window.X properties).
-window.__VAHDAM_BUILD__='ui-restructure-v90';
+window.__VAHDAM_BUILD__='4step-flow-v91';
 // On page load, surface Supabase connection state so the user can see if
 // data is going to Supabase or only to localStorage.
 setTimeout(function(){
@@ -1891,18 +1975,19 @@ function collectionUrl(theme,m){
   return b+'/collections/'+(typeMap[t]||'all');
 }
 function setStep(n){
-  for(let i=1;i<=5;i++){
+  for(let i=1;i<=4;i++){
     const sn=document.getElementById('sn'+i),sl=document.getElementById('sl'+i),sc=document.getElementById('sc'+i);
     if(sn){sn.className='step-n'+(i<n?' done':i===n?' active':'');sl.className='step-l'+(i<=n?' active':'');}
-    if(sc&&i<5)sc.className='step-line'+(i<n?' done':'');
+    if(sc&&i<4)sc.className='step-line'+(i<n?' done':'');
   }
 }
 function show(id,v){const el=document.getElementById(id);if(el)el.style.display=v?'block':'none';}
-// Show ONE step panel and explicitly hide all the others — prevents stale
-// content from a previous step (esp. Step 5 mailer iframe / dark code panel)
-// bleeding through when the user navigates between steps.
+// 4-step flow: Step 1→p1, Step 2→p2, Step 3→p3 (images), Step 4→p5 (mailer output)
+var _stepPanelMap={1:'p1',2:'p2',3:'p3',4:'p5'};
 function showOnly(stepNum){
-  for(var i=1;i<=5;i++)show('p'+i,i===stepNum);
+  ['p1','p2','p3','p4','p5'].forEach(function(id){show(id,false);});
+  var panelId=_stepPanelMap[stepNum]||('p'+stepNum);
+  show(panelId,true);
   setStep(stepNum);
 }
 function goBack(to){
@@ -1914,6 +1999,13 @@ function goBack(to){
     S.precomputedStrategy=null;
     var banner=document.getElementById('p2AIPlanning');
     if(banner)banner.style.display='none';
+  }
+  if(to===3){
+    // Show image content if we have it
+    if(S._phase1Done){
+      var ld=document.getElementById('p3ImgLoading');if(ld)ld.style.display='none';
+      var ct=document.getElementById('p3ImgContent');if(ct)ct.style.display='block';
+    }
   }
 }
 function renderCatalog(filter){
@@ -1980,8 +2072,6 @@ function selectType(val,btn){
   if(btn)btn.classList.add('on');
   // Hide auto-detect tag when user manually picks
   var tag=document.getElementById('typeAutoTag');if(tag)tag.style.display='none';
-  // Refresh products for new type
-  _refreshP1ProductPreview();
 }
 
 // ── Auto-detect campaign type + market from prompt text ─────────────────────
@@ -2030,11 +2120,9 @@ function _autoDetectFromPrompt(text){
       }
     }
   }
-  // Refresh product preview
-  _refreshP1ProductPreview();
 }
 
-// ── Product preview strip on Step 1 ────────────────────────────────────────
+// ── Product preview strip on Step 1 (DEPRECATED — products now show on Step 2 only) ──
 function _refreshP1ProductPreview(){
   var container=document.getElementById('p1ProductStrip');
   var preview=document.getElementById('p1ProductPreview');
@@ -2107,8 +2195,8 @@ function toggleMarket(m,el){
   showCopyToast(ct===1?'1 market selected':ct+' markets selected — one mailer per market will be generated');
   // Hide auto-detect tag when user manually changes markets
   var tag=document.getElementById('mktAutoTag');if(tag)tag.style.display='none';
-  // Load catalog for newly selected market and refresh product preview
-  loadCatalog(S.markets[0]).then(function(){_refreshP1ProductPreview();}).catch(function(){});
+  // Load catalog for newly selected market
+  loadCatalog(S.markets[0]).catch(function(){});
 }
 
 // ── Prompt enhancer ─────────────────────────────────────────────────────────
@@ -2829,26 +2917,29 @@ function showValidErr(fieldId,msg){
   setTimeout(function(){var e=document.getElementById('validErr_'+fieldId);if(e)e.remove();},4000);
 }
 function go2(){
-  // go2 is now the "Edit Selection" path — user clicked Edit from Step 1 product preview
+  // Step 1 → Step 2: Validate prompt, then go to product selection with auto-pick
   var p=(document.getElementById('promptIn')||{}).value||'';
-  S.prompt=p.trim()||S.prompt;
+  if(!p.trim()){showValidErr('promptIn','Campaign description is required. Describe the offer, mood, or product — or use Create Brief with AI.');return;}
+  if(p.trim().length<15){showValidErr('promptIn','Add a bit more detail — what\'s the offer, the season, or the product focus?');return;}
+  S.prompt=p.trim();
   // Read selected market chips
   var selected=[];
   document.querySelectorAll('#mktChips .mkt-chip.on').forEach(function(c){
     var m=c.getAttribute('data-mkt');if(m)selected.push(m);
   });
-  if(selected.length===0)selected=['US'];
+  if(selected.length===0){showValidErr('mktChips','Select at least one target market.');return;}
   S.markets=selected;
   S.market=S.markets[0];
   S.activeMarket=S.markets[0];
   S.type=document.getElementById('typeIn').value;
-  // Pre-populate manual selection from auto-picked products
-  if(!S.manualProds||!S.manualProds.length){
-    S.manualProds=(S._autoPickedProds||[]).slice();
-  }
   _activeCatFilter='all';
   // ── Load region-specific catalog from CSV knowledge base ──
-  loadCatalog(S.markets[0]).catch(function(e){console.warn('[go2] catalog load:',e.message);});
+  loadCatalog(S.markets[0]).then(function(){
+    // Auto-pick products based on prompt after catalog loads
+    if(!S.manualProds||!S.manualProds.length){
+      activateAutoPick();
+    }
+  }).catch(function(e){console.warn('[go2] catalog load:',e.message);});
   showOnly(2);renderCatalog('all');updateSelInfo();
   injectCtxBanners();
   // Auto-filter catalog to best matching tab
@@ -2862,13 +2953,17 @@ function go2(){
 }
 
 function go3(){
+  // Legacy compat — redirect to new 4-step flow
+  go3Images();
+}
+
+// ── Step 2 → Step 3: Lock products, run pipeline stages 1-3, show images ──
+function go3Images(){
   // Set final products — manual selection or auto-pick from strategy/keywords
   var manCount=S.manualProds?S.manualProds.length:0;
   if(manCount===0){
-    // If strategy pre-fetched, use its product selection; otherwise keyword auto-pick
     var pf=S.precomputedStrategy;
     if(pf&&pf.product_selection&&pf.product_selection.hero){
-      // Build product list from strategy recommendations
       var heroName=(pf.product_selection.hero.name||'').toLowerCase();
       var supNames=((pf.product_selection.supporting)||[]).map(function(s){return (s.name||'').toLowerCase();});
       var strategyProds=CAT.filter(function(c){
@@ -2886,8 +2981,83 @@ function go3(){
   }
   S.activePrompt=S.prompt;
   S.lastFeedback='';S.feedbackHistory=[];S.regenCount=0;
-  // Go directly to pipeline — bypass canvas/review steps entirely
-  approveAndBuild(false);
+  S._phase1Done=false;
+  S._imgRegenCount=0;
+  // Show Step 3 with loading state
+  showOnly(3);
+  var ld=document.getElementById('p3ImgLoading');if(ld)ld.style.display='block';
+  var ct=document.getElementById('p3ImgContent');if(ct)ct.style.display='none';
+  // Run pipeline stages 1-3 (strategy + variants + images)
+  var primaryMkt=(S.markets&&S.markets.length>0?S.markets[0]:null)||'US';
+  _runPipelinePhase1(primaryMkt,{regenerate_counter:0});
+}
+
+// ── Step 3 → Step 4: Run pipeline stages 4-5 (HTML + score), show mailer ──
+function go4Mailer(){
+  if(!S._phase1Done||!S._phase1Data){
+    showCopyToast('Images not ready yet — please wait for generation to complete.');
+    return;
+  }
+  // Show Step 4 (p5) with loading state
+  showOnly(4);
+  _p5ShowLoading(true);
+  var primaryMkt=(S.markets&&S.markets.length>0?S.markets[0]:null)||'US';
+  _runPipelinePhase2(primaryMkt,S._phase1Data);
+}
+
+// ── Regenerate images with feedback ──
+function regenerateImages(){
+  var feedback=(document.getElementById('p3Feedback')||{}).value||'';
+  S._imgRegenCount=(S._imgRegenCount||0)+1;
+  if(feedback.trim()){
+    S.activePrompt=(S.activePrompt||S.prompt)+'\n\nFeedback: '+feedback.trim();
+  }
+  S._phase1Done=false;
+  // Show loading
+  var ld=document.getElementById('p3ImgLoading');if(ld)ld.style.display='block';
+  var ct=document.getElementById('p3ImgContent');if(ct)ct.style.display='none';
+  var statusEl=document.getElementById('p3ImgLoadingStatus');
+  if(statusEl)statusEl.textContent='Regenerating images with your feedback (attempt '+(S._imgRegenCount+1)+')...';
+  var primaryMkt=(S.markets&&S.markets.length>0?S.markets[0]:null)||'US';
+  _runPipelinePhase1(primaryMkt,{regenerate_counter:S._imgRegenCount});
+}
+
+// ── Render image results on Step 3 ──
+function _renderP3Images(imgsA,imgsB,strategy,planA,planB){
+  // Strategy summary
+  var stratText=document.getElementById('p3StrategyText');
+  if(stratText){
+    stratText.innerHTML='<strong>'+((strategy||{}).strategy||'Campaign')+'</strong> · Theme: '+
+      (((strategy||{}).theme||{}).name||'default')+' · '+
+      ((strategy||{}).subject_line||'');
+  }
+  // Render image grids
+  function renderImgGrid(containerId,imgs){
+    var el=document.getElementById(containerId);if(!el)return;
+    var slots=[
+      {key:'hero',label:'Hero Image'},
+      {key:'product',label:'Product Shot'},
+      {key:'lifestyle',label:'Lifestyle'}
+    ];
+    el.innerHTML=slots.map(function(slot){
+      var url=imgs[slot.key]||'';
+      var fallback='https://placehold.co/400x300/0f2a1c/fdf6e8?text='+encodeURIComponent(slot.label);
+      return '<div style="border:1.5px solid var(--border2);border-radius:10px;overflow:hidden;background:#fff">'
+        +'<img src="'+(url||fallback)+'" alt="'+slot.label+'" style="width:100%;height:200px;object-fit:cover;display:block" onerror="this.src=\''+fallback+'\'">'
+        +'<div style="padding:8px 12px;border-top:1px solid var(--border)">'
+        +'<div style="font-size:10px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.08em">'+slot.label+'</div>'
+        +(url?'<div style="font-size:9px;color:#2d6b4a;margin-top:2px">&#10003; Generated</div>':'<div style="font-size:9px;color:#d4873a;margin-top:2px">&#9888; Placeholder</div>')
+        +'</div></div>';
+    }).join('');
+  }
+  renderImgGrid('p3ImgsA',imgsA||{});
+  renderImgGrid('p3ImgsB',imgsB||{});
+  // Regen count
+  var rc=document.getElementById('p3RegenCount');
+  if(rc&&S._imgRegenCount>0)rc.textContent='Regenerated '+S._imgRegenCount+' time'+(S._imgRegenCount>1?'s':'');
+  // Show content, hide loading
+  var ld=document.getElementById('p3ImgLoading');if(ld)ld.style.display='none';
+  var ct=document.getElementById('p3ImgContent');if(ct)ct.style.display='block';
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -5032,7 +5202,7 @@ function handleImgUpload(event){
 }
 async function approveWithUpload(){
   if(!S.uploadedDesignUrl){alert('Please upload a design image first.');return;}
-  showOnly(5);
+  showOnly(4);
   document.getElementById('p5').scrollIntoView({behavior:'smooth'});
   // ── v68: AUTO-CONCEPT first. Smart fallback if no API key.
   await _autoConceptThenBuild(S.uploadedDesignUrl);
@@ -5598,6 +5768,309 @@ function _injectImages(html, images) {
   return h;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// TWO-PHASE PIPELINE (4-step flow)
+// Phase 1: Strategy + Variants + Images (stages 1-3) → shows on Step 3
+// Phase 2: HTML + Score (stages 4-5) → shows on Step 4
+// ═══════════════════════════════════════════════════════════════════════════
+async function _runPipelinePhase1(mkt, opts) {
+  if (_PLN_RUNNING) return;
+  _PLN_RUNNING = true;
+  _PLN_ABORT = false;
+  _imgQuotaNoticeShown = false;
+  opts = opts || {};
+  var regen = opts.regenerate_counter || 0;
+
+  _showPipelineOverlay(true);
+  _pipelineLog(0, 'Phase 1 — Strategy + Images — market: ' + mkt + (regen > 0 ? ' (retry '+regen+')' : ''), 'ok');
+
+  var brief = (window.S && (S.activePrompt || S.prompt)) || '';
+  var type  = (window.S && S.type) || '';
+  var prods = (window.S && S.finalProds) || [];
+  var market = mkt || (window.S && S.activeMarket) || 'US';
+
+  try {
+    // ─── Health check ─────────────────────────────────────────────────────
+    _pipelineLog(0, 'Checking pipeline endpoints…', '');
+    try {
+      var healthRes = await fetch('/api/ai/pipeline/health', { method: 'GET', cache: 'no-store' });
+      if (!healthRes.ok) {
+        var hStatus = healthRes.status;
+        if (hStatus === 404) {
+          _PLN_RUNNING = false;
+          _pipelineShowError('Pipeline endpoints not deployed (HTTP 404)', 'GET /api/ai/pipeline/health returned 404.', 'Wait 1-2 min for deployment, then retry.');
+          return;
+        }
+        _pipelineLog(0, 'Health check returned HTTP ' + hStatus + ' — continuing', 'warn');
+      } else {
+        var hData = await healthRes.json().catch(function(){ return {}; });
+        if (hData && !hData.ok) {
+          _PLN_RUNNING = false;
+          _pipelineShowError('Pipeline blocked: no LLM provider', hData.verdict || 'No API key set.', 'Add GEMINI_API_KEY or OPENAI_API_KEY in Vercel env.');
+          return;
+        }
+        _pipelineLog(0, 'Health OK', 'ok');
+      }
+    } catch (hErr) {
+      _PLN_RUNNING = false;
+      _pipelineShowError('Cannot reach pipeline (' + hErr.message + ')', 'Network error on health check.', 'Check Vercel deployment.');
+      return;
+    }
+
+    // ─── Stage 1: Decision Engine ─────────────────────────────────────────
+    var strategy;
+    var _precomp = (window.S && S.precomputedStrategy && S.precomputedStrategy.ok && regen === 0) ? S.precomputedStrategy : null;
+    if (_precomp) {
+      strategy = _precomp;
+      S.precomputedStrategy = null;
+      _strategyPrefetch = null;
+      _pipelineSetStep(1, 'done', (strategy.strategy || '?') + ' ⚡ pre-computed');
+      _pipelineLog(1, '⚡ Strategy pre-computed — Stage 1 skipped', 'ok');
+    } else {
+      _pipelineSetStep(1, 'active', 'Analysing brief + locking strategy...');
+      _pipelineLog(1, 'Decision Engine — parsing inputs', '');
+      strategy = await _pipelinePost('/api/ai/pipeline/strategy', {
+        brief: brief, market: market, type: type,
+        products: (Array.isArray(prods) ? prods : []).slice(0, 15),
+        regenerate_counter: regen
+      }, 42000);
+      _pipelineSetStep(1, 'done', (strategy.strategy || '?') + ' · ' + ((strategy.theme||{}).name || ''));
+      _pipelineLog(1, 'Strategy: ' + strategy.strategy, 'ok');
+    }
+
+    // ─── Stage 2: Creative Plans ──────────────────────────────────────────
+    _pipelineSetStep(2, 'active', 'Building Variant A + B plans...');
+    _pipelineLog(2, 'Variant A + B — parallel calls', '');
+    var [planA, planB] = await Promise.all([
+      _pipelinePost('/api/ai/pipeline/variant', {
+        strategy_output: strategy, variant: 'A', brief: brief, market: market,
+        products: (Array.isArray(prods) ? prods : []).slice(0, 5), regenerate_counter: regen
+      }, 52000),
+      _pipelinePost('/api/ai/pipeline/variant', {
+        strategy_output: strategy, variant: 'B', brief: brief, market: market,
+        products: (Array.isArray(prods) ? prods : []).slice(0, 5), regenerate_counter: regen
+      }, 52000)
+    ]);
+    _pipelineSetStep(2, 'done', 'Plans locked — A: ' + (planA.sections||[]).length + ' sections · B: ' + (planB.sections||[]).length + ' sections');
+    _pipelineLog(2, 'Plans locked', 'ok');
+
+    // ─── Stage 3: Images ──────────────────────────────────────────────────
+    _pipelineSetStep(3, 'active', 'Generating images (hero+product+lifestyle) via AI...');
+    _pipelineLog(3, 'Image generation: 3 slots × 2 variants = 6 total', '');
+    var stylelock = strategy.image_style_lock || '';
+    var [imgsA, imgsB] = await Promise.all([
+      _generateImagesForVariant(planA.image_requirements || [], 'A', stylelock),
+      _generateImagesForVariant(planB.image_requirements || [], 'B', stylelock)
+    ]);
+    var countA = Object.values(imgsA).filter(Boolean).length;
+    var countB = Object.values(imgsB).filter(Boolean).length;
+    _pipelineSetStep(3, countA+countB > 0 ? 'done' : 'warn', 'A: '+countA+'/3 · B: '+countB+'/3 images');
+    _pipelineLog(3, 'Images: A='+countA+'/3, B='+countB+'/3', countA+countB > 0 ? 'ok' : 'warn');
+
+    // Store images in S
+    if (!window.S.openaiImages) window.S.openaiImages = {};
+    if (!window.S.openaiImages[market]) window.S.openaiImages[market] = {};
+    if (imgsA.hero) window.S.openaiImages[market].A = imgsA.hero;
+    if (imgsB.hero) window.S.openaiImages[market].B = imgsB.hero;
+
+    // Store phase 1 results for phase 2
+    S._phase1Data = { strategy: strategy, planA: planA, planB: planB, imgsA: imgsA, imgsB: imgsB, market: market, regen: regen, brief: brief };
+    S._phase1Done = true;
+
+    _pipelineLog(0, '✓ Phase 1 complete — images ready for review', 'ok');
+    setTimeout(function() {
+      _showPipelineOverlay(false);
+      _PLN_RUNNING = false;
+      // Render images on Step 3
+      _renderP3Images(imgsA, imgsB, strategy, planA, planB);
+    }, 400);
+
+  } catch (e) {
+    console.error('[pipeline-phase1] Fatal:', e);
+    _PLN_RUNNING = false;
+    var errMsg = (e && e.message) ? e.message : String(e);
+    var isAbort = errMsg.indexOf('Aborted') !== -1 || errMsg.indexOf('abort') !== -1;
+    _pipelineLog(0, 'Phase 1 error: ' + errMsg, 'error');
+    if (isAbort) {
+      _showPipelineOverlay(false);
+      showOnly(2); // Go back to products
+    } else {
+      _pipelineShowError('Image generation failed', errMsg, 'Check Vercel function logs or click template fallback.');
+    }
+  }
+}
+
+async function _runPipelinePhase2(mkt, data) {
+  if (_PLN_RUNNING) return;
+  _PLN_RUNNING = true;
+  _PLN_ABORT = false;
+
+  _showPipelineOverlay(true);
+  _pipelineLog(0, 'Phase 2 — HTML Generation + Scoring', 'ok');
+
+  var strategy = data.strategy;
+  var planA = data.planA;
+  var planB = data.planB;
+  var imgsA = data.imgsA;
+  var imgsB = data.imgsB;
+  var market = data.market || mkt;
+  var regen = data.regen || 0;
+  var brief = data.brief || S.prompt;
+
+  try {
+    // ─── Stage 4: HTML ────────────────────────────────────────────────────
+    _pipelineSetStep(4, 'active', 'AI building custom HTML...');
+    _pipelineLog(4, 'html.js: Variant A + B in parallel', '');
+
+    function _injectImages(html, imgs) {
+      if (!html) return '';
+      var h = html;
+      var fallbackHero    = 'https://placehold.co/600x400/0f2a1c/fdf6e8?text=Hero+Image';
+      var fallbackProduct = 'https://placehold.co/400x400/0f2a1c/fdf6e8?text=Product';
+      var fallbackLife    = 'https://placehold.co/600x400/0f2a1c/fdf6e8?text=Lifestyle';
+      h = h.replace(/IMAGE_HERO_URL/g,      imgs.hero      || fallbackHero);
+      h = h.replace(/IMAGE_PRODUCT_URL/g,   imgs.product   || fallbackProduct);
+      h = h.replace(/IMAGE_LIFESTYLE_URL/g, imgs.lifestyle || fallbackLife);
+      return h;
+    }
+
+    var finalA = '', finalB = '';
+    var _htmlASource = 'pending', _htmlBSource = 'pending';
+
+    var [htmlSettledA, htmlSettledB] = await Promise.allSettled([
+      _pipelinePost('/api/ai/pipeline/html', {
+        variant: 'A', plan: planA, strategy: strategy, brief: brief, market: market, regenerate_counter: regen
+      }, 85000),
+      _pipelinePost('/api/ai/pipeline/html', {
+        variant: 'B', plan: planB, strategy: strategy, brief: brief, market: market, regenerate_counter: regen
+      }, 85000)
+    ]);
+
+    if (htmlSettledA.status === 'fulfilled' && htmlSettledA.value && htmlSettledA.value.html) {
+      finalA = _injectImages(htmlSettledA.value.html, imgsA);
+      _htmlASource = 'ai';
+    } else {
+      var errA = htmlSettledA.status === 'rejected' ? htmlSettledA.reason.message : 'empty html';
+      _pipelineLog(4, 'Variant A html.js failed (' + errA + ') — template fallback', 'warn');
+    }
+
+    if (htmlSettledB.status === 'fulfilled' && htmlSettledB.value && htmlSettledB.value.html) {
+      finalB = _injectImages(htmlSettledB.value.html, imgsB);
+      _htmlBSource = 'ai';
+    } else {
+      var errB = htmlSettledB.status === 'rejected' ? htmlSettledB.reason.message : 'empty html';
+      _pipelineLog(4, 'Variant B html.js failed (' + errB + ') — template fallback', 'warn');
+    }
+
+    if (finalA && finalB) {
+      _pipelineSetStep(4, 'done', 'A: ' + Math.round(finalA.length/1024) + 'KB · B: ' + Math.round(finalB.length/1024) + 'KB');
+      _pipelineLog(4, 'HTML ready', 'ok');
+    }
+
+    // Template fallback for missing variants
+    if (!finalA || !finalB) {
+      _pipelineLog(4, 'Applying template fallback for missing variant(s)', 'warn');
+      var _fbHeroA = (planA.sections || []).find(function(s){ return s.id==='hero'; }) || (planA.sections||[])[0] || {};
+      var _fbHeroB = (planB.sections || []).find(function(s){ return s.id==='hero'; }) || (planB.sections||[])[0] || {};
+      var _fbCtaA  = (planA.sections || []).find(function(s){ return s.id==='cta'; }) || {};
+      var _fbCtaB  = (planB.sections || []).find(function(s){ return s.id==='cta'; }) || {};
+      if (!window.S.strategy) window.S.strategy = {};
+      window.S.strategy._pipeline = true;
+      if (!finalA && typeof buildEmail === 'function') {
+        window._vhdCurrentHeroA = imgsA.hero || null;
+        var cpA = _fbHeroA.copy || {};
+        if (cpA.headline) window.S.strategy.headline = cpA.headline;
+        if (cpA.subcopy)  window.S.strategy.subCopy  = cpA.subcopy;
+        finalA = buildEmail(null, market) || '';
+        _htmlASource = 'template-fallback';
+        window._vhdCurrentHeroA = null;
+      }
+      if (!finalB && typeof buildEmailVariantB === 'function') {
+        window._vhdCurrentHeroB = imgsB.hero || null;
+        var cpB = _fbHeroB.copy || {};
+        if (cpB.headline) window.S.strategy.headline = cpB.headline;
+        if (cpB.subcopy)  window.S.strategy.subCopy  = cpB.subcopy;
+        finalB = buildEmailVariantB(null, market) || '';
+        _htmlBSource = 'template-fallback';
+        window._vhdCurrentHeroB = null;
+      }
+      window.S.strategy._pipeline = false;
+    }
+
+    if (!finalA || !finalB) {
+      throw new Error('html_stage_empty: Both AI and template fallback failed.');
+    }
+
+    // ─── Stage 5: Quality Scoring ─────────────────────────────────────────
+    _pipelineSetStep(5, 'active', 'Quality scoring...');
+    var scoreRes = null;
+    try {
+      var _scoreA = finalA.length > 80000 ? finalA.substring(0, 80000) : finalA;
+      var _scoreB = finalB.length > 80000 ? finalB.substring(0, 80000) : finalB;
+      scoreRes = await _pipelinePost('/api/ai/pipeline/score', {
+        html_a: _scoreA, html_b: _scoreB,
+        variant_a_plan: planA, variant_b_plan: planB,
+        strategy_output: strategy
+      }, 25000);
+    } catch (scoreErr) {
+      console.warn('[pipeline] Scoring non-fatal:', scoreErr.message);
+    }
+
+    var oA = scoreRes && scoreRes.scores_a ? scoreRes.scores_a.overall : '–';
+    var oB = scoreRes && scoreRes.scores_b ? scoreRes.scores_b.overall : '–';
+    _pipelineSetStep(5, 'done', 'A: ' + oA + '/10 · B: ' + oB + '/10');
+    _pipelineLog(5, 'Scores — A: '+oA+'/10, B: '+oB+'/10', 'ok');
+
+    // ─── Commit results ──────────────────────────────────────────────────
+    if (!window.S.marketMailers) window.S.marketMailers = {};
+    window.S.marketMailers[market] = {
+      A: finalA, B: finalB,
+      _pipelineMeta: {
+        strategy: strategy.strategy, theme: (strategy.theme||{}).name,
+        archetype_a: _htmlASource, archetype_b: _htmlBSource,
+        subject_lines_a: planA.subject_lines || [], subject_lines_b: planB.subject_lines || [],
+        preheader: planA.preheader || '', scores: scoreRes,
+        generated_at: new Date().toISOString(), regen_count: regen
+      }
+    };
+    if (planA.subject_lines && planA.subject_lines.length) window.S.subjectLines = planA.subject_lines;
+
+    _pipelineLog(0, '✓ Phase 2 complete — HTML mailer ready', 'ok');
+
+    setTimeout(function() {
+      _showPipelineOverlay(false);
+      _PLN_RUNNING = false;
+      S.activeVariant = S.activeVariant || 'A';
+      S.finalHTML = (window.S.marketMailers[market] || {})[S.activeVariant] || finalA;
+      var frEl = document.getElementById('emailFr'); if (frEl) frEl.srcdoc = S.finalHTML;
+      var rawEl = document.getElementById('htmlRaw'); if (rawEl) rawEl.textContent = S.finalHTML;
+      if (typeof buildStep5UI === 'function') buildStep5UI(S.prompt, S.finalProds, market);
+      if (typeof renderMarketTabs === 'function') renderMarketTabs();
+      if (typeof renderVariantSwitcher === 'function') renderVariantSwitcher();
+      if (typeof renderAllMailersMatrix === 'function') renderAllMailersMatrix();
+      if (typeof renderStrategicBrief === 'function') renderStrategicBrief();
+      if (typeof renderStep5UnifiedPanel === 'function') renderStep5UnifiedPanel();
+      if (typeof saveMailerToDashboard === 'function') saveMailerToDashboard();
+    }, 600);
+
+  } catch (e) {
+    console.error('[pipeline-phase2] Fatal:', e);
+    _PLN_RUNNING = false;
+    var errMsg = (e && e.message) ? e.message : String(e);
+    var isAbort = errMsg.indexOf('Aborted') !== -1;
+    _pipelineLog(0, 'Phase 2 error: ' + errMsg, 'error');
+    if (isAbort) {
+      _showPipelineOverlay(false);
+      approveAndBuild(true); // template fallback
+    } else {
+      _pipelineShowError('HTML generation failed', errMsg, 'Check Vercel logs or use template fallback.');
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LEGACY FULL PIPELINE (kept for template fallback path via approveAndBuild)
+// ═══════════════════════════════════════════════════════════════════════════
 async function _runPipeline(mkt, opts) {
   if (_PLN_RUNNING) return;
   _PLN_RUNNING = true;
@@ -6026,7 +6499,7 @@ async function approveAndBuild(skipPipeline){
   _approveBuildDebounce = true;
   setTimeout(function(){ _approveBuildDebounce = false; }, 800);
 
-  showOnly(5);
+  showOnly(4); // Step 4 = p5 (mailer output)
   _p5ShowLoading(true); // Show loading state until content is ready
   // ── v80: MULTI-STAGE PIPELINE for primary market (if not already running
   //   and not explicitly skipped by fallback path).
@@ -9677,9 +10150,13 @@ function resetAll(){
   ['p2','p3','p4','p5'].forEach(function(id){show(id,false);});
   _p5ShowLoading(true); // Reset loading state for next campaign
   S._autoPickedProds=[];S._typeManual=false;
+  S._phase1Done=false;S._phase1Data=null;S._imgRegenCount=0;
+  // Reset Step 3 image review
+  var p3Ld=document.getElementById('p3ImgLoading');if(p3Ld)p3Ld.style.display='block';
+  var p3Ct=document.getElementById('p3ImgContent');if(p3Ct)p3Ct.style.display='none';
+  var p3Fb=document.getElementById('p3Feedback');if(p3Fb)p3Fb.value='';
   const analyzeEl=document.getElementById('analyzeStatus');if(analyzeEl)analyzeEl.style.display='none';
   show('p1',true);setStep(1);
-  _refreshP1ProductPreview();
   // Reset form inputs
   const pt=document.getElementById('promptIn');if(pt){pt.value='';pt.style.minHeight='';}
   const tt=document.getElementById('typeIn');if(tt)tt.value='';
@@ -9720,6 +10197,109 @@ function switchTab(id,btn){
 }
 
 // ── Main tab switching ───────────────────────────────────────────────────────
+// ── Admin check ────────────────────────────────────────────────────────────
+function isAdmin(){
+  var u=window._currentUser;
+  return u && u.email && u.email.toLowerCase()==='anchit.tandon@vahdam.com';
+}
+
+// ── Dashboard tab switcher (Mailers / Users) ───────────────────────────────
+function switchDashTab(tab){
+  var mailers=document.getElementById('dashMailersSection');
+  var users=document.getElementById('dashUsersSection');
+  var tabM=document.getElementById('dashTabMailers');
+  var tabU=document.getElementById('dashTabUsers');
+  if(tab==='users'&&isAdmin()){
+    if(mailers)mailers.style.display='none';
+    if(users)users.style.display='block';
+    if(tabM){tabM.style.background='transparent';tabM.style.color='#888';tabM.classList.remove('on');}
+    if(tabU){tabU.style.background='#0f2a1c';tabU.style.color='#fdf6e8';tabU.classList.add('on');}
+    renderAdminUsers();
+  } else {
+    if(mailers)mailers.style.display='block';
+    if(users)users.style.display='none';
+    if(tabM){tabM.style.background='#0f2a1c';tabM.style.color='#fdf6e8';tabM.classList.add('on');}
+    if(tabU){tabU.style.background='transparent';tabU.style.color='#888';tabU.classList.remove('on');}
+  }
+}
+
+// ── Admin: Render users table ──────────────────────────────────────────────
+async function renderAdminUsers(){
+  if(!isAdmin())return;
+  var el=document.getElementById('adminUsersList');
+  if(!el)return;
+  el.innerHTML='<div style="text-align:center;padding:24px;color:#bbb">Loading users...</div>';
+  // Collect users from Supabase campaigns (unique by email)
+  var users=[];
+  if(SUPABASE_CONFIG.enabled){
+    var rows=await supabaseFetchCampaigns(1000);
+    if(rows&&rows.length){
+      var userMap={};
+      rows.forEach(function(r){
+        var email=(r.user_email||'').toLowerCase();
+        if(!email)return;
+        if(!userMap[email]){
+          userMap[email]={name:r.user_name||'Unknown',email:email,campaigns:0,lastActive:r.created_at,markets:new Set()};
+        }
+        userMap[email].campaigns++;
+        if(r.created_at>userMap[email].lastActive)userMap[email].lastActive=r.created_at;
+        (r.markets||[]).forEach(function(m){userMap[email].markets.add(m);});
+      });
+      users=Object.values(userMap).map(function(u){
+        return {name:u.name,email:u.email,campaigns:u.campaigns,lastActive:u.lastActive,markets:[...u.markets]};
+      });
+    }
+  }
+  // Also merge localStorage users
+  try{
+    var localUsers=JSON.parse(localStorage.getItem('vhd_users')||'[]');
+    localUsers.forEach(function(lu){
+      var email=(lu.email||'').toLowerCase();
+      if(!users.find(function(u){return u.email===email;})){
+        users.push({name:lu.name,email:email,campaigns:0,lastActive:lu.created_at||'',markets:[]});
+      }
+    });
+  }catch(_){}
+  users.sort(function(a,b){return b.campaigns-a.campaigns;});
+  if(!users.length){
+    el.innerHTML='<div style="text-align:center;padding:32px;color:#bbb">No users found.</div>';
+    return;
+  }
+  // Stats bar
+  var totalCampaigns=users.reduce(function(s,u){return s+u.campaigns;},0);
+  var statsHtml='<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;padding:14px 18px;background:linear-gradient(135deg,#0f2a1c,#1a3a28);border-radius:12px;color:#fdf6e8;align-items:center">'
+    +'<div><div style="font-size:22px;font-weight:800">'+users.length+'</div><div style="font-size:9px;opacity:0.7;text-transform:uppercase;letter-spacing:0.12em">Total Users</div></div>'
+    +'<div style="width:1px;height:36px;background:rgba(255,255,255,0.15)"></div>'
+    +'<div><div style="font-size:22px;font-weight:800">'+totalCampaigns+'</div><div style="font-size:9px;opacity:0.7;text-transform:uppercase;letter-spacing:0.12em">Total Campaigns</div></div>'
+    +'<div style="width:1px;height:36px;background:rgba(255,255,255,0.15)"></div>'
+    +'<div><div style="font-size:22px;font-weight:800">'+(totalCampaigns>0?(totalCampaigns/users.length).toFixed(1):'0')+'</div><div style="font-size:9px;opacity:0.7;text-transform:uppercase;letter-spacing:0.12em">Avg per User</div></div>'
+  +'</div>';
+  // Table
+  var tableHtml='<div style="overflow-x:auto;border:1.5px solid var(--border2);border-radius:12px"><table style="width:100%;border-collapse:collapse;font-size:12px;font-family:DM Sans,sans-serif">'
+    +'<thead><tr style="background:#f5f0e8;border-bottom:2px solid var(--border2)">'
+    +'<th style="padding:12px 16px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280">#</th>'
+    +'<th style="padding:12px 16px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280">Name</th>'
+    +'<th style="padding:12px 16px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280">Email</th>'
+    +'<th style="padding:12px 16px;text-align:center;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280">Campaigns</th>'
+    +'<th style="padding:12px 16px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280">Markets</th>'
+    +'<th style="padding:12px 16px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280">Last Active</th>'
+    +'</tr></thead><tbody>';
+  users.forEach(function(u,i){
+    var isMe=window._currentUser&&window._currentUser.email&&u.email===window._currentUser.email.toLowerCase();
+    var lastDate=u.lastActive?new Date(u.lastActive).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+    tableHtml+='<tr style="border-bottom:1px solid var(--border);'+(isMe?'background:#f0faf4;':i%2===0?'background:#fff;':'background:#fafaf6;')+'">'
+      +'<td style="padding:10px 16px;color:#9ca3af;font-weight:600">'+(i+1)+'</td>'
+      +'<td style="padding:10px 16px;font-weight:700;color:#0f2a1c">'+u.name+(isMe?' <span style="font-size:8px;font-weight:700;background:#0f2a1c;color:#fdf6e8;padding:2px 6px;border-radius:4px;vertical-align:middle">YOU</span>':'')+'</td>'
+      +'<td style="padding:10px 16px;color:#6b7280">'+u.email+'</td>'
+      +'<td style="padding:10px 16px;text-align:center;font-weight:700;color:'+(u.campaigns>0?'#0f2a1c':'#ccc')+'">'+u.campaigns+'</td>'
+      +'<td style="padding:10px 16px;color:#6b7280">'+(u.markets.length?u.markets.join(', '):'—')+'</td>'
+      +'<td style="padding:10px 16px;color:#9ca3af;font-size:11px">'+lastDate+'</td>'
+    +'</tr>';
+  });
+  tableHtml+='</tbody></table></div>';
+  el.innerHTML=statsHtml+tableHtml;
+}
+
 function switchMainTab(tab){
   var create=document.getElementById('createView');
   var dash=document.getElementById('dashboardView');
@@ -9733,12 +10313,18 @@ function switchMainTab(tab){
     allCreate.forEach(function(b){b.classList.remove('on');});
     allDash.forEach(function(b){b.classList.add('on');});
     window.scrollTo({top:0,behavior:'instant'});
+    // Show/hide Users tab for admin
+    var usersTab=document.getElementById('dashTabUsers');
+    if(usersTab)usersTab.style.display=isAdmin()?'block':'none';
+    // Admin sees all users' data by default
+    if(isAdmin()&&window._dashFilters){window._dashFilters.mineOnly=false;}
+    switchDashTab('mailers');
     renderDashboard();
   } else {
     if(dash){dash.style.display='none';dash.style.visibility='hidden';}
     if(create){create.style.display='block';create.style.visibility='visible';}
     // Restore the active step (whatever it was) — ensure at least p1 is shown if state is fresh
-    var anyVisible=['p1','p2','p3','p4','p5'].some(function(id){var el=document.getElementById(id);return el&&el.style.display!=='none';});
+    var anyVisible=['p1','p2','p3','p5'].some(function(id){var el=document.getElementById(id);return el&&el.style.display!=='none';});
     if(!anyVisible){var p1=document.getElementById('p1');if(p1)p1.style.display='block';}
     allCreate.forEach(function(b){b.classList.add('on');});
     allDash.forEach(function(b){b.classList.remove('on');});
@@ -10037,7 +10623,7 @@ function dashSetFilter(field,val){
   renderDashboard(0);
 }
 function dashClearFilters(){
-  window._dashFilters={type:'',market:'',user:'',q:'',mineOnly:true};
+  window._dashFilters={type:'',market:'',user:'',q:'',mineOnly:isAdmin()?false:true};
   _dashPage=0;
   var sb=document.getElementById('dashSearch');if(sb)sb.value='';
   renderDashboard(0);
@@ -10820,8 +11406,7 @@ document.addEventListener('DOMContentLoaded',function(){
   // Load product catalog from CSV-built JSON (async, non-blocking)
   // Loads US by default; switches when user picks a different market
   loadCatalog(window.S && S.markets && S.markets[0] || 'US').then(function(){
-    // Show auto-picked products on Step 1 as soon as catalog is ready
-    if(typeof _refreshP1ProductPreview==='function')_refreshP1ProductPreview();
+    console.log('[boot] Catalog ready for Step 2 auto-pick');
   }).catch(function(e){
     console.warn('[boot] catalog load error:',e.message);
   });
