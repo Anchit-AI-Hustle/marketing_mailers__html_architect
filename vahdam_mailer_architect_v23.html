@@ -1286,7 +1286,7 @@ async function loadCatalog(market){
 }
 const S={step:1,prompt:'',market:'US',markets:['US'],marketMailers:{},activeMarket:'US',type:'',manualProds:[],finalProds:[],regenCount:0,finalHTML:'',lastImagePrompt:'',generatedPrompt:'',canvasDataUrl:'',uploadedDesignUrl:null,precomputedStrategy:null};
 window.S=S; // Make S accessible via window so the `window.S&&...` safety guards in helper functions actually work (const declarations at top-level do NOT auto-create window.X properties).
-window.__VAHDAM_BUILD__='4step-flow-v91';
+window.__VAHDAM_BUILD__='4step-flow-v92';
 // On page load, surface Supabase connection state so the user can see if
 // data is going to Supabase or only to localStorage.
 setTimeout(function(){
@@ -5838,23 +5838,23 @@ async function _runPipelinePhase1(mkt, opts) {
       _pipelineLog(1, 'Strategy: ' + strategy.strategy, 'ok');
     }
 
-    // ─── Stage 2: Creative Plans ──────────────────────────────────────────
-    _pipelineSetStep(2, 'active', 'Building Variant A + B plans...');
-    _pipelineLog(2, 'Variant A + B — parallel calls', '');
-    var [planA, planB] = await Promise.all([
-      _pipelinePost('/api/ai/pipeline/variant', {
-        strategy_output: strategy, variant: 'A', brief: brief, market: market,
-        products: (Array.isArray(prods) ? prods : []).slice(0, 5), regenerate_counter: regen
-      }, 52000),
-      _pipelinePost('/api/ai/pipeline/variant', {
-        strategy_output: strategy, variant: 'B', brief: brief, market: market,
-        products: (Array.isArray(prods) ? prods : []).slice(0, 5), regenerate_counter: regen
-      }, 52000)
-    ]);
+    // ─── Stage 2: Creative Plans (sequential to avoid rate-limit on free-tier) ─
+    _pipelineSetStep(2, 'active', 'Building Variant A plan...');
+    _pipelineLog(2, 'Variant A first, then B (sequential — avoids rate limits)', '');
+    var _variantPayloadBase = {
+      strategy_output: strategy, brief: brief, market: market,
+      products: (Array.isArray(prods) ? prods : []).slice(0, 5), regenerate_counter: regen
+    };
+    var planA = await _pipelinePost('/api/ai/pipeline/variant', Object.assign({}, _variantPayloadBase, { variant: 'A' }), 58000);
+    _pipelineLog(2, 'Variant A done — ' + (planA.sections||[]).length + ' sections', 'ok');
+    _pipelineSetStep(2, 'active', 'Building Variant B plan...');
+    // 3s delay to let rate limits cool down on free-tier providers
+    await new Promise(function(r){setTimeout(r,3000);});
+    var planB = await _pipelinePost('/api/ai/pipeline/variant', Object.assign({}, _variantPayloadBase, { variant: 'B' }), 58000);
     _pipelineSetStep(2, 'done', 'Plans locked — A: ' + (planA.sections||[]).length + ' sections · B: ' + (planB.sections||[]).length + ' sections');
     _pipelineLog(2, 'Plans locked', 'ok');
 
-    // ─── Stage 3: Images ──────────────────────────────────────────────────
+    // ─── Stage 3: Images (parallel — image API has separate rate limits) ──
     _pipelineSetStep(3, 'active', 'Generating images (hero+product+lifestyle) via AI...');
     _pipelineLog(3, 'Image generation: 3 slots × 2 variants = 6 total', '');
     var stylelock = strategy.image_style_lock || '';
@@ -6180,24 +6180,26 @@ async function _runPipeline(mkt, opts) {
       _pipelineLog(1, '⚠ ' + strategy._divergence_warning, 'warn');
     }
 
-    // ─── Stage 2: Creative Plans (A and B in parallel, separate calls) ────
-    _pipelineSetStep(2, 'active', 'Building Variant A + B plans (separate LLM calls)...');
-    _pipelineLog(2, 'Variant A (product-led · light cream) + B (editorial narrative · dark inverted) — parallel', '');
+    // ─── Stage 2: Creative Plans (sequential to avoid rate-limit on free-tier) ─
+    _pipelineSetStep(2, 'active', 'Building Variant A plan...');
+    _pipelineLog(2, 'Variant A first, then B (sequential — avoids rate limits)', '');
 
-    var [planA, planB] = await Promise.all([
-      _pipelinePost('/api/ai/pipeline/variant', {
-        strategy_output: strategy, variant: 'A',
-        brief: brief, market: market,
-        products: (Array.isArray(prods) ? prods : []).slice(0, 5),
-        regenerate_counter: regen
-      }, 52000),   // 52s client; variant.js vercel maxDuration 55s
-      _pipelinePost('/api/ai/pipeline/variant', {
-        strategy_output: strategy, variant: 'B',
-        brief: brief, market: market,
-        products: (Array.isArray(prods) ? prods : []).slice(0, 5),
-        regenerate_counter: regen
-      }, 52000)
-    ]);
+    var planA = await _pipelinePost('/api/ai/pipeline/variant', {
+      strategy_output: strategy, variant: 'A',
+      brief: brief, market: market,
+      products: (Array.isArray(prods) ? prods : []).slice(0, 5),
+      regenerate_counter: regen
+    }, 58000);
+    _pipelineLog(2, 'Variant A done — ' + (planA.sections||[]).length + ' sections', 'ok');
+    _pipelineSetStep(2, 'active', 'Building Variant B plan...');
+    // 3s delay to let rate limits cool on free-tier providers (Gemini)
+    await new Promise(function(r){setTimeout(r,3000);});
+    var planB = await _pipelinePost('/api/ai/pipeline/variant', {
+      strategy_output: strategy, variant: 'B',
+      brief: brief, market: market,
+      products: (Array.isArray(prods) ? prods : []).slice(0, 5),
+      regenerate_counter: regen
+    }, 58000);
 
     var secA = (planA.sections || []).length;
     var secB = (planB.sections || []).length;

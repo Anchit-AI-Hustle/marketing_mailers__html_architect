@@ -136,7 +136,8 @@ module.exports = async function callLLM(opts) {
 
   async function _gemini(model) {
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    // Gemini free tier can be slower — give 30% more time than other providers
+    const t = setTimeout(() => ctrl.abort(), Math.round(timeoutMs * 1.3));
     const combined = systemPrompt + '\n\n---\nUSER REQUEST:\n' + seededUserMessage;
     console.log('[llm][' + stage + '] gemini model=' + model + ' seed=' + seed);
     try {
@@ -262,7 +263,7 @@ module.exports = async function callLLM(opts) {
     }
   }
 
-  // === 3. Gemini ===
+  // === 3. Gemini (with rate-limit retry) ===
   //    De-duplicate: env var might equal a hardcoded fallback
   if (geminiKey && (!result || !result.ok)) {
     console.warn('[llm][' + stage + '] Trying Gemini');
@@ -277,6 +278,13 @@ module.exports = async function callLLM(opts) {
     for (const model of geminiModels) {
       result = await _gemini(model);
       if (result.ok) break;
+      // Rate-limit retry: wait 4s and retry same model once before moving on
+      if (result.status === 429) {
+        console.warn('[llm][' + stage + '] Gemini 429 on ' + model + ' — waiting 4s and retrying');
+        await new Promise(r => setTimeout(r, 4000));
+        result = await _gemini(model);
+        if (result.ok) break;
+      }
       if (isRetryable(result.status)) {
         console.warn('[llm][' + stage + '] Gemini ' + result.status + ' on ' + model + ' — trying next');
         continue;
