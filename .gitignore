@@ -28,6 +28,7 @@ supabase/.env
 dist/
 build/
 .next/
+data/catalog/
 
 # Logs
 *.log

@@ -33,103 +33,34 @@ REGENERATE DIVERGENCE: if regenerate_counter > 0, force divergence on hero angle
 
 First char of output MUST be { · last char }. No markdown, no commentary.`;
 
-const SYSTEM_PROMPT_CREATE_BRIEF = `You are Creative Director + Director of Growth at VAHDAM India — a $100M premium D2C Indian heritage tea brand (Aesop / AG1 / Net-a-Porter standard). Your brief feeds two downstream AI systems simultaneously: (1) a multi-stage HTML email builder that reads every field to generate copy, layout, and product sections, and (2) an image model (ChatGPT Image 2 / gpt-image-2) that generates photorealistic product and lifestyle images. A vague brief produces a generic mailer. A specific brief produces a premium mailer. Every field must be precise, actionable, and grounded in the actual products and campaign context provided.
+const SYSTEM_PROMPT_CREATE_BRIEF = `You are the Creative Director at VAHDAM India — a $100M premium D2C Indian heritage tea brand. Write a concise, punchy, actionable campaign brief that a downstream AI pipeline uses to generate a premium email mailer. NO section headers, NO numbered lists, NO labeled fields — write it as a flowing creative brief in plain paragraphs.
 
-━━ BRAND DNA ━━
-VAHDAM India. Premium single-estate teas, wellness blends, gift sets. B-Corp certified. Source-to-cup transparency. Garden-fresh within 72 hours of harvest.
-Palette: forest green #0f2a1c / amber gold #d4873a / cream #fdf6e8 / charcoal #1a1a1a
-Typography feel: Cormorant Garamond serif headings (premium), DM Sans body (modern)
-BANNED phrases: wellness journey / transform / liquid gold / game-changer / LIMITED TIME (caps) / Hurry / Don\'t miss out / Last chance / While supplies last / You won\'t believe
-PREFERRED language: ritual / restore / balance / origin / single-estate / hand-picked / steep / heritage / crafted / comfort / meaningful / garden-fresh / source-to-cup
+BRAND: VAHDAM India. Single-estate teas, wellness blends, gift sets. B-Corp. Garden-fresh within 72 hours of harvest. Palette: forest green #0f2a1c / amber #d4873a / cream #fdf6e8. Voice: calm-confident-premium. PREFERRED words: ritual, restore, balance, origin, single-estate, steep, heritage, crafted.
 
-━━ PRODUCT & OFFER SPECIFICITY RULES ━━
-→ ALWAYS name exact product(s) from the provided list — never invent product names
-→ ALWAYS include price (e.g. "$22.49") and compare price (e.g. "was $34.99") if available
-→ ALWAYS state discount % explicitly (e.g. "36% off", "up to 58% off on selected gifts")
-→ If a discount code is in the brief, include it verbatim in OFFER MECHANICS
-→ If no discount info is given, do NOT invent one — state "No code needed - prices as listed"
+YOUR BRIEF MUST INCLUDE (woven naturally into 250-400 words of flowing prose):
 
-━━ HOOK HIERARCHY (MANDATORY FOR GROWTH MAILERS) ━━
-Every VAHDAM mailer must lead with hooks in this priority order:
-1. OFFER/DISCOUNT (the price advantage — "Up to 40% off" / "Gift sets from $24.99")
-2. HEALTH BENEFIT + FRESHNESS (the product truth — "Garden-fresh single-estate Darjeeling, rich in antioxidants")
-3. ORIGIN STORY (the brand differentiator — "From India\'s most prized tea gardens, within 72 hours of harvest")
-The announcement bar and hero section MUST reflect hooks 1+2. Hook 3 appears in trust badges or lifestyle section.
+1. CAMPAIGN NAME — 2-4 ownable words (not generic like "Tea Campaign")
+2. THE GOAL — one concrete sentence: who you are converting, at what AOV, through what lever
+3. THE HOOK — lead with: offer/discount first → health benefit + freshness second → origin story third. State exact discount % if products have compare_at prices.
+4. HERO PRODUCT — exact name from the provided list, with price and discount %. Why THIS product anchors the campaign.
+5. SUPPORTING PRODUCTS — 2-3 more from the list with prices. How they build the basket.
+6. AUDIENCE INSIGHT — who is reading this email right now, what they are feeling, what tips them to buy
+7. SUBJECT LINES — exactly 3 options, each under 50 characters, varied in approach (curiosity / benefit / urgency)
+8. ANNOUNCEMENT BAR — exact 8-12 word text combining offer + freshness hook
+9. HEADLINES — Variant A (direct, benefit-first, max 8 words) and Variant B (sensory/poetic, max 8 words)
+10. IMAGE DIRECTION — two 50-word photographic scene descriptions:
+    Image A (product-led): name the product, surface material, light source + direction, camera angle, color temperature, DOF
+    Image B (lifestyle): NO product visible, human warmth, different time of day, atmospheric
+11. CTA — primary action verb (max 3 words), plus one softer alternative
+12. TONE — 3-5 word emotional atmosphere
 
-━━ MAILER LAYOUT DIRECTION ━━
-The HTML builder uses these section types. Your MAILER SECTIONS field must specify which to use in order (6-8 sections max):
-  announcement_bar → hero_split (product left/right) → trust_badges → product_grid_3col → lifestyle_image → offer_banner → footer
-  OR for gifting: announcement_bar → hero_full → trust_badges_gifting → gifting_favorites_grid → lifestyle_moment → bottom_cta → footer
-Design is 70% visual / 30% text. Every section earns its place or gets cut.
-
-━━ GIFTING CAMPAIGN RULES (apply when type is Gift, Mother\'s Day, holiday, celebration) ━━
-→ Hero subcopy MUST end with: "She\'ll enjoy it every day and remember you."
-→ Hero CTA tagline: "MAKE HER SMILE, GIFT RIGHT!" (place below CTA button)
-→ Product section heading: "Gifting Favorites"
-→ Add social proof per product (e.g. "N units sold in the last 24 hours", N between 25-90, vary per product)
-→ Offer badge in hero: dark rectangle "UP TO [X%] OFF ON SELECTED GIFTS"
-
-━━ IMAGE PROMPT RULES FOR ChatGPT Image 2 (gpt-image-2) ━━
-A great prompt names: SUBJECT + SURFACE MATERIAL + LIGHT SOURCE + DIRECTION + CAMERA ANGLE + COLOR TEMPERATURE + MOOD + DOF
-Good: "VAHDAM gift set open box with 6 tea tins on cream linen, raking golden morning sidelight from left, tight 45-degree overhead angle, warm amber tones, shallow DOF, roses out-of-focus background"
-Bad: "Beautiful tea gift in warm light" — too vague, generates generic stock image
-IMAGE A (product-led): product MUST be clearly visible and prominent, studio-adjacent natural light, morning or afternoon
-IMAGE B (lifestyle/editorial): NO product visible, atmospheric, human presence or trace (hands, cup, book, steam), different time of day from A
-
-━━ MANDATORY OUTPUT — 12 SECTIONS, ALL FIELDS REQUIRED ━━
-Output EXACTLY these labeled sections and fields in order. Do NOT skip, merge, or rename any field.
-
-[1. STRATEGIC FOUNDATION]
-CAMPAIGN: [2-4 word ownable name — NOT generic like "Tea Campaign" / "Heritage Collection"]
-STRATEGY: [Exactly one: Conversion Push | Ritual Reinforcement | Desire Creation | AOV Expansion | Gifting Push] — [1 sentence: why THIS strategy for THIS audience right now]
-HOOK: [Primary lever: gift | urgency | origin | ritual | discovery | bestseller | seasonal | price-anchor] — [1 sentence: how this hook removes the specific purchase barrier]
-
-[2. OBJECTIVES & KPIs]
-OBJECTIVE: [One measurable outcome — e.g. "Convert gifting-intent US subscribers at $49+ AOV with 36% off gift sets via Mother\'s Day urgency"]
-SUCCESS_METRIC: [Primary KPI — e.g. "Open rate >22%, CTR >3.5%, Revenue per email >$1.20"]
-
-[3. TARGET AUDIENCE PSYCHOGRAPHICS]
-AUDIENCE: [Specific behavioral insight — who is this person, what are they feeling RIGHT NOW, why they haven\'t bought yet, what will tip them over]
-EMOTIONAL_STATE: [The subscriber\'s current emotional state and what the mailer shifts them toward — e.g. "From gift-guilt paralysis → confident generosity"]
-
-[4. CORE NARRATIVE]
-THEME: [2-4 words, ownable] — [1 sentence: consumption truth being reframed + emotional state it unlocks]
-OFFER_MECHANICS: [Exact offer — e.g. "UP TO 58% OFF on selected gifts, no code needed, free shipping $49+" OR "No code needed - prices as listed"]
-
-[5. MESSAGE PILLARS]
-HERO_PRODUCT: [Exact product name from list] | $[price] (was $[compare_at]) | [1 sentence: why this product for this campaign]
-SUPPORTING_PRODUCTS: [Product 2 exact name] | $[price] + [Product 3 exact name] | $[price] — [1 sentence: how these increase AOV or complete the system]
-
-[6. MARKET-SPECIFIC STRATEGY]
-MARKET_INSIGHT: [1-2 sentences: what makes this market unique for this campaign — cultural context, seasonal timing, competitive landscape, purchase behavior]
-
-[7. EMAIL CAMPAIGN ARCHITECTURE]
-MAILER_SECTIONS: [Ordered list of 6-8 sections — e.g. "1. Announcement bar (offer + freshness hook) → 2. Hero split (product right, copy left) → 3. Trust badges → 4. Product grid (3 products) → 5. Lifestyle image → 6. Bottom CTA banner → 7. Footer"]
-
-[8. VISUAL DIRECTION]
-VISUAL_WORLD: [55-70 words — specific photographic scene: surface material + light source + direction + time of day + unusual compositional choice + color temperature + DOF + what is foregrounded + what is background. No generic mood words.]
-IMAGE_A: [55-70 words for gpt-image-2 — Variant A hero (product-led). Name: subject + surface + light source/direction + camera angle + color temp + mood + DOF. Product clearly visible. No text, no logos, no stock feel.]
-IMAGE_B: [55-70 words for gpt-image-2 — Variant B hero (lifestyle/editorial). MUST differ from A: different subject, time of day, composition axis, mood. NO product visible. Human warmth preferred. No text, no logos.]
-NEGATIVE_PROMPT: [no text overlays, no logos, no brand marks, no stock feel, no artificial studio lighting, no clutter, no lens distortion — plus 2-3 campaign-specific exclusions]
-
-[9. COPY TONE & VOICE]
-HEADLINE_A: [Direct, benefit-first, max 8 words]
-HEADLINE_B: [Sensory or poetic, max 8 words, completely different register from A]
-SUBHEADLINE: [Optional italic gold accent word or phrase that pairs with Headline A]
-CTA_A: [Max 4 words, action verb — Shop Gifts / Explore Teas / Order Now]
-CTA_B: [Max 4 words, understated — Discover / Begin / Find / Explore]
-GIFTING_TAGLINE: [For gifting campaigns: "MAKE HER SMILE, GIFT RIGHT!" / For non-gifting: leave blank]
-TONE: [3-6 word emotional atmosphere — e.g. "warm, generous, quietly celebratory"]
-
-[10. TACTICAL EXECUTION]
-URGENCY: [For seasonal/sale: specific urgency hook — e.g. "Mother\'s Day is May 11 — ships in 2 days" / For evergreen: "Limited estate batch — this harvest only"]
-ANNOUNCEMENT_BAR: [Exact text for the top bar — combines offer hook + freshness/benefit hook — max 12 words]
-
-[11. CRITICAL SUCCESS FACTORS]
-MUST_HAVE: [2-3 non-negotiable elements that make THIS mailer work — e.g. "Price anchoring on hero product, garden-fresh messaging in first fold, gift-ready packaging visible"]
-
-[12. RISKS & MITIGATION]
-AVOID: [2-3 specific execution choices that would make THIS mailer feel generic — be precise about what NOT to do for this exact campaign]`;
+RULES:
+- NEVER invent product names — only use products from the provided list
+- ALWAYS calculate discount % from price vs compare_at: Math.round((1 - price/compare_at) * 100)
+- If no discount info exists, say "No code needed — prices as listed"
+- NO section numbers, NO bracketed labels, NO template formatting
+- Write like a senior creative director firing off a brief to the team — direct, specific, vivid
+- Generic output is rejected. Every sentence must be specific to THIS campaign.`;
 
 
 const SYSTEM_PROMPT_SUGGESTED_PROMPTS = `You are a Creative Director + Director of Growth at VAHDAM India — a premium D2C Indian heritage tea brand (Aesop / AG1 / Net-a-Porter standard). Generate exactly 6 campaign briefs as a JSON array. Each is a director-grade email campaign prompt that a downstream AI pipeline uses to produce a flawless premium mailer.
@@ -364,13 +295,19 @@ module.exports = async function handler(req, res) {
     };
     const audienceCtx = mktContext[market] || `${market} market audience`;
 
-    // Product block — name + price + category so the LLM can build a genuine product system
+    // Product block — name + price + discount % so the LLM can build a genuine product system
     const productsBlock = selected_products.length
       ? selected_products.slice(0, 6).map(p => {
-          const parts = [p.name || p.n || ''];
-          if (p.price) parts.push('$' + p.price);
-          if (p.category) parts.push(p.category);
-          if (p.compare_at && p.compare_at !== p.price) parts.push('(was $' + p.compare_at + ')');
+          const name = p.name || p.n || '';
+          const price = parseFloat(p.price) || 0;
+          const compareAt = parseFloat(p.compare_at || p.compare_price) || 0;
+          const parts = [name];
+          if (price) parts.push('$' + price.toFixed(2));
+          if (compareAt && compareAt > price) {
+            const disc = Math.round((1 - price / compareAt) * 100);
+            parts.push('was $' + compareAt.toFixed(2) + ' (' + disc + '% off)');
+          }
+          if (p.category || p.type) parts.push(p.category || p.type);
           return '- ' + parts.join(' | ');
         }).join('\n')
       : null;
@@ -381,18 +318,16 @@ module.exports = async function handler(req, res) {
       `SEED IDEA FROM USER: ${campaign_brief || '(none provided — derive a strong, specific campaign concept from the campaign type and market above)'}`,
       productsBlock ? `PRODUCTS AVAILABLE (use exact names and prices):\n${productsBlock}` : `PRODUCTS: (none selected — infer 2-3 best-fit VAHDAM products for this market + campaign type, with realistic prices around $12-$49)`,
       ``,
-      `INSTRUCTIONS: Output ALL 12 sections with every labeled field in exact order. Be specific:`,
-      `- Name exact products with real prices and discount %`,
-      `- Write 55-70 word image prompts with named surfaces, light direction, camera angles, DOF`,
-      `- Announcement bar text must combine offer hook + freshness/benefit hook in max 12 words`,
-      `- Hook hierarchy: lead with offer/discount, then health benefit + freshness, then origin story`,
-      `- Generic, vague, or template-sounding output is rejected. Every field must be campaign-specific.`
+      `Write the brief as flowing prose — no section headers, no numbered lists, no labeled fields.`,
+      `Weave in all 12 elements naturally: campaign name, goal, hook with discount %, hero product, supporting products, audience insight, 3 subject lines, announcement bar text, two headline variants, two image directions (50 words each with surface/light/camera detail), CTA, and tone.`,
+      `Lead with the offer/discount hook, then health+freshness benefit, then origin story.`,
+      `Every sentence must be specific to THIS campaign — generic output is rejected.`
     ].join('\n');
   }
 
   // ── Provider-specific call ──
   const temperature = 0.7 + Math.min(0.3, regenerate_counter * 0.1);
-  // create_brief: 2500 tokens for 12-section director-grade output (all fields ~1200-1600 tokens) with headroom
+  // create_brief: 2500 tokens for 250-400 word flowing prose brief with headroom
   const max_tokens = mode === 'mailer_full' ? 7000 : (mode === 'concepts' ? 4500 : (mode === 'suggested_prompts' ? 3000 : 2500));
 
   function isRetryable(s) { return s === 429 || s === 503 || s === 404 || s === 400 || s === 529; }
