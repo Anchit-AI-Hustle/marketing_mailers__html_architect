@@ -482,6 +482,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   .cat-grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
 }
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .panel{animation:fadeUp .25s ease both}
 </style>
@@ -1090,6 +1091,24 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 </div><!-- /p4 -->
 <div id="analyzeStatus"></div>
 <div id="p5" style="display:none">
+  <!-- ── Loading state — shown while pipeline generates, hidden when content ready ── -->
+  <div id="p5Loading" class="panel" style="text-align:center;padding:48px 24px">
+    <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#0f2a1c,#1a3a28);margin-bottom:18px">
+      <div style="width:28px;height:28px;border:3px solid rgba(212,135,58,0.25);border-top-color:#d4873a;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+    </div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#0f2a1c;margin-bottom:8px">Generating your campaign...</div>
+    <div id="p5LoadingStatus" style="font-size:12px;color:#6b7280;line-height:1.6;max-width:420px;margin:0 auto">The AI pipeline is creating your strategy, images, and HTML mailer. This takes 30-90 seconds depending on complexity.</div>
+    <div style="margin-top:20px;display:flex;align-items:center;justify-content:center;gap:6px">
+      <div style="width:8px;height:8px;border-radius:50%;background:#d4873a;animation:pulse 1.4s ease-in-out infinite"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#d4873a;animation:pulse 1.4s ease-in-out 0.2s infinite"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#d4873a;animation:pulse 1.4s ease-in-out 0.4s infinite"></div>
+    </div>
+    <div style="margin-top:24px">
+      <button onclick="_pipelineAbort()" style="background:transparent;border:1.5px solid var(--border2);border-radius:8px;padding:8px 20px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='#d4873a';this.style.color='#d4873a'" onmouseout="this.style.borderColor='';this.style.color='#6b7280'">Cancel &amp; use template fallback</button>
+    </div>
+  </div>
+  <!-- ── Actual content sections — hidden until pipeline completes ── -->
+  <div id="p5Content" style="display:none">
   <div class="panel">
     <div class="plbl" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       Campaign Output Report
@@ -1140,6 +1159,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
       <button class="btn btn-primary" onclick="resetAll()">&#10010; New Campaign</button>
     </div>
   </div>
+  </div><!-- /p5Content -->
 </div>
 </div>
 <div id="toast"></div>
@@ -1182,7 +1202,7 @@ async function loadCatalog(market){
 }
 const S={step:1,prompt:'',market:'US',markets:['US'],marketMailers:{},activeMarket:'US',type:'',manualProds:[],finalProds:[],regenCount:0,finalHTML:'',lastImagePrompt:'',generatedPrompt:'',canvasDataUrl:'',uploadedDesignUrl:null,precomputedStrategy:null};
 window.S=S; // Make S accessible via window so the `window.S&&...` safety guards in helper functions actually work (const declarations at top-level do NOT auto-create window.X properties).
-window.__VAHDAM_BUILD__='ui-restructure-v89';
+window.__VAHDAM_BUILD__='ui-restructure-v90';
 // On page load, surface Supabase connection state so the user can see if
 // data is going to Supabase or only to localStorage.
 setTimeout(function(){
@@ -5389,6 +5409,10 @@ function _pipelineSetStep(stepNum, status, msg) {
     if (msgEl && msg) msgEl.textContent = msg;
   }
 
+  // Update p5 loading status text (visible behind the pipeline overlay)
+  var _stepLabels = {1:'Locking campaign strategy...',2:'Building creative plans...',3:'Generating images...',4:'Writing HTML mailer...',5:'Running quality checks...'};
+  if (status === 'active') _p5UpdateLoadingStatus(_stepLabels[stepNum] || 'Processing stage ' + stepNum + '...');
+
   // Update active section card on the prominent banner
   if (status === 'active' && msg) {
     var def = _PLN_STEP_DEFS[stepNum - 1] || {};
@@ -6003,6 +6027,7 @@ async function approveAndBuild(skipPipeline){
   setTimeout(function(){ _approveBuildDebounce = false; }, 800);
 
   showOnly(5);
+  _p5ShowLoading(true); // Show loading state until content is ready
   // ── v80: MULTI-STAGE PIPELINE for primary market (if not already running
   //   and not explicitly skipped by fallback path).
   if (!skipPipeline && !_PLN_RUNNING) {
@@ -8836,7 +8861,20 @@ function buildEmail(uploadedDesignImg,mktOverride){
 }
 
 
+// ── Step 5 loading/content toggle ────────────────────────────────────────────
+function _p5ShowLoading(show){
+  var loading=document.getElementById('p5Loading');
+  var content=document.getElementById('p5Content');
+  if(loading)loading.style.display=show?'block':'none';
+  if(content)content.style.display=show?'none':'block';
+}
+function _p5UpdateLoadingStatus(msg){
+  var el=document.getElementById('p5LoadingStatus');
+  if(el)el.textContent=msg;
+}
 function buildStep5UI(prompt,prods,market){
+  // Show content, hide loading
+  _p5ShowLoading(false);
   // ── Subject line suggestions — prompt-accurate ───────────────────────────
   const type=(window.S&&S.type?S.type:null)||detectType(prompt);
   const sig=extractPromptSignals(prompt);
@@ -9637,8 +9675,11 @@ function resetAll(){
   if(uploadedImg)uploadedImg.src='';
   if(imgUploadInput)imgUploadInput.value='';
   ['p2','p3','p4','p5'].forEach(function(id){show(id,false);});
+  _p5ShowLoading(true); // Reset loading state for next campaign
+  S._autoPickedProds=[];S._typeManual=false;
   const analyzeEl=document.getElementById('analyzeStatus');if(analyzeEl)analyzeEl.style.display='none';
   show('p1',true);setStep(1);
+  _refreshP1ProductPreview();
   // Reset form inputs
   const pt=document.getElementById('promptIn');if(pt){pt.value='';pt.style.minHeight='';}
   const tt=document.getElementById('typeIn');if(tt)tt.value='';
