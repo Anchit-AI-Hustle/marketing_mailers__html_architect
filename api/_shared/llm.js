@@ -211,7 +211,8 @@ module.exports = async function callLLM(opts) {
 
   // ── Helper: is this a retryable error (rate limit / model issue) ────────────
   function isRetryable(status) {
-    return status === 429 || status === 503 || status === 404 || status === 400 || status === 529;
+    // 403 = forbidden/no-credits (Grok), 402 = payment required — both should cascade
+    return status === 429 || status === 503 || status === 404 || status === 400 || status === 529 || status === 403 || status === 402;
   }
 
   // ── 4-provider cascade ──────────────────────────────────────────────────────

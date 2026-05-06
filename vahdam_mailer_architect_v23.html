@@ -695,7 +695,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 </div>
 <div id="createView">
 <div class="steps" id="stepFlow">
-  <div class="step"><div class="step-n active" id="sn1">1</div><div class="step-l active" id="sl1">Brief</div></div>
+  <div class="step"><div class="step-n active" id="sn1">1</div><div class="step-l active" id="sl1">Brief &amp; Products</div></div>
   <div class="step-line" id="sc1"></div>
   <div class="step"><div class="step-n" id="sn2">2</div><div class="step-l" id="sl2">Products</div></div>
   <div class="step-line" id="sc4"></div>
@@ -715,67 +715,14 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
         <span style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.6)">Campaign Brief</span>
       </div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#fdf6e8;margin-bottom:6px;line-height:1.2">What are we sending today?</div>
-      <p style="font-size:12px;color:rgba(251,245,234,0.7);margin:0;line-height:1.6;max-width:520px">Pick your market and campaign type first — then describe your campaign. Hit <strong style="color:#c9a05a">Enhance</strong> to let AI enrich your description using all the context you've already set.</p>
+      <p style="font-size:12px;color:rgba(251,245,234,0.7);margin:0;line-height:1.6;max-width:520px">Describe your campaign below. Market and campaign type will <strong style="color:#c9a05a">auto-detect</strong> from your description, or set them manually.</p>
     </div>
   </div>
 
   <!-- Form body -->
   <div style="padding:24px 28px">
 
-    <!-- Markets — FIRST -->
-    <div style="margin-bottom:20px">
-      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
-        <label style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin:0">Target Market <span class="req">*</span></label>
-        <span style="font-size:10px;color:#9ca3af;font-weight:400">Multi-select — each market gets its own tailored mailer</span>
-      </div>
-      <div class="mkt-chips" id="mktChips">
-        <button class="mkt-chip on" data-mkt="US" onclick="toggleMarket('US',this)">&#127482;&#127480; United States</button>
-        <button class="mkt-chip" data-mkt="UK" onclick="toggleMarket('UK',this)">&#127468;&#127463; United Kingdom</button>
-        <button class="mkt-chip" data-mkt="IN" onclick="toggleMarket('IN',this)">&#127470;&#127475; India</button>
-        <button class="mkt-chip" data-mkt="Global" onclick="toggleMarket('Global',this)">&#127758; Global</button>
-        <button class="mkt-chip" data-mkt="ME" onclick="toggleMarket('ME',this)">&#127462;&#127466; Middle East</button>
-        <button class="mkt-chip" data-mkt="AU" onclick="toggleMarket('AU',this)">&#127462;&#127482; Australia</button>
-        <button class="mkt-chip" data-mkt="EU" onclick="toggleMarket('EU',this)">&#127466;&#127482; Europe</button>
-      </div>
-    </div>
-
-    <!-- Campaign Type — SECOND -->
-    <div style="margin-bottom:20px">
-      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
-        <label style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin:0">Campaign Type</label>
-        <span style="font-size:10px;color:#9ca3af;font-weight:400">Auto-detect if left unset</span>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap" id="typeChips">
-        <button class="type-chip on" data-type="" onclick="selectType('',this)">&#x1F916; Auto</button>
-        <button class="type-chip" data-type="Sale" onclick="selectType('Sale',this)">&#127991; Sale</button>
-        <button class="type-chip" data-type="Launch" onclick="selectType('Launch',this)">&#x1F680; Launch</button>
-        <button class="type-chip" data-type="Seasonal" onclick="selectType('Seasonal',this)">&#127807; Seasonal</button>
-        <button class="type-chip" data-type="Bestseller" onclick="selectType('Bestseller',this)">&#11088; Bestsellers</button>
-        <button class="type-chip" data-type="Gift" onclick="selectType('Gift',this)">&#127873; Gifting</button>
-        <button class="type-chip" data-type="Discovery" onclick="selectType('Discovery',this)">&#129514; Discovery</button>
-        <button class="type-chip" data-type="Routine" onclick="selectType('Routine',this)">&#127774; Routine</button>
-        <button class="type-chip" data-type="Story" onclick="selectType('Story',this)">&#128216; Brand Story</button>
-      </div>
-      <!-- Hidden select kept for JS compat -->
-      <select id="typeIn" style="display:none">
-        <option value="">Auto-detect</option>
-        <option value="Sale">Sale / Offer</option>
-        <option value="Launch">New Launch</option>
-        <option value="Seasonal">Seasonal</option>
-        <option value="Bestseller">Bestsellers</option>
-        <option value="Gift">Gifting</option>
-        <option value="Discovery">Discovery / Sampler</option>
-        <option value="Routine">Daily Routine</option>
-        <option value="Story">Brand Story</option>
-      </select>
-    </div>
-
-    <!-- Divider -->
-    <div style="height:1px;background:var(--border);margin-bottom:22px;position:relative">
-      <span style="position:absolute;top:-8px;left:0;background:#fff;padding:0 10px 0 0;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#d1d5db">Campaign Brief</span>
-    </div>
-
-    <!-- Campaign Description — LAST, enriched by market + type context -->
+    <!-- ① Campaign Description — PRIMARY INPUT (top) -->
     <div class="field" style="margin-bottom:18px">
       <label style="display:flex;align-items:center;justify-content:space-between">
         <span>Campaign Description <span class="req">*</span></span>
@@ -783,7 +730,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
       </label>
       <textarea id="promptIn"
         style="min-height:120px;font-size:13px;line-height:1.7"
-        oninput="(function(el){var c=document.getElementById('promptCharCount');if(c)c.textContent=el.value.length+' chars';_updateSmartAIBtn(el.value.trim().length>0);})(this)"
+        oninput="(function(el){var c=document.getElementById('promptCharCount');if(c)c.textContent=el.value.length+' chars';_updateSmartAIBtn(el.value.trim().length>0);_debouncedAutoDetect(el.value);})(this)"
         placeholder="e.g. 20% off all turmeric &amp; ginger teas with code DETOX20. Focus on gut health, daily wellness ritual, natural ingredients. Free shipping on orders over $49. Warm, inspiring tone."></textarea>
       <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap">
         <button class="btn-enhance" id="smartAIBtn" onclick="smartAIBrief(event)" style="background:linear-gradient(135deg,#0f2a1c,#1a3a28);color:#fdf6e8;border:1.5px solid #d4873a">&#127775; Create Brief with AI</button>
@@ -803,7 +750,74 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
       </div>
     </div>
 
-    <!-- Suggested prompts accordion -->
+    <!-- ② Divider — Campaign Settings -->
+    <div style="height:1px;background:var(--border);margin-bottom:18px;position:relative">
+      <span style="position:absolute;top:-8px;left:0;background:#fff;padding:0 10px 0 0;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#d1d5db">Campaign Settings</span>
+    </div>
+
+    <!-- ③ Target Market — BELOW prompt -->
+    <div style="margin-bottom:16px">
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+        <label style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin:0">Target Market <span class="req">*</span></label>
+        <span id="mktAutoTag" style="display:none;font-size:8px;font-weight:700;background:#d4873a;color:#fff;padding:1px 6px;border-radius:4px;letter-spacing:0.06em">AUTO-DETECTED</span>
+        <span style="font-size:10px;color:#9ca3af;font-weight:400">Multi-select — each market gets its own mailer</span>
+      </div>
+      <div class="mkt-chips" id="mktChips">
+        <button class="mkt-chip on" data-mkt="US" onclick="toggleMarket('US',this)">&#127482;&#127480; United States</button>
+        <button class="mkt-chip" data-mkt="UK" onclick="toggleMarket('UK',this)">&#127468;&#127463; United Kingdom</button>
+        <button class="mkt-chip" data-mkt="IN" onclick="toggleMarket('IN',this)">&#127470;&#127475; India</button>
+        <button class="mkt-chip" data-mkt="Global" onclick="toggleMarket('Global',this)">&#127758; Global</button>
+        <button class="mkt-chip" data-mkt="ME" onclick="toggleMarket('ME',this)">&#127462;&#127466; Middle East</button>
+        <button class="mkt-chip" data-mkt="AU" onclick="toggleMarket('AU',this)">&#127462;&#127482; Australia</button>
+        <button class="mkt-chip" data-mkt="EU" onclick="toggleMarket('EU',this)">&#127466;&#127482; Europe</button>
+      </div>
+    </div>
+
+    <!-- ④ Campaign Type — BELOW market -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
+        <label style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin:0">Campaign Type</label>
+        <span id="typeAutoTag" style="display:none;font-size:8px;font-weight:700;background:#d4873a;color:#fff;padding:1px 6px;border-radius:4px;letter-spacing:0.06em">AUTO-DETECTED</span>
+        <span style="font-size:10px;color:#9ca3af;font-weight:400">Auto-detects from your description</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="typeChips">
+        <button class="type-chip on" data-type="" onclick="selectType('',this);S._typeManual=false;">&#x1F916; Auto</button>
+        <button class="type-chip" data-type="Sale" onclick="selectType('Sale',this);S._typeManual=true;">&#127991; Sale</button>
+        <button class="type-chip" data-type="Launch" onclick="selectType('Launch',this);S._typeManual=true;">&#x1F680; Launch</button>
+        <button class="type-chip" data-type="Seasonal" onclick="selectType('Seasonal',this);S._typeManual=true;">&#127807; Seasonal</button>
+        <button class="type-chip" data-type="Bestseller" onclick="selectType('Bestseller',this);S._typeManual=true;">&#11088; Bestsellers</button>
+        <button class="type-chip" data-type="Gift" onclick="selectType('Gift',this);S._typeManual=true;">&#127873; Gifting</button>
+        <button class="type-chip" data-type="Discovery" onclick="selectType('Discovery',this);S._typeManual=true;">&#129514; Discovery</button>
+        <button class="type-chip" data-type="Routine" onclick="selectType('Routine',this);S._typeManual=true;">&#127774; Routine</button>
+        <button class="type-chip" data-type="Story" onclick="selectType('Story',this);S._typeManual=true;">&#128216; Brand Story</button>
+      </div>
+      <!-- Hidden select kept for JS compat -->
+      <select id="typeIn" style="display:none">
+        <option value="">Auto-detect</option>
+        <option value="Sale">Sale / Offer</option>
+        <option value="Launch">New Launch</option>
+        <option value="Seasonal">Seasonal</option>
+        <option value="Bestseller">Bestsellers</option>
+        <option value="Gift">Gifting</option>
+        <option value="Discovery">Discovery / Sampler</option>
+        <option value="Routine">Daily Routine</option>
+        <option value="Story">Brand Story</option>
+      </select>
+    </div>
+
+    <!-- ⑤ Auto-Picked Products Preview -->
+    <div id="p1ProductPreview" style="display:none;margin-bottom:18px;border:1.5px solid var(--border2);border-radius:12px;overflow:hidden">
+      <div style="background:linear-gradient(90deg,#0f2a1c,#1a3a28);padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#d4873a">Auto-Selected Products</div>
+          <div id="p1ProductCount" style="font-size:11px;color:rgba(253,246,232,0.8)">Loading catalog...</div>
+        </div>
+        <button onclick="go2()" style="background:none;border:1px solid rgba(253,246,232,0.3);color:#fdf6e8;padding:4px 12px;border-radius:6px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;letter-spacing:0.04em;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">Edit Selection</button>
+      </div>
+      <div id="p1ProductStrip" style="padding:12px 16px;display:flex;gap:12px;overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
+    </div>
+
+    <!-- ⑥ Suggested prompts accordion -->
     <div class="sugg-wrap" style="margin-bottom:22px">
       <div class="sugg-hdr" onclick="toggleSuggestedPrompts()">
         <div style="display:flex;align-items:center;gap:10px">
@@ -818,13 +832,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
       <div id="suggGrid" class="sugg-grid" style="display:none"></div>
     </div>
 
-    <!-- CTA -->
-    <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center;gap:10px;font-size:14px" onclick="go2()">
-      <span>Select Products</span>
+    <!-- ⑦ CTA — Generate Mailer -->
+    <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center;gap:10px;font-size:14px" onclick="go3FromBrief()">
+      <span>Generate Mailer</span>
       <span style="font-size:18px;line-height:1">&rarr;</span>
     </button>
     <p style="text-align:center;font-size:11px;color:#bbb;margin:10px 0 0;line-height:1.5">
-      We'll auto-pick the best matching products from the VAHDAM catalog — or you can choose manually in the next step.
+      Products are auto-selected from the VAHDAM catalog. Click <strong>Edit Selection</strong> above to customise.
     </p>
 
   </div>
@@ -1168,7 +1182,7 @@ async function loadCatalog(market){
 }
 const S={step:1,prompt:'',market:'US',markets:['US'],marketMailers:{},activeMarket:'US',type:'',manualProds:[],finalProds:[],regenCount:0,finalHTML:'',lastImagePrompt:'',generatedPrompt:'',canvasDataUrl:'',uploadedDesignUrl:null,precomputedStrategy:null};
 window.S=S; // Make S accessible via window so the `window.S&&...` safety guards in helper functions actually work (const declarations at top-level do NOT auto-create window.X properties).
-window.__VAHDAM_BUILD__='csv-catalog-v88';
+window.__VAHDAM_BUILD__='ui-restructure-v89';
 // On page load, surface Supabase connection state so the user can see if
 // data is going to Supabase or only to localStorage.
 setTimeout(function(){
@@ -1944,7 +1958,122 @@ function selectType(val,btn){
   if(sel)sel.value=val;
   document.querySelectorAll('.type-chip').forEach(function(b){b.classList.remove('on');});
   if(btn)btn.classList.add('on');
+  // Hide auto-detect tag when user manually picks
+  var tag=document.getElementById('typeAutoTag');if(tag)tag.style.display='none';
+  // Refresh products for new type
+  _refreshP1ProductPreview();
 }
+
+// ── Auto-detect campaign type + market from prompt text ─────────────────────
+var _autoDetectTimer=null;
+function _debouncedAutoDetect(text){
+  clearTimeout(_autoDetectTimer);
+  _autoDetectTimer=setTimeout(function(){_autoDetectFromPrompt(text);},600);
+}
+function _autoDetectFromPrompt(text){
+  var p=(text||'').trim();
+  if(p.length<10)return;
+  // Auto-detect campaign type (only if user hasn't manually chosen one)
+  if(!S._typeManual){
+    var detected=detectType(p);
+    if(detected){
+      var btn=document.querySelector('#typeChips .type-chip[data-type="'+detected+'"]');
+      if(btn&&!btn.classList.contains('on')){
+        document.querySelectorAll('.type-chip').forEach(function(b){b.classList.remove('on');});
+        btn.classList.add('on');
+        document.getElementById('typeIn').value=detected;
+        S.type=detected;
+        var tag=document.getElementById('typeAutoTag');if(tag)tag.style.display='inline';
+      }
+    }
+  }
+  // Auto-detect market hints (visual hint only — doesn't auto-select)
+  var marketHints={
+    UK:['uk','united kingdom','british','london','pound','£','english breakfast'],
+    IN:['india','indian','inr','rupee','₹','diwali','raksha','masala chai'],
+    ME:['middle east','dubai','uae','arabic','eid','ramadan'],
+    AU:['australia','australian','sydney','melbourne','aud'],
+    EU:['europe','european','germany','france','berlin','paris']
+  };
+  var pl=p.toLowerCase();
+  var mktTag=document.getElementById('mktAutoTag');
+  for(var mkt in marketHints){
+    if(marketHints[mkt].some(function(kw){return pl.indexOf(kw)>=0;})){
+      if(S.markets.indexOf(mkt)<0){
+        var mktBtn=document.querySelector('#mktChips .mkt-chip[data-mkt="'+mkt+'"]');
+        if(mktBtn&&!mktBtn.classList.contains('on')){
+          // Auto-add the detected market
+          S.markets.push(mkt);mktBtn.classList.add('on');
+          if(mktTag)mktTag.style.display='inline';
+          loadCatalog(mkt).catch(function(){});
+        }
+      }
+    }
+  }
+  // Refresh product preview
+  _refreshP1ProductPreview();
+}
+
+// ── Product preview strip on Step 1 ────────────────────────────────────────
+function _refreshP1ProductPreview(){
+  var container=document.getElementById('p1ProductStrip');
+  var preview=document.getElementById('p1ProductPreview');
+  var countEl=document.getElementById('p1ProductCount');
+  if(!container||!preview)return;
+  if(!CAT||!CAT.length){preview.style.display='none';return;}
+  var prompt=(document.getElementById('promptIn')||{}).value||'';
+  var type=S.type||detectType(prompt)||'Bestseller';
+  var picked=autoPickProducts(prompt||'bestseller collection',type);
+  S._autoPickedProds=picked;
+  if(!picked.length){preview.style.display='none';return;}
+  preview.style.display='block';
+  if(countEl)countEl.textContent=picked.length+' products for '+(S.markets[0]||'US')+' · '+type;
+  container.innerHTML=picked.map(function(p){
+    var name=(p.n||p.name||'').split(',')[0].split(' - ')[0].substring(0,28);
+    var img=p.i||p.image_url||'';
+    var price=parseFloat(p.price)||0;
+    var compare=parseFloat(p.compare_at||p.compare_price)||0;
+    var disc=(compare&&compare>price)?Math.round((1-price/compare)*100):0;
+    return '<div style="flex-shrink:0;text-align:center;width:80px;position:relative">'
+      +(disc?'<div style="position:absolute;top:2px;right:2px;background:#d4873a;color:#fff;font-size:8px;font-weight:800;padding:1px 5px;border-radius:4px;z-index:1">-'+disc+'%</div>':'')
+      +(img?'<img src="'+img+'" style="width:64px;height:64px;border-radius:8px;object-fit:cover;border:1.5px solid #e8e0d8;display:block;margin:0 auto" onerror="this.style.display=\'none\'">':'<div style="width:64px;height:64px;border-radius:8px;background:#f0ece6;margin:0 auto"></div>')
+      +'<div style="font-size:9px;color:#374151;margin-top:5px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+name+'</div>'
+      +(price?'<div style="font-size:9px;color:#d4873a;font-weight:700">$'+price.toFixed(2)+'</div>':'')
+      +'</div>';
+  }).join('');
+}
+
+// ── go3FromBrief — merged Step 1 → straight to generation ──────────────────
+function go3FromBrief(){
+  // Validate prompt
+  var p=document.getElementById('promptIn').value.trim();
+  if(!p){showValidErr('promptIn','Campaign description is required. Describe the offer, mood, or product — or use Create Brief with AI.');return;}
+  if(p.length<15){showValidErr('promptIn','Add a bit more detail — what\'s the offer, the season, or the product focus?');return;}
+  S.prompt=p;
+  // Read selected market chips
+  var selected=[];
+  document.querySelectorAll('#mktChips .mkt-chip.on').forEach(function(c){
+    var m=c.getAttribute('data-mkt');if(m)selected.push(m);
+  });
+  if(selected.length===0){showValidErr('mktChips','Select at least one target market.');return;}
+  S.markets=selected;
+  S.market=S.markets[0];
+  S.activeMarket=S.markets[0];
+  S.type=document.getElementById('typeIn').value;
+  // Use auto-picked products, or manual if user edited
+  if(S.manualProds&&S.manualProds.length>0){
+    S.finalProds=S.manualProds.map(function(p,i){return Object.assign({},p,{role:i===0?'hero':i<=2?'featured':'grid'});});
+  } else if(S._autoPickedProds&&S._autoPickedProds.length>0){
+    S.finalProds=S._autoPickedProds.map(function(p,i){return Object.assign({},p,{role:i===0?'hero':i<=2?'featured':'grid'});});
+  } else {
+    S.finalProds=autoPickProducts(S.prompt,S.type||detectType(S.prompt));
+  }
+  S.activePrompt=S.prompt;
+  S.lastFeedback='';S.feedbackHistory=[];S.regenCount=0;
+  // Go to pipeline
+  approveAndBuild(false);
+}
+
 // ── Market chip toggle ──────────────────────────────────────────────────────
 function toggleMarket(m,el){
   var idx=S.markets.indexOf(m);
@@ -1955,8 +2084,11 @@ function toggleMarket(m,el){
     S.markets.push(m);el.classList.add('on');
   }
   var ct=S.markets.length;
-  var lbl=document.querySelector('[for="mktChips"]');
   showCopyToast(ct===1?'1 market selected':ct+' markets selected — one mailer per market will be generated');
+  // Hide auto-detect tag when user manually changes markets
+  var tag=document.getElementById('mktAutoTag');if(tag)tag.style.display='none';
+  // Load catalog for newly selected market and refresh product preview
+  loadCatalog(S.markets[0]).then(function(){_refreshP1ProductPreview();}).catch(function(){});
 }
 
 // ── Prompt enhancer ─────────────────────────────────────────────────────────
@@ -2677,41 +2809,36 @@ function showValidErr(fieldId,msg){
   setTimeout(function(){var e=document.getElementById('validErr_'+fieldId);if(e)e.remove();},4000);
 }
 function go2(){
-  const p=document.getElementById('promptIn').value.trim();
-  if(!p){showValidErr('promptIn','Campaign description is required. Describe the offer, mood, or product — or use Enhance with AI to build it from your market & type selection.');return;}
-  if(p.length<15){showValidErr('promptIn','Add a bit more detail — what\'s the offer, the season, or the product focus? Even one sentence is enough to start.');return;}
-  S.prompt=p;
+  // go2 is now the "Edit Selection" path — user clicked Edit from Step 1 product preview
+  var p=(document.getElementById('promptIn')||{}).value||'';
+  S.prompt=p.trim()||S.prompt;
   // Read selected market chips
   var selected=[];
   document.querySelectorAll('#mktChips .mkt-chip.on').forEach(function(c){
     var m=c.getAttribute('data-mkt');if(m)selected.push(m);
   });
-  if(selected.length===0){
-    showValidErr('mktChips','Select at least one target market for your campaign.');return;
-  }
+  if(selected.length===0)selected=['US'];
   S.markets=selected;
   S.market=S.markets[0];
   S.activeMarket=S.markets[0];
   S.type=document.getElementById('typeIn').value;
-  // ── fresh slate: clear any products from a previous campaign ──
-  S.manualProds=[];S.finalProds=[];S.precomputedStrategy=null;_activeCatFilter='all';
-  document.querySelectorAll('.cfbtn').forEach(function(b){b.classList.remove('on');});
-  var allBtn=document.querySelector('#catFilter .cfbtn[onclick*="\'all\'"]');if(allBtn)allBtn.classList.add('on');
+  // Pre-populate manual selection from auto-picked products
+  if(!S.manualProds||!S.manualProds.length){
+    S.manualProds=(S._autoPickedProds||[]).slice();
+  }
+  _activeCatFilter='all';
   // ── Load region-specific catalog from CSV knowledge base ──
   loadCatalog(S.markets[0]).catch(function(e){console.warn('[go2] catalog load:',e.message);});
-  // ─────────────────────────────────────────────────────────────
   showOnly(2);renderCatalog('all');updateSelInfo();
   injectCtxBanners();
-  // Auto-filter catalog using prompt signals first, then campaign type fallback
+  // Auto-filter catalog to best matching tab
   var smartTab=getBestCatalogTab(S.prompt,S.type);
   if(smartTab!=='all'){
     var cfBtn=document.querySelector('#catFilter .cfbtn[onclick*="\''+smartTab+'\'"]');
     if(cfBtn)cfBtn.click();
   }
   // ── Fire strategy analysis in background while user browses products ──────
-  // When complete: highlights recommended products + shows strategy banner.
-  // Result cached so _runPipeline can skip Stage 1 (saves ~30s on generation).
-  _prefetchStrategy(p, S.markets[0], S.type);
+  _prefetchStrategy(S.prompt, S.markets[0], S.type);
 }
 
 function go3(){
@@ -10651,7 +10778,10 @@ document.addEventListener('DOMContentLoaded',function(){
   initAuth();
   // Load product catalog from CSV-built JSON (async, non-blocking)
   // Loads US by default; switches when user picks a different market
-  loadCatalog(window.S && S.markets && S.markets[0] || 'US').catch(function(e){
+  loadCatalog(window.S && S.markets && S.markets[0] || 'US').then(function(){
+    // Show auto-picked products on Step 1 as soon as catalog is ready
+    if(typeof _refreshP1ProductPreview==='function')_refreshP1ProductPreview();
+  }).catch(function(e){
     console.warn('[boot] catalog load error:',e.message);
   });
   // Run smoke tests if explicitly requested via #tests in URL or localStorage

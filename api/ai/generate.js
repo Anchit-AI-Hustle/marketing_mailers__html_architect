@@ -330,7 +330,7 @@ module.exports = async function handler(req, res) {
   // create_brief: 2500 tokens for 250-400 word flowing prose brief with headroom
   const max_tokens = mode === 'mailer_full' ? 7000 : (mode === 'concepts' ? 4500 : (mode === 'suggested_prompts' ? 3000 : 2500));
 
-  function isRetryable(s) { return s === 429 || s === 503 || s === 404 || s === 400 || s === 529; }
+  function isRetryable(s) { return s === 429 || s === 503 || s === 404 || s === 400 || s === 529 || s === 403 || s === 402; }
 
   // ── Provider helpers ───────────────────────────────────────────────────────
   async function callOpenAI(model, key) {
