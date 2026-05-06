@@ -1168,7 +1168,7 @@ async function loadCatalog(market){
 }
 const S={step:1,prompt:'',market:'US',markets:['US'],marketMailers:{},activeMarket:'US',type:'',manualProds:[],finalProds:[],regenCount:0,finalHTML:'',lastImagePrompt:'',generatedPrompt:'',canvasDataUrl:'',uploadedDesignUrl:null,precomputedStrategy:null};
 window.S=S; // Make S accessible via window so the `window.S&&...` safety guards in helper functions actually work (const declarations at top-level do NOT auto-create window.X properties).
-window.__VAHDAM_BUILD__='csv-catalog-v87';
+window.__VAHDAM_BUILD__='csv-catalog-v88';
 // On page load, surface Supabase connection state so the user can see if
 // data is going to Supabase or only to localStorage.
 setTimeout(function(){
@@ -2559,14 +2559,38 @@ function downloadMarketMailer(mkt){
   URL.revokeObjectURL(a.href);
   showCopyToast(mkt+' mailer (Variant '+v+') downloaded!');
 }
+// ── Shared preview wrapper — injects a nav bar above the mailer HTML ────────
+function _openPreviewWindow(html,title){
+  var w=window.open('','_blank');
+  if(!w){showCopyToast&&showCopyToast('Pop-up blocked — allow pop-ups to preview');return null;}
+  var safe=html.replace(/"/g,'&quot;');
+  var page='<!DOCTYPE html><html><head><title>'+(title||'VAHDAM® Preview')+'</title><style>'+
+    '*{box-sizing:border-box}'+
+    'body{margin:0;padding:0;background:#1a3a28;font-family:DM Sans,sans-serif;display:flex;flex-direction:column;height:100vh}'+
+    '.nav{background:#0a1f14;color:#fdf6e8;padding:8px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0}'+
+    '.nav-btn{background:transparent;color:#fdf6e8;border:1.5px solid rgba(255,255,255,0.25);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer;letter-spacing:0.04em;transition:all 0.15s ease}'+
+    '.nav-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.45)}'+
+    '.nav-title{flex:1;font-size:12px;font-weight:600;letter-spacing:0.04em;text-align:center;color:#9fd6b5}'+
+    'iframe{flex:1;width:100%;border:0;background:#fff}'+
+    '</style></head><body>'+
+    '<div class="nav">'+
+      '<button class="nav-btn" onclick="window.opener?window.close():window.location.href=\'/\'" title="Back to Studio">&larr; Back to Studio</button>'+
+      '<div class="nav-title">'+(title||'VAHDAM® Preview')+'</div>'+
+      '<button class="nav-btn" onclick="window.close()" title="Close this tab">&times; Close</button>'+
+    '</div>'+
+    '<iframe srcdoc="'+safe+'"></iframe>'+
+    '</body></html>';
+  w.document.open();w.document.write(page);w.document.close();
+  return w;
+}
+
 // Open the rendered mailer in a new tab — replaces the now-hidden Live Preview pane
 window.previewMailerInModal=function(mkt){
   _ensureMailerBuilt&&_ensureMailerBuilt(mkt,S.activeVariant||'A');
   var html=_resolveMailerHtml(S.marketMailers[mkt],S.activeVariant||'A');
   if(!html){statusPill&&statusPill('warn','No mailer for '+mkt);return;}
-  var w=window.open('','_blank');
-  if(w){w.document.open();w.document.write(html);w.document.close();}
-  else statusPill&&statusPill('warn','Pop-up blocked — allow pop-ups to preview');
+  var v=S.activeVariant||'A';
+  _openPreviewWindow(html,'VAHDAM® · '+mkt+' · Variant '+v);
 };
 // View HTML source for a market — opens a modal with copy + download buttons
 window.viewMarketHtml=function(mkt){
@@ -6591,9 +6615,7 @@ window.__step5Preview=function(m,v){
   if(!entry)return;
   var html=typeof entry==='string'?entry:(entry[v]||entry.A||'');
   if(!html){showCopyToast('Variant not available');return;}
-  var w=window.open('','_blank');
-  if(!w){showCopyToast('Pop-up blocked');return;}
-  w.document.write(html);w.document.close();
+  _openPreviewWindow(html,'VAHDAM® · '+m+' · Variant '+(v||'A'));
 };
 window.__step5Download=function(m,v){
   // Set active so downloadVariant uses the right cell
@@ -6941,10 +6963,14 @@ function previewBothSideBySide(){
   var htmlA=entry.A||'';
   var htmlB=entry.B||'';
   if(!htmlA||!htmlB){showCopyToast('One variant is missing — generate again');return;}
-  var encA=encodeURIComponent(htmlA),encB=encodeURIComponent(htmlB);
   var pageHtml='<!DOCTYPE html><html><head><title>VAHDAM® A vs B — '+S.activeMarket+'</title><style>'+
+    '*{box-sizing:border-box}'+
     'body{margin:0;padding:0;background:#1a3a28;font-family:DM Sans,sans-serif;display:flex;flex-direction:column;height:100vh}'+
-    '.bar{background:#0f2a1c;color:#fdf6e8;padding:10px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid rgba(255,255,255,0.1);flex-shrink:0}'+
+    '.nav{background:#0a1f14;color:#fdf6e8;padding:8px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0}'+
+    '.nav-btn{background:transparent;color:#fdf6e8;border:1.5px solid rgba(255,255,255,0.25);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer;letter-spacing:0.04em;transition:all 0.15s ease}'+
+    '.nav-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.45)}'+
+    '.nav-title{flex:1;font-size:12px;font-weight:600;letter-spacing:0.04em;text-align:center;color:#9fd6b5}'+
+    '.bar{background:#0f2a1c;color:#fdf6e8;padding:8px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid rgba(255,255,255,0.1);flex-shrink:0}'+
     '.bar h1{margin:0;font-size:13px;font-weight:700;letter-spacing:0.04em}'+
     '.bar span{font-size:10.5px;color:#9fd6b5;font-weight:600;letter-spacing:0.06em;text-transform:uppercase}'+
     '.split{display:flex;flex:1;overflow:hidden}'+
@@ -6952,8 +6978,13 @@ function previewBothSideBySide(){
     '.col:last-child{border-right:0}'+
     '.lbl{background:#d4873a;color:#fff;padding:8px 14px;font-size:11px;font-weight:800;letter-spacing:0.18em;text-align:center;flex-shrink:0}'+
     '.col iframe{flex:1;width:100%;border:0;background:#fff}'+
+    '@media(max-width:700px){.split{flex-direction:column}.col{flex:none;height:50vh}}'+
     '</style></head><body>'+
-    '<div class="bar"><h1>VAHDAM® · '+S.activeMarket+' Mailer · A vs B Comparison</h1><span>· Editorial Hero (A) vs Narrative Story (B)</span></div>'+
+    '<div class="nav">'+
+      '<button class="nav-btn" onclick="window.opener?window.close():window.location.href=\'/\'" title="Back to Studio">&larr; Back to Studio</button>'+
+      '<div class="nav-title">'+S.activeMarket+' · Editorial Hero (A) vs Narrative Story (B)</div>'+
+      '<button class="nav-btn" onclick="window.close()" title="Close this tab">&times; Close</button>'+
+    '</div>'+
     '<div class="split">'+
       '<div class="col"><div class="lbl">VARIANT A — EDITORIAL HERO</div><iframe srcdoc="'+htmlA.replace(/"/g,'&quot;')+'"></iframe></div>'+
       '<div class="col"><div class="lbl">VARIANT B — NARRATIVE STORY</div><iframe srcdoc="'+htmlB.replace(/"/g,'&quot;')+'"></iframe></div>'+
@@ -10473,11 +10504,10 @@ function previewDashboardMailer(logIdx,mkt,variant){
     var entry=_getDashEntry(logIdx);
     if(!entry||!entry.fullMailers||!entry.fullMailers[mkt]){showCopyToast('Mailer not found');return;}
     var stored=entry.fullMailers[mkt];
-    var html=typeof stored==='string'?stored:(stored[variant||'A']||stored.A||stored.B||'');
-    if(!html){showCopyToast('Variant '+(variant||'A')+' not available');return;}
-    var w=window.open('','_blank');
-    if(!w){showCopyToast('Pop-up blocked — allow pop-ups');return;}
-    w.document.write(html);w.document.close();
+    var v=variant||'A';
+    var html=typeof stored==='string'?stored:(stored[v]||stored.A||stored.B||'');
+    if(!html){showCopyToast('Variant '+v+' not available');return;}
+    _openPreviewWindow(html,'VAHDAM® · '+mkt+' · Variant '+v+' (Dashboard)');
   }catch(e){showCopyToast('Could not preview this mailer.');}
 }
 function downloadDashboardMailer(logIdx,mkt,variant){
@@ -10531,8 +10561,24 @@ function previewDashboardSideBySide(logIdx,mkt){
   var stored=entry.fullMailers[mkt];
   if(typeof stored==='string'){previewDashboardMailer(logIdx,mkt);return;}
   if(!stored.A||!stored.B){showCopyToast('Both variants required');return;}
-  var pageHtml='<!DOCTYPE html><html><head><title>VAHDAM® '+mkt+' · A vs B</title><style>body{margin:0;padding:0;background:#1a3a28;font-family:DM Sans,sans-serif;display:flex;flex-direction:column;height:100vh}.bar{background:#0f2a1c;color:#fdf6e8;padding:10px 16px;font-size:13px;font-weight:700;flex-shrink:0}.split{display:flex;flex:1;overflow:hidden}.col{flex:1;border-right:1px solid #1a3a28;display:flex;flex-direction:column}.col:last-child{border-right:0}.lbl{background:#d4873a;color:#fff;padding:8px 14px;font-size:11px;font-weight:800;letter-spacing:0.18em;text-align:center;flex-shrink:0}.col iframe{flex:1;width:100%;border:0;background:#fff}</style></head><body>'+
-    '<div class="bar">VAHDAM® · '+mkt+' · A vs B Comparison (from Dashboard)</div>'+
+  var pageHtml='<!DOCTYPE html><html><head><title>VAHDAM® '+mkt+' · A vs B</title><style>'+
+    '*{box-sizing:border-box}'+
+    'body{margin:0;padding:0;background:#1a3a28;font-family:DM Sans,sans-serif;display:flex;flex-direction:column;height:100vh}'+
+    '.nav{background:#0a1f14;color:#fdf6e8;padding:8px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0}'+
+    '.nav-btn{background:transparent;color:#fdf6e8;border:1.5px solid rgba(255,255,255,0.25);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer;letter-spacing:0.04em;transition:all 0.15s ease}'+
+    '.nav-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.45)}'+
+    '.nav-title{flex:1;font-size:12px;font-weight:600;letter-spacing:0.04em;text-align:center;color:#9fd6b5}'+
+    '.split{display:flex;flex:1;overflow:hidden}'+
+    '.col{flex:1;border-right:1px solid #1a3a28;display:flex;flex-direction:column}.col:last-child{border-right:0}'+
+    '.lbl{background:#d4873a;color:#fff;padding:8px 14px;font-size:11px;font-weight:800;letter-spacing:0.18em;text-align:center;flex-shrink:0}'+
+    '.col iframe{flex:1;width:100%;border:0;background:#fff}'+
+    '@media(max-width:700px){.split{flex-direction:column}.col{flex:none;height:50vh}}'+
+    '</style></head><body>'+
+    '<div class="nav">'+
+      '<button class="nav-btn" onclick="window.opener?window.close():window.location.href=\'/\'" title="Back to Studio">&larr; Back to Studio</button>'+
+      '<div class="nav-title">'+mkt+' · A vs B Comparison</div>'+
+      '<button class="nav-btn" onclick="window.close()" title="Close this tab">&times; Close</button>'+
+    '</div>'+
     '<div class="split">'+
       '<div class="col"><div class="lbl">VARIANT A — EDITORIAL HERO</div><iframe srcdoc="'+stored.A.replace(/"/g,'&quot;')+'"></iframe></div>'+
       '<div class="col"><div class="lbl">VARIANT B — NARRATIVE STORY</div><iframe srcdoc="'+stored.B.replace(/"/g,'&quot;')+'"></iframe></div>'+
