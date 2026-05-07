@@ -768,11 +768,212 @@ Output starts <!DOCTYPE html>, ends </html>. Nothing before or after.`;
     });
 
   } catch (e) {
-    return res.status(500).json({
-      error: 'html_failed',
+    // ── HEURISTIC FALLBACK: Generate a complete HTML email without LLM ──────
+    console.warn('[html] All providers failed for variant ' + variant + ' — using heuristic HTML fallback');
+
+    const isB = variant === 'B';
+    const planSections = (plan.sections || []);
+    const heroSection = planSections.find(s => s.id === 'hero' || s.id === 'narrative') || {};
+    const productSection = planSections.find(s => s.id === 'product_reveal') || {};
+    const offerSection = planSections.find(s => s.id === 'offer_bar') || {};
+    const ctaSection = planSections.find(s => s.id === 'cta') || {};
+    const benefitSection = planSections.find(s => s.id === 'benefit_strip' || s.id === 'context') || {};
+    const proofSection = planSections.find(s => s.id === 'social_proof') || {};
+
+    const heroHeadline = (heroSection.copy || {}).headline || (isB ? 'The Hill Is Quiet at 7,000 Feet' : 'Crafted Where Tradition Meets Modern Science');
+    const heroSubcopy = (heroSection.copy || {}).subcopy || (isB ? 'Where morning mist meets hand-picked leaves, a ritual begins.' : 'Discover single-estate teas crafted with heritage and precision.');
+    const heroCta = (heroSection.copy || {}).cta || (isB ? 'Discover the Origin' : 'Shop Now');
+    const productName = (productSection.copy || {}).headline || ((strategy.product_selection || {}).hero || {}).name || 'VAHDAM Signature Collection';
+    const productCopy = (productSection.copy || {}).subcopy || 'Premium single-estate tea, hand-picked at peak flavor.';
+    const productCta = (productSection.copy || {}).cta || (isB ? 'Explore This Blend' : 'Add to Cart');
+    const offerHeadline = (offerSection.copy || {}).headline || 'Free Shipping on Orders $50+';
+    const offerSubcopy = (offerSection.copy || {}).subcopy || 'Use code HERITAGE at checkout.';
+    const finalCta = (ctaSection.copy || {}).cta || (isB ? 'Explore the Collection →' : 'Shop Now');
+    const proofCopy = (proofSection.copy || {}).subcopy || '"The finest tea I\'ve ever tasted." — Verified Buyer';
+    const subjectLines = plan.subject_lines || [(isB ? 'A tea worth slowing down for' : heroHeadline)];
+    const preheader = plan.preheader || 'Premium single-estate teas, crafted for your ritual';
+
+    const bgColor = isB ? '#0f2a1c' : '#fdf6e8';
+    const textColor = isB ? '#fdf6e8' : '#0f2a1c';
+    const accentColor = '#d4873a';
+
+    const html = `<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>${heroHeadline}</title>
+<!--[if mso]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+<style>
+body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
+table,td{mso-table-lspace:0;mso-table-rspace:0}
+img{-ms-interpolation-mode:bicubic;border:0;outline:none;text-decoration:none;display:block}
+body{margin:0;padding:0;width:100%!important;-webkit-font-smoothing:antialiased}
+.email-container{max-width:600px!important}
+@media screen and (max-width:620px){
+  .email-container{width:100%!important;max-width:100%!important}
+  .col2,.col3{width:100%!important;display:block!important;padding:12px 16px!important}
+  .mobile-hide{display:none!important}
+  .mobile-full{width:100%!important}
+  .mobile-pad{padding:16px!important}
+  img.hero-img{width:100%!important;height:auto!important}
+}
+</style>
+</head>
+<body style="margin:0;padding:0;background:#f5f0e8" bgcolor="#f5f0e8">
+<!-- PREHEADER -->
+<div style="display:none;font-size:1px;color:#f5f0e8;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden">${preheader}</div>
+
+<!-- OUTER WRAPPER -->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f5f0e8" bgcolor="#f5f0e8"><tr><td align="center" style="padding:0">
+
+<!-- ANNOUNCEMENT BAR -->
+<table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
+<tr><td style="background:${accentColor};padding:10px 20px;text-align:center;font-family:Arial,sans-serif;font-size:13px;color:#ffffff;letter-spacing:0.5px" bgcolor="${accentColor}">
+✦ FREE SHIPPING ON ORDERS $50+ &nbsp;|&nbsp; CODE: HERITAGE
+</td></tr>
+</table>
+
+<!-- HEADER -->
+<table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
+<tr><td style="background:#0f2a1c;padding:16px 24px;text-align:center;font-family:Georgia,serif;font-size:12px;color:#a89f91;letter-spacing:2px" bgcolor="#0f2a1c">
+<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td style="text-align:left;font-family:Arial,sans-serif;font-size:11px;color:#a89f91;letter-spacing:1px" class="mobile-hide">EST. 2015</td>
+<td style="text-align:center;font-family:Georgia,serif;font-size:22px;color:#fdf6e8;letter-spacing:3px;font-weight:bold">VAHDAM&reg;</td>
+<td style="text-align:right;font-family:Arial,sans-serif;font-size:11px;color:${accentColor};letter-spacing:1px" class="mobile-hide"><a href="#" style="color:${accentColor};text-decoration:none">SHOP ALL →</a></td>
+</tr></table>
+</td></tr>
+</table>
+
+<!-- TRUST BADGES -->
+<table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
+<tr><td style="background:#fdf6e8;padding:10px 16px;text-align:center;font-family:Arial,sans-serif;font-size:11px;color:#6b6255;letter-spacing:0.3px" bgcolor="#fdf6e8">
+&#127807; Pure Indian Tea &nbsp;&bull;&nbsp; ✦ Ethically Sourced &nbsp;&bull;&nbsp; &#127793; Farm Direct &nbsp;&bull;&nbsp; ★ 4.8/5
+</td></tr>
+</table>
+
+<!-- HERO SECTION -->
+<table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
+<tr><td style="background:${bgColor};padding:0" bgcolor="${bgColor}">
+${isB ? `
+<!-- VARIANT B: Full-bleed editorial hero -->
+<div style="position:relative;background:${bgColor}">
+<img src="IMAGE_HERO_URL" alt="${heroHeadline}" width="600" class="hero-img" style="width:600px;height:auto;display:block">
+</div>
+<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#0f2a1c;padding:48px 40px;text-align:center" bgcolor="#0f2a1c">
+<p style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:12px;color:${accentColor};letter-spacing:2px;text-transform:uppercase">${(heroSection.copy || {}).eyebrow || 'A STORY IN EVERY STEEP'}</p>
+<h1 style="margin:0 0 16px;font-family:Georgia,serif;font-size:32px;color:#fdf6e8;line-height:1.2;font-weight:normal">${heroHeadline}</h1>
+<p style="margin:0 0 28px;font-family:Arial,sans-serif;font-size:15px;color:#c9bfb0;line-height:1.6;max-width:440px;margin-left:auto;margin-right:auto">${heroSubcopy}</p>
+<a href="#" style="display:inline-block;padding:14px 36px;font-family:Arial,sans-serif;font-size:13px;color:#fdf6e8;border:1px solid #fdf6e8;text-decoration:none;letter-spacing:1px">${heroCta}</a>
+</td></tr></table>
+` : `
+<!-- VARIANT A: Split hero -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td class="col2" width="300" style="vertical-align:middle;background:${bgColor}" bgcolor="${bgColor}">
+<img src="IMAGE_HERO_URL" alt="${heroHeadline}" width="300" class="hero-img" style="width:300px;height:auto;display:block">
+</td>
+<td class="col2" width="300" style="vertical-align:middle;background:${bgColor};padding:32px 28px" bgcolor="${bgColor}">
+<p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:12px;color:${accentColor};letter-spacing:2px;text-transform:uppercase">${(heroSection.copy || {}).eyebrow || 'NEW ARRIVAL'}</p>
+<h1 style="margin:0 0 14px;font-family:Georgia,serif;font-size:28px;color:#0f2a1c;line-height:1.2">${heroHeadline}</h1>
+<p style="margin:0 0 24px;font-family:Arial,sans-serif;font-size:14px;color:#4a4540;line-height:1.6">${heroSubcopy}</p>
+<a href="#" style="display:inline-block;padding:14px 32px;background:${accentColor};font-family:Arial,sans-serif;font-size:13px;color:#ffffff;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${heroCta}</a>
+</td>
+</tr></table>
+`}
+</td></tr>
+</table>
+
+<!-- BENEFIT STRIP -->
+<table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
+<tr><td style="background:${isB ? '#0a1f13' : '#ffffff'};padding:28px 20px;text-align:center" bgcolor="${isB ? '#0a1f13' : '#ffffff'}">
+<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td class="col3" width="150" style="text-align:center;padding:8px;font-family:Arial,sans-serif;font-size:12px;color:${isB ? '#c9bfb0' : '#6b6255'};letter-spacing:0.5px">&#127807;<br>Single-Estate</td>
+<td class="col3" width="150" style="text-align:center;padding:8px;font-family:Arial,sans-serif;font-size:12px;color:${isB ? '#c9bfb0' : '#6b6255'};letter-spacing:0.5px">✦<br>Hand-Picked</td>
+<td class="col3" width="150" style="text-align:center;padding:8px;font-family:Arial,sans-serif;font-size:12px;color:${isB ? '#c9bfb0' : '#6b6255'};letter-spacing:0.5px">&#127793;<br>Farm to Cup</td>
+<td class="col3" width="150" style="text-align:center;padding:8px;font-family:Arial,sans-serif;font-size:12px;color:${isB ? '#c9bfb0' : '#6b6255'};letter-spacing:0.5px">★<br>Premium Heritage</td>
+</tr></table>
+</td></tr>
+</table>
+
+<!-- PRODUCT SECTION -->
+<table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
+<tr><td style="background:${isB ? '#0f2a1c' : '#ffffff'};padding:36px 24px;text-align:center" bgcolor="${isB ? '#0f2a1c' : '#ffffff'}">
+${isB ? `<p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:12px;color:${accentColor};letter-spacing:2px;text-transform:uppercase">THE COLLECTION</p>` : ''}
+<h2 style="margin:0 0 12px;font-family:Georgia,serif;font-size:24px;color:${textColor};line-height:1.3">${productName}</h2>
+<img src="IMAGE_PRODUCT_URL" alt="${productName}" width="${isB ? 400 : 260}" style="width:${isB ? 400 : 260}px;height:auto;display:block;margin:16px auto;border-radius:4px">
+<p style="margin:12px auto 20px;font-family:Arial,sans-serif;font-size:14px;color:${isB ? '#c9bfb0' : '#4a4540'};line-height:1.6;max-width:420px">${productCopy}</p>
+<a href="#" style="display:inline-block;padding:14px 32px;${isB ? 'border:1px solid #fdf6e8;color:#fdf6e8' : 'background:' + accentColor + ';color:#ffffff'};font-family:Arial,sans-serif;font-size:13px;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${productCta}</a>
+</td></tr>
+</table>
+
+<!-- SOCIAL PROOF -->
+<table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
+<tr><td style="background:${isB ? '#0a1f13' : '#fdf6e8'};padding:32px 36px;text-align:center" bgcolor="${isB ? '#0a1f13' : '#fdf6e8'}">
+<p style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:14px;color:${accentColor}">★★★★★</p>
+<p style="margin:0 0 8px;font-family:Georgia,serif;font-size:16px;color:${textColor};font-style:italic;line-height:1.5">${proofCopy}</p>
+<p style="margin:0;font-family:Arial,sans-serif;font-size:11px;color:${isB ? '#8a8175' : '#8a8175'};letter-spacing:1px">15,000+ 5-STAR REVIEWS</p>
+</td></tr>
+</table>
+
+<!-- LIFESTYLE IMAGE -->
+<table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
+<tr><td style="background:${isB ? '#0f2a1c' : '#ffffff'};padding:0" bgcolor="${isB ? '#0f2a1c' : '#ffffff'}">
+<img src="IMAGE_LIFESTYLE_URL" alt="Tea lifestyle" width="600" style="width:600px;height:auto;display:block">
+</td></tr>
+</table>
+
+<!-- OFFER BAR -->
+<table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
+<tr><td style="background:${accentColor};padding:24px 28px;text-align:center" bgcolor="${accentColor}">
+<h3 style="margin:0 0 8px;font-family:Georgia,serif;font-size:20px;color:#ffffff">${offerHeadline}</h3>
+<p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:13px;color:#fff5eb">${offerSubcopy}</p>
+<a href="#" style="display:inline-block;padding:12px 28px;background:#0f2a1c;font-family:Arial,sans-serif;font-size:13px;color:#fdf6e8;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${(offerSection.copy || {}).cta || 'Shop the Collection'}</a>
+</td></tr>
+</table>
+
+<!-- FINAL CTA -->
+<table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
+<tr><td style="background:${bgColor};padding:36px 28px;text-align:center" bgcolor="${bgColor}">
+<h3 style="margin:0 0 16px;font-family:Georgia,serif;font-size:22px;color:${textColor}">${(ctaSection.copy || {}).headline || (isB ? 'Begin Your Ritual' : 'Shop VAHDAM Today')}</h3>
+<a href="#" style="display:inline-block;padding:16px 40px;${isB ? 'border:1px solid #fdf6e8;color:#fdf6e8' : 'background:' + accentColor + ';color:#ffffff'};font-family:Arial,sans-serif;font-size:14px;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${finalCta}</a>
+</td></tr>
+</table>
+
+<!-- FOOTER -->
+<table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
+<tr><td style="background:#0f2a1c;padding:28px 24px;text-align:center" bgcolor="#0f2a1c">
+<p style="margin:0 0 12px;font-family:Georgia,serif;font-size:18px;color:#fdf6e8;letter-spacing:2px">VAHDAM&reg;</p>
+<p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:12px;color:#8a8175">
+<a href="#" style="color:${accentColor};text-decoration:none">Shop All</a> &nbsp;&bull;&nbsp;
+<a href="#" style="color:${accentColor};text-decoration:none">Our Story</a> &nbsp;&bull;&nbsp;
+<a href="#" style="color:${accentColor};text-decoration:none">Gifting</a> &nbsp;&bull;&nbsp;
+<a href="#" style="color:${accentColor};text-decoration:none">Contact</a>
+</p>
+<p style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:11px;color:#6b6255;line-height:1.5">
+You received this email because you signed up at vahdam.com<br>
+<a href="#" style="color:#8a8175;text-decoration:underline">Unsubscribe</a> &nbsp;|&nbsp; <a href="#" style="color:#8a8175;text-decoration:underline">Privacy Policy</a>
+</p>
+<p style="margin:0;font-family:Arial,sans-serif;font-size:10px;color:#4a4540">&copy; 2026 VAHDAM India. All Rights Reserved.</p>
+</td></tr>
+</table>
+
+</td></tr></table>
+</body>
+</html>`;
+
+    return res.status(200).json({
+      ok: true,
       stage: 'html',
       variant,
-      detail: String(e.message || e).substring(0, 300)
+      provider: 'heuristic',
+      model: 'fallback-v1',
+      html,
+      _heuristic: true,
+      _llm_error: String(e.message || e).substring(0, 200),
+      section_count: 8,
+      subject_lines: subjectLines,
+      preheader
     });
   }
 };

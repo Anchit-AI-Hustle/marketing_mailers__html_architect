@@ -324,6 +324,158 @@ Implement Variant ${variant} now. Follow the locked structure exactly. Generate 
     });
 
   } catch (e) {
-    return res.status(500).json({ error: 'variant_plan_failed', stage: 'variant', variant, detail: String(e.message || e).substring(0, 300) });
+    // ── HEURISTIC FALLBACK ────────────────────────────────────────────────────
+    console.warn('[variant] All providers failed for variant ' + variant + ' — using heuristic fallback');
+
+    const heroProduct = ((strategy_output.product_selection || {}).hero || {});
+    const heroName = heroProduct.name || 'VAHDAM Signature Tea';
+    const themeName = ((strategy_output.theme || {}).name) || brief || 'Premium Tea';
+    const isB = variant === 'B';
+
+    const heuristic = {
+      ok: true, provider: 'heuristic', model: 'fallback-v1', stage: 'variant', variant,
+      _heuristic: true,
+      _llm_error: String(e.message || e).substring(0, 200),
+      layout_plan: {
+        hero: isB ? 'Full-bleed atmospheric image, copy overlay bottom, 600px total' : '55% image left, 45% copy right, 600px total',
+        benefit_section: 'Four-column icon strip with single-line benefits',
+        product_section: isB ? 'Single product editorial reveal, full-width' : 'Two-column product grid, image left, copy right',
+        proof_section: 'Single testimonial, centered, serif italic quote',
+        offer_section: 'Full-width amber banner with code and terms',
+        cta_section: isB ? 'Ghost-button text-link style CTA' : 'Prominent amber filled button, centered',
+        color_scheme: isB
+          ? { background: '#0f2a1c', primary: '#fdf6e8', accent: '#d4873a', text: '#e8dcc8' }
+          : { background: '#fdf6e8', primary: '#0f2a1c', accent: '#d4873a', text: '#1a1a1a' },
+        spacing: '48px between sections, 24px internal padding',
+        flow: isB ? 'editorial-narrative' : 'structured-conversion'
+      },
+      sections: [
+        {
+          id: isB ? 'narrative' : 'hero',
+          type: isB ? 'full-bleed' : 'split-hero',
+          purpose: isB ? 'Atmospheric immersion — reader feels the origin before product' : 'Immediate product impact — hero drives first impression',
+          copy: {
+            eyebrow: isB ? 'A story in every steep' : 'NEW ARRIVAL',
+            headline: isB ? 'The Hill Is Quiet at 7,000 Feet' : (themeName.substring(0, 40)),
+            subcopy: isB
+              ? 'Where morning mist meets hand-picked leaves, a ritual begins that has traveled centuries to reach your cup.'
+              : 'Discover single-estate teas crafted with heritage and precision. Premium quality, farm to cup.',
+            cta: isB ? 'Discover the Origin' : 'Shop Now'
+          },
+          layout: isB ? 'Full-width image with 60% dark overlay, centered text, 64px padding' : 'Table: 50% img cell + 50% copy cell, vertical center aligned',
+          image_slot: 'hero',
+          ux_intent: isB ? 'Emotional immersion — create curiosity' : 'Conversion clarity — product + benefit visible immediately'
+        },
+        {
+          id: isB ? 'context' : 'benefit_strip',
+          type: isB ? 'centered' : 'three-col-grid',
+          purpose: isB ? 'Build the narrative before revealing product' : 'Quick-scan benefits reinforce purchase decision',
+          copy: {
+            headline: isB ? 'Heritage in Every Leaf' : '',
+            subcopy: isB
+              ? 'From the misty gardens of Darjeeling to your morning table — each blend carries generations of craft.'
+              : 'Single-Estate · Hand-Picked · Farm to Cup · Premium Heritage',
+            cta: ''
+          },
+          layout: isB ? 'Centered text block, generous whitespace, max-width 480px' : 'Three equal columns with icon placeholder + single-line label',
+          image_slot: isB ? 'lifestyle' : 'none',
+          ux_intent: isB ? 'Deepen emotional investment' : 'Rational reinforcement of quality'
+        },
+        {
+          id: 'product_reveal',
+          type: isB ? 'centered' : 'two-col-grid',
+          purpose: 'Product introduction with clear pricing and CTA',
+          copy: {
+            eyebrow: isB ? 'The Collection' : '',
+            headline: heroName,
+            subcopy: 'Premium single-estate tea, hand-picked at peak flavor. Experience the difference heritage makes.',
+            cta: isB ? 'Explore This Blend' : 'Add to Cart'
+          },
+          layout: isB ? 'Single product, full-width image, centered copy below' : 'Product image left, name + price + CTA right',
+          image_slot: 'product',
+          ux_intent: 'Product consideration — drive add-to-cart'
+        },
+        {
+          id: 'social_proof',
+          type: 'centered',
+          purpose: 'Build trust through real customer voice',
+          copy: {
+            headline: '',
+            subcopy: '"The finest tea I\'ve ever tasted. The aroma alone makes the morning ritual worth it." — Verified Buyer',
+            cta: ''
+          },
+          layout: 'Centered italic quote, small avatar placeholder, reviewer name below',
+          image_slot: 'none',
+          ux_intent: 'Trust building — social validation'
+        },
+        {
+          id: 'offer_bar',
+          type: 'banner',
+          purpose: 'Price incentive to convert browsers to buyers',
+          copy: {
+            eyebrow: 'EXCLUSIVE OFFER',
+            headline: 'Free Shipping on Orders $50+',
+            subcopy: 'Use code HERITAGE at checkout. Limited time.',
+            cta: 'Shop the Collection'
+          },
+          layout: 'Full-width amber (#d4873a) banner, centered text, CTA button below',
+          image_slot: 'none',
+          ux_intent: 'Urgency + value — final conversion push'
+        },
+        {
+          id: 'cta',
+          type: 'button-row',
+          purpose: 'Final call to action',
+          copy: {
+            headline: isB ? 'Begin Your Ritual' : 'Shop VAHDAM Today',
+            subcopy: '',
+            cta: isB ? 'Explore the Collection →' : 'Shop Now'
+          },
+          layout: isB ? 'Ghost-button, centered, generous padding' : 'Amber filled button, 220px wide, centered',
+          image_slot: 'none',
+          ux_intent: 'Final conversion capture'
+        }
+      ],
+      image_requirements: [
+        {
+          slot: 'hero',
+          prompt: isB
+            ? 'Golden hour on a Darjeeling hillside, tea bushes stretching to the horizon under warm dusk light. A weathered wooden table in the foreground holds a single steaming cup. Atmospheric haze, deep greens and amber sky. Full-bleed editorial composition, shallow depth of field. No text, no logos, no UI.'
+            : 'Clean morning light studio-adjacent scene. VAHDAM tea package centered on cream linen surface. Freshly brewed cup beside it, steam catching the light. Warm amber tones, shallow focus on product, soft shadow falling left. Overhead angle, slightly off-center. No text, no logos.',
+          size: '1536x1024',
+          negative_prompt: 'no text overlays, no logos, no UI elements, no email layout, no stock look, no artificial lighting, no clutter'
+        },
+        {
+          slot: 'product',
+          prompt: 'Close-up VAHDAM tea packaging on aged oak surface, natural sidelight from left window, warm 4500K temperature. Loose tea leaves scattered artfully nearby. Shallow depth of field f/2.8, premium feel, tactile textures visible. No text, no logos.',
+          size: '1024x1024',
+          negative_prompt: 'no text overlays, no logos, no UI elements, no stock look, no artificial lighting'
+        },
+        {
+          slot: 'lifestyle',
+          prompt: isB
+            ? 'Hands cupping a warm ceramic mug of golden tea on a misty morning balcony. Soft knit sweater sleeve visible. Blurred garden greenery behind. Warm cinematic light, intimate and personal. No text, no logos.'
+            : 'Person pouring tea from a glass teapot into a ceramic cup at a clean kitchen counter. Morning light through window, fresh herbs nearby. Warm tones, editorial feel, genuine moment. No text, no logos.',
+          size: '1024x1024',
+          negative_prompt: 'no text overlays, no logos, no UI elements, no stock look, no artificial lighting'
+        }
+      ],
+      copy_framework: {
+        tone: isB ? 'sensory-evocative' : 'precise-authoritative',
+        voice: isB ? 'storytelling guide' : 'confident product expert',
+        headline_style: isB ? 'poetic-sensory indirect' : 'benefit-first declarative',
+        cta_verb: isB ? 'Discover | Explore | Experience' : 'Shop | Order | Add to Cart'
+      },
+      subject_lines: [
+        isB ? 'The quiet ritual that changed everything' : (themeName.substring(0, 40) + ' — Now Available'),
+        isB ? 'From 7,000 feet to your morning cup' : 'Discover ' + heroName + ' | Free Shipping',
+        isB ? 'A tea worth slowing down for' : 'Premium Single-Estate Teas — Shop Today'
+      ],
+      preheader: isB
+        ? 'Hand-picked from heritage gardens, crafted for your daily ritual'
+        : 'Premium single-estate teas, delivered farm to cup with free shipping'
+    };
+
+    return res.status(200).json(heuristic);
   }
 };

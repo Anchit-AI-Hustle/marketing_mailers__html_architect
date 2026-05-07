@@ -333,6 +333,99 @@ Run Phase 1 → Phase 2 now. Think deeply before locking. Every field matters.`;
     });
 
   } catch (e) {
-    return res.status(500).json({ error: 'strategy_failed', stage: 'strategy', detail: String(e.message || e).substring(0, 500), provider_errors: e._providerErrors || [] });
+    // ── HEURISTIC FALLBACK: generate a reasonable strategy without LLM ──────
+    console.warn('[strategy] All providers failed — using heuristic fallback');
+    const heroProduct = products[0] || { name: 'VAHDAM Signature Tea Collection', handle: 'signature-collection' };
+    const supporting = products.slice(1, 4).map(p => ({
+      name: p.name || p.n || 'VAHDAM Tea',
+      handle: p.handle || p.id || 'vahdam-tea',
+      role: 'AOV expansion',
+      why: 'Complements the hero product for a curated set'
+    }));
+
+    const briefWords = (brief || 'Premium Tea Campaign').trim();
+    const isGifting = /gift|mother|father|valentine|birthday|anniversary/i.test(briefWords);
+    const isSeasonal = /summer|winter|spring|autumn|monsoon|holiday|festiv/i.test(briefWords);
+    const isSale = /sale|discount|offer|deal|flash|clearance/i.test(briefWords);
+
+    const stratType = isSale ? 'Conversion Push' : isGifting ? 'AOV Expansion' : isSeasonal ? 'Brand Building' : 'Brand Building';
+    const emotionalTone = isGifting ? 'warm generosity and thoughtful celebration'
+      : isSale ? 'smart discovery and rewarding value'
+      : 'quiet confidence and curated craftsmanship';
+    const pace = isSale ? 'fast/punchy — urgency drives action' : 'slow/editorial — let the story breathe';
+
+    const heuristic = {
+      ok: true, provider: 'heuristic', model: 'fallback-v1', stage: 'strategy',
+      _heuristic: true,
+      _llm_error: String(e.message || e).substring(0, 300),
+      provider_errors: e._providerErrors || [],
+      strategic_lock: {
+        audience_truth: `${market} premium tea buyers who appreciate origin stories and artisan craftsmanship — browsing but need a compelling reason to add to cart today`,
+        business_goal: `Drive qualified clicks and conversion for ${market} market via ${briefWords.substring(0, 60)}`,
+        purchase_barrier: 'Too many premium options — needs a clear reason why VAHDAM is the smarter, more authentic choice',
+        conversion_trigger: isGifting ? 'Curated gift sets that feel personal and premium without the decision fatigue'
+          : isSale ? 'Clear value anchor with price comparison and urgency'
+          : 'Single-estate provenance story that no supermarket brand can replicate'
+      },
+      product_selection: {
+        hero: { name: heroProduct.name || heroProduct.n || 'VAHDAM Signature Tea', handle: heroProduct.handle || heroProduct.id || 'signature-tea', why: 'Best expression of the campaign brief — anchors the story' },
+        supporting,
+        product_system: 'Hero drives interest, supporting products expand the order into a curated experience',
+        aov_logic: 'Bundle logic: hero + 1-2 complementary blends = complete ritual set'
+      },
+      strategy_type: stratType,
+      strategy: `${stratType} via ${isGifting ? 'curated gifting narrative' : isSale ? 'price-anchored urgency' : 'single-estate provenance storytelling'} for ${market} premium audience`,
+      reasoning: `${stratType} is the right approach because the brief "${briefWords.substring(0, 50)}" signals ${isGifting ? 'a gifting occasion where AOV expansion through sets is natural' : isSale ? 'a value-driven moment where price anchoring and urgency convert browsers to buyers' : 'a brand-forward moment where origin story and craft differentiate VAHDAM from commodity alternatives'}. The ${market} audience responds to authenticity and specificity over generic tea marketing.`,
+      vibe: {
+        emotional_tone: emotionalTone,
+        pace,
+        visual_energy: 'Warm natural light, tactile surfaces, intentional stillness — premium editorial not catalog',
+        positioning: isGifting ? 'premium provenance gifting' : 'accessible daily ritual with artisan roots',
+        avoid: 'Generic stock photography, cluttered layouts, aggressive discount language, wellness clichés'
+      },
+      theme: {
+        name: briefWords.split(/\s+/).slice(0, 4).join(' '),
+        core_idea: `Reframing ${isGifting ? 'gifting' : 'daily tea'} from commodity habit to intentional ritual through single-estate Indian heritage`,
+        emotional_driver: `The reader feels ${isGifting ? 'like a thoughtful curator choosing something meaningful' : 'quietly rewarded for choosing craft over convenience'}`,
+        conversion_logic: `${stratType === 'Conversion Push' ? 'Price anchor + urgency removes hesitation' : 'Story-driven emotional investment makes the purchase feel personal, not transactional'}`,
+        visual_world: 'Morning light through a kitchen window falling on a wooden surface. A single cup of golden tea, steam visible. Fresh tea leaves in a small ceramic bowl beside it. Shallow depth of field, warm color temperature, overhead compositional angle slightly off-center. The scene feels real, unhurried, editorially composed but not staged.'
+      },
+      structure: {
+        sections: ['hero', 'context', 'product_reveal', 'benefit_strip', 'social_proof', 'offer_bar', 'cta'],
+        layout_rules: 'Max 7 sections. Single-column mobile-first. CTA visible without scroll. Product section max 3 items.',
+        visual_system: {
+          color_palette: 'Primary: forest green #0f2a1c. Secondary: cream #fdf6e8. Accent: amber gold #d4873a. Variant A uses cream bg, Variant B uses dark bg.',
+          typography: 'Headings: serif, 28-36px. Body: sans-serif, 14-16px. Generous line-height 1.6.',
+          spacing_rhythm: 'Section gap: 32-48px. Internal padding: 24-32px. Breathing room between elements.',
+          image_style: 'Luxury editorial — cinematic warm light, shallow DOF, tactile textures, no stock look'
+        }
+      },
+      image_style_lock: 'Shot on medium-format digital with 80mm lens. Natural window light, warm 4500K color temperature. Shallow depth of field f/2.8. Tactile surfaces: raw linen, aged wood, matte ceramic. One hero product prominent, 1-2 supporting props maximum. No text overlays, no artificial lighting, no clutter. The image should feel like a premium lifestyle magazine editorial.',
+      variant_a_concept: {
+        emotional_angle: 'Direct confidence — the product speaks for itself with clarity and authority',
+        headline_register: 'Direct benefit-led declarative — clear, precise, action-oriented',
+        template_key: isSale ? 'sale' : isGifting ? 'gift' : 'bestseller',
+        color_approach: 'light-cream — background #fdf6e8, primary text #0f2a1c, amber accents #d4873a',
+        opening_section: 'hero (product visible in section 1)',
+        hero_scene: 'Clean morning light studio-adjacent scene. VAHDAM tea package centered on a cream linen surface. A freshly brewed cup beside it, steam catching the light. Warm amber tones, shallow focus on the product, soft shadow falling left. Overhead angle, slightly off-center composition. Premium, confident, conversion-clear.'
+      },
+      variant_b_concept: {
+        emotional_angle: 'Atmospheric immersion — the reader feels the origin before seeing the product',
+        headline_register: 'Poetic-sensory and evocative — reader feels before they see',
+        template_key: isSale ? 'story' : isGifting ? 'editorial' : 'story',
+        color_approach: 'dark-inverted — background #0f2a1c for first 2 sections, cream text #fdf6e8, amber accent — OPPOSITE of A',
+        opening_section: 'narrative or lifestyle (NO product in first 2 sections)',
+        hero_scene: 'Golden hour on a Darjeeling hillside. Tea bushes stretching to the horizon under warm dusk light. A weathered wooden table in the foreground holds a single steaming cup. Atmospheric haze, deep greens and amber sky. Full-bleed editorial composition, the product is secondary to the mood. The reader should feel transported to the estate.'
+      },
+      variant_divergence_contract: {
+        layout_difference: 'A uses centered product-hero layout; B uses full-bleed editorial with generous whitespace',
+        color_difference: 'A uses light cream bg (#fdf6e8) with dark text; B uses dark green bg (#0f2a1c) with cream text for opening sections',
+        copy_difference: 'A is direct and benefit-specific; B is sensory, poetic, and narrative-led',
+        section_order_difference: 'A opens hero→product; B opens narrative→lifestyle→product reveal',
+        product_treatment_difference: 'A: product grid in section 1; B: editorial single product reveal after section 2'
+      }
+    };
+
+    return res.status(200).json(heuristic);
   }
 };
