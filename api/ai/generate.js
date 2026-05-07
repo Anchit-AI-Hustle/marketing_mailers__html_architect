@@ -505,6 +505,33 @@ module.exports = async function handler(req, res) {
     }
 
     if (!result || !result.ok) {
+      // ── HEURISTIC FALLBACK for create_brief mode ─────────────────────────
+      // When all providers fail, generate a structured brief from inputs so the
+      // "Enhance with AI" button always returns something useful.
+      if (mode === 'create_brief') {
+        console.warn('[generate] All providers failed for create_brief — using heuristic fallback');
+        const typeMap = { Sale: 'conversion-focused flash sale', Launch: 'new product launch', Gift: 'premium gifting', Seasonal: 'seasonal campaign', Bestseller: 'bestseller showcase', Story: 'brand storytelling', Routine: 'daily ritual', Discovery: 'product discovery' };
+        const typeDesc = typeMap[theme] || theme || 'premium campaign';
+        const mktMap = { US: 'US professionals 30-55', UK: 'UK tea lovers', IN: 'Indian consumers', AU: 'Australian wellness seekers', ME: 'Middle East audience', EU: 'European premium shoppers', Global: 'global audience' };
+        const audience = mktMap[market] || 'premium tea audience';
+        const prodNames = selected_products.slice(0, 3).map(p => p.name || p.n || '').filter(Boolean);
+        const heroProduct = prodNames[0] || 'VAHDAM Signature Collection';
+        const supportProducts = prodNames.slice(1).join(' and ') || 'complementary wellness blends';
+
+        const offerMatch = campaign_brief.match(/(\d{1,2})\s*%/);
+        const offerPct = offerMatch ? offerMatch[1] : '20';
+        const codeMatch = campaign_brief.match(/(?:code|coupon)\s+([A-Z0-9]{4,15})/i);
+        const promoCode = codeMatch ? codeMatch[1].toUpperCase() : 'VAHDAM' + offerPct;
+
+        const heuristicBrief = `Our next ${typeDesc} targets ${audience}, aiming for an AOV exceeding $55 by leveraging the unmatched premium provenance of our single-estate teas. We're leading with a compelling offer: experience the crisp clarity of our finest teas with up to ${offerPct}% off for a limited time using code ${promoCode}. This isn't just a discount — it's an invitation to elevate your daily ritual with garden-fresh teas, picked and packed within 72 hours of harvest.\n\nOur hero product anchoring this campaign is ${heroProduct}, a single-estate jewel perfect for a discerning morning ritual. To build a richer basket we'll feature ${supportProducts} as supporting products. These selections offer variety and cater to both the ritualistic black tea drinker and the health-conscious individual.\n\nOur audience craves moments of calm and intentionality — they're seeking authenticity and connection, a premium experience that integrates into their demanding lives. A truly authentic tea with a clear origin story tips them towards purchase.\n\nFor subject lines, test these: Your Morning Ritual, Elevated. | ${offerPct}% Off — Premium Teas, Limited Time. | Freshness From The Himalayas Awaits.`;
+
+        return res.status(200).json({
+          ok: true, mode, provider: 'heuristic', model: 'fallback-v1', text: heuristicBrief,
+          _heuristic: true,
+          _llm_error: String((result && result.detail) || 'All providers failed').substring(0, 200)
+        });
+      }
+
       const is429 = result && result.status === 429;
       // Never forward Gemini/OpenAI's 404 (model not found) as our response status —
       // that confuses clients into thinking the endpoint doesn't exist. Use 503 instead.
