@@ -55,11 +55,15 @@ module.exports = async function callLLM(opts) {
     process.env.OPENAI_API_KEY_3
   ].filter(Boolean);
 
-  const anthropicKey = (process.env.ANTHROPIC_API_KEY || '').trim();
-  const geminiKey    = (userGeminiKey || process.env.GEMINI_API_KEY || '').trim();
-  const grokKey      = (process.env.XAI_API_KEY || '').trim();
-  const groqKey      = (process.env.GROQ_API_KEY || '').trim();
-  const cerebrasKey  = (process.env.CEREBRAS_API_KEY || '').trim();
+  // Strip BOM (U+FEFF), zero-width spaces, and whitespace — Vercel env can inject invisible chars
+  const _clean = s => (s || '').replace(/[﻿​ ]/g, '').trim();
+  const anthropicKey = _clean(process.env.ANTHROPIC_API_KEY);
+  const geminiKey    = _clean(userGeminiKey) || _clean(process.env.GEMINI_API_KEY);
+  const grokKey      = _clean(process.env.XAI_API_KEY);
+  const groqKey      = _clean(process.env.GROQ_API_KEY);
+  const cerebrasKey  = _clean(process.env.CEREBRAS_API_KEY);
+  // Debug: log key presence (not values) for cascade diagnostics
+  console.log('[llm] Keys present: groq=' + !!groqKey + ' cerebras=' + !!cerebrasKey + ' gemini=' + !!geminiKey);
 
   if (!openaiKeys.length && !anthropicKey && !geminiKey && !grokKey && !groqKey && !cerebrasKey) {
     throw new Error('No AI provider configured. Set at least one of: OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, XAI_API_KEY, GROQ_API_KEY, CEREBRAS_API_KEY');

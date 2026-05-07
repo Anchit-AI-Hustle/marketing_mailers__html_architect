@@ -222,13 +222,15 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
 
   // PROVIDER WATERFALL: OpenAI → Anthropic → Gemini → Grok → Groq → Cerebras
-  const openaiKey    = (process.env.OPENAI_API_KEY || '').trim();
-  const anthropicKey = (process.env.ANTHROPIC_API_KEY || '').trim();
-  const userGeminiKey = (req.headers['x-user-gemini-key'] || '').trim();
-  const geminiKey    = userGeminiKey || (process.env.GEMINI_API_KEY || '').trim();
-  const grokKey      = (process.env.XAI_API_KEY || '').trim();
-  const groqKey      = (process.env.GROQ_API_KEY || '').trim();
-  const cerebrasKey  = (process.env.CEREBRAS_API_KEY || '').trim();
+  // Strip BOM and non-ASCII from all API keys (Vercel env via PowerShell can inject invisible chars)
+  const _ck = s => { if (!s) return ''; return s.split('').filter(c => c.charCodeAt(0) < 128).join('').trim(); };
+  const openaiKey    = _ck(process.env.OPENAI_API_KEY);
+  const anthropicKey = _ck(process.env.ANTHROPIC_API_KEY);
+  const userGeminiKey = _ck(req.headers['x-user-gemini-key']);
+  const geminiKey    = userGeminiKey || _ck(process.env.GEMINI_API_KEY);
+  const grokKey      = _ck(process.env.XAI_API_KEY);
+  const groqKey      = _ck(process.env.GROQ_API_KEY);
+  const cerebrasKey  = _ck(process.env.CEREBRAS_API_KEY);
   if (!openaiKey && !anthropicKey && !geminiKey && !grokKey && !groqKey && !cerebrasKey) {
     return res.status(500).json({ error: 'server_misconfigured', detail: 'No AI provider configured. Set OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, XAI_API_KEY, GROQ_API_KEY, or CEREBRAS_API_KEY.' });
   }
