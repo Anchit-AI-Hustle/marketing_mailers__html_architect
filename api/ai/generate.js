@@ -222,13 +222,13 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
 
   // PROVIDER WATERFALL: OpenAI → Anthropic → Gemini → Grok → Groq → Cerebras
-  const openaiKey    = process.env.OPENAI_API_KEY;
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const userGeminiKey = req.headers['x-user-gemini-key'] || '';
-  const geminiKey    = userGeminiKey || process.env.GEMINI_API_KEY;
-  const grokKey      = process.env.XAI_API_KEY;
-  const groqKey      = process.env.GROQ_API_KEY;
-  const cerebrasKey  = process.env.CEREBRAS_API_KEY;
+  const openaiKey    = (process.env.OPENAI_API_KEY || '').trim();
+  const anthropicKey = (process.env.ANTHROPIC_API_KEY || '').trim();
+  const userGeminiKey = (req.headers['x-user-gemini-key'] || '').trim();
+  const geminiKey    = userGeminiKey || (process.env.GEMINI_API_KEY || '').trim();
+  const grokKey      = (process.env.XAI_API_KEY || '').trim();
+  const groqKey      = (process.env.GROQ_API_KEY || '').trim();
+  const cerebrasKey  = (process.env.CEREBRAS_API_KEY || '').trim();
   if (!openaiKey && !anthropicKey && !geminiKey && !grokKey && !groqKey && !cerebrasKey) {
     return res.status(500).json({ error: 'server_misconfigured', detail: 'No AI provider configured. Set OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, XAI_API_KEY, GROQ_API_KEY, or CEREBRAS_API_KEY.' });
   }

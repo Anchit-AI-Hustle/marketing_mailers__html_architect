@@ -55,11 +55,11 @@ module.exports = async function callLLM(opts) {
     process.env.OPENAI_API_KEY_3
   ].filter(Boolean);
 
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const geminiKey    = userGeminiKey || process.env.GEMINI_API_KEY;
-  const grokKey      = process.env.XAI_API_KEY;
-  const groqKey      = process.env.GROQ_API_KEY;
-  const cerebrasKey  = process.env.CEREBRAS_API_KEY;
+  const anthropicKey = (process.env.ANTHROPIC_API_KEY || '').trim();
+  const geminiKey    = (userGeminiKey || process.env.GEMINI_API_KEY || '').trim();
+  const grokKey      = (process.env.XAI_API_KEY || '').trim();
+  const groqKey      = (process.env.GROQ_API_KEY || '').trim();
+  const cerebrasKey  = (process.env.CEREBRAS_API_KEY || '').trim();
 
   if (!openaiKeys.length && !anthropicKey && !geminiKey && !grokKey && !groqKey && !cerebrasKey) {
     throw new Error('No AI provider configured. Set at least one of: OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, XAI_API_KEY, GROQ_API_KEY, CEREBRAS_API_KEY');
