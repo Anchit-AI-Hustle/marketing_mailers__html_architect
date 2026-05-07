@@ -1,6 +1,6 @@
 'use strict';
 // ─────────────────────────────────────────────────────────────────────────────
-// Shared LLM caller — 6-provider waterfall
+// Shared LLM caller — 6-provider waterfall (Gemini + Groq + Cerebras free tier)
 //
 // CASCADE ORDER (first available key wins at each tier):
 //   1. OpenAI    (OPENAI_API_KEY / _2 / _3)   — ChatGPT, highest quality
