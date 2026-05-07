@@ -126,6 +126,8 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
 
+  const userGeminiKey = req.headers['x-user-gemini-key'] || '';
+
   let body = req.body;
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch (_) { return res.status(400).json({ error: 'invalid_json' }); }
@@ -191,7 +193,8 @@ Score both variants now on ALL criteria. Penalise heavily for: thin content, mis
       maxTokens: 700,
       temperature: 0.15,  // Near-deterministic — scoring should be consistent
       timeoutMs: 20000,
-      stage: 'score'
+      stage: 'score',
+      userGeminiKey
     });
 
     let parsed;

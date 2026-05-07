@@ -225,6 +225,8 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
 
+  const userGeminiKey = req.headers['x-user-gemini-key'] || '';
+
   let body = req.body;
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch (_) { return res.status(400).json({ error: 'invalid_json' }); }
@@ -307,7 +309,8 @@ Implement Variant ${variant} now. Follow the locked structure exactly. Generate 
       maxTokens: 3500,
       temperature: 0.55 + Math.min(0.2, regenerate_counter * 0.08),
       timeoutMs: 46000,        // 46s internal; vercel maxDuration 55s (9s headroom)
-      stage: 'variant-' + variant + '[regen=' + regenerate_counter + ']'
+      stage: 'variant-' + variant + '[regen=' + regenerate_counter + ']',
+      userGeminiKey
     });
 
     let parsed;

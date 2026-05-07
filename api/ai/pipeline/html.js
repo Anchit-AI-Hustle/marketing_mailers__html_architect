@@ -531,6 +531,8 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
 
+  const userGeminiKey = req.headers['x-user-gemini-key'] || '';
+
   let body = req.body;
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch (_) { return res.status(400).json({ error: 'invalid_json' }); }
@@ -701,7 +703,8 @@ Output starts <!DOCTYPE html>, ends </html>. Nothing before or after.`;
       maxTokens: 10000,        // Full email with 6-8 sections + header/footer easily exceeds 6K tokens
       temperature: 0.3 + Math.min(0.15, regen * 0.05), // Low = reliable HTML; slight bump on regen for variation
       timeoutMs: 80000,        // 80s internal; vercel maxDuration set to 90s (10s headroom for overhead)
-      stage: 'html-' + variant + '[regen=' + regen + ']'
+      stage: 'html-' + variant + '[regen=' + regen + ']',
+      userGeminiKey
     });
 
     let html = (text || '').trim();

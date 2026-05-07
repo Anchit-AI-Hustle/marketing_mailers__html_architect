@@ -595,6 +595,26 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     <div id="linkLoadSub" style="font-size:11px;color:#888;line-height:1.5">Prompt copied to clipboard. Paste it when the page opens.</div>
   </div>
 </div>
+<!-- API Key Fallback Popup -->
+<div id="apiKeyModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);overflow-y:auto;padding:20px 10px">
+  <div style="max-width:480px;margin:60px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.32)">
+    <div style="background:#0f2a1c;padding:20px 24px;color:#fdf6e8">
+      <h3 style="margin:0;font-size:18px;font-weight:600">🔑 AI Provider Key Required</h3>
+      <p style="margin:8px 0 0;font-size:13px;opacity:0.8" id="apiKeyModalReason">The configured API keys have been exhausted.</p>
+    </div>
+    <div style="padding:24px">
+      <p style="margin:0 0 12px;font-size:14px;color:#333">Paste your <strong>Google Gemini API key</strong> to continue. Get one free at <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#d4873a">aistudio.google.com/apikey</a></p>
+      <input id="apiKeyModalInput" type="text" placeholder="AIzaSy..." style="width:100%;padding:12px 14px;border:2px solid #e0d9cf;border-radius:8px;font-size:14px;font-family:monospace;box-sizing:border-box;outline:none" />
+      <p id="apiKeyModalError" style="display:none;margin:8px 0 0;font-size:12px;color:#c0392b"></p>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button id="apiKeyModalSubmit" onclick="_apiKeyModalSubmit()" style="flex:1;padding:12px;background:#d4873a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Use This Key & Retry</button>
+        <button onclick="_apiKeyModalCancel()" style="padding:12px 20px;background:#f5f0e8;color:#333;border:none;border-radius:8px;font-size:14px;cursor:pointer">Cancel</button>
+      </div>
+      <p style="margin:12px 0 0;font-size:11px;color:#999">Your key is stored only in this browser session and sent directly to Google's API. It is not saved on our servers.</p>
+    </div>
+  </div>
+</div>
+
 <!-- Dashboard record detail modal -->
 <div id="dashRecordModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);overflow-y:auto;padding:20px 10px">
   <div style="max-width:720px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.32)">
@@ -1031,24 +1051,24 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
         <button class="cta-trio-btn cta-design" onclick="ctaCreateDesign()">
           <div class="cta-trio-icon">&#127912;</div>
           <div class="cta-trio-text">
-            <div class="cta-trio-title">Create Mailer Design</div>
-            <div class="cta-trio-sub">AI-generated creative images for all variants &amp; regions</div>
+            <div class="cta-trio-title">Generate Mailer Design</div>
+            <div class="cta-trio-sub">Visual mockup of the mailer creative with real product images</div>
           </div>
           <div class="cta-trio-arrow">&rarr;</div>
         </button>
         <button class="cta-trio-btn cta-html" onclick="ctaCreateHTML()">
           <div class="cta-trio-icon">&#128421;</div>
           <div class="cta-trio-text">
-            <div class="cta-trio-title">Create Mailer HTML</div>
-            <div class="cta-trio-sub">Production-ready HTML email for all variants &amp; regions</div>
+            <div class="cta-trio-title">Generate HTML Directly</div>
+            <div class="cta-trio-sub">Production-ready HTML email with download — uses real product images</div>
           </div>
           <div class="cta-trio-arrow">&rarr;</div>
         </button>
         <button class="cta-trio-btn cta-both" onclick="ctaCreateDesignAndHTML()">
           <div class="cta-trio-icon">&#9889;</div>
           <div class="cta-trio-text">
-            <div class="cta-trio-title">Create Design + HTML</div>
-            <div class="cta-trio-sub">Images first, then matching HTML mailer — complete package</div>
+            <div class="cta-trio-title">Generate Design + Mailer</div>
+            <div class="cta-trio-sub">Design mockup first, then full HTML mailer — complete package</div>
           </div>
           <div class="cta-trio-arrow">&rarr;</div>
         </button>
@@ -2326,23 +2346,22 @@ async function _supabaseUpdateRow(updates){
   }catch(e){console.warn('[Supabase] Update:',e.message);}
 }
 
-// ── CTA 1: Create Mailer Design (images only) ──────────────────────────────
+// ── CTA 1: Generate Mailer Design (visual mockup with real product images) ──
 function ctaCreateDesign(){
   if(!_validateInputs())return;
   S._outputMode='design';
   S._allMarketImages={};
   S._pendingMarkets=(S.markets||['US']).slice();
   S._currentMarketIdx=0;
-  // Show output page with loading
-  showOnly(3);
-  var ld=document.getElementById('p3ImgLoading');if(ld)ld.style.display='block';
-  var ct=document.getElementById('p3ImgContent');if(ct)ct.style.display='none';
-  var statusEl=document.getElementById('p3ImgLoadingStatus');
-  if(statusEl)statusEl.textContent='Generating creative images for '+S._pendingMarkets.join(', ')+'. This takes 30-60 seconds per market.';
-  _runPipelinePhase1(S._pendingMarkets[0],{regenerate_counter:0});
+  // Show output page — this generates HTML then renders as visual preview
+  showOnly(4);
+  _p5ShowLoading(true);
+  _p5UpdateLoadingStatus('Generating mailer design mockup for '+S._pendingMarkets.join(', ')+'...');
+  // Run full pipeline to get HTML, then show as visual preview
+  _runFullHTMLPipeline(S._pendingMarkets[0]);
 }
 
-// ── CTA 2: Create Mailer HTML (HTML only) ───────────────────────────────────
+// ── CTA 2: Generate HTML Directly (full HTML with download) ─────────────────
 function ctaCreateHTML(){
   if(!_validateInputs())return;
   S._outputMode='html';
@@ -2351,28 +2370,23 @@ function ctaCreateHTML(){
   // Show Step 4 (HTML output) with loading
   showOnly(4);
   _p5ShowLoading(true);
-  _p5UpdateLoadingStatus('Running full pipeline for '+S._pendingHTMLMarkets.join(', ')+'...');
+  _p5UpdateLoadingStatus('Generating HTML mailer for '+S._pendingHTMLMarkets.join(', ')+'...');
   // Run full pipeline — stages 1-5 for first market
   _runFullHTMLPipeline(S._pendingHTMLMarkets[0]);
 }
 
-// ── CTA 3: Create Design + HTML (both) ──────────────────────────────────────
+// ── CTA 3: Generate Design + Mailer (mockup first, then HTML) ───────────────
 function ctaCreateDesignAndHTML(){
   if(!_validateInputs())return;
   S._outputMode='both';
   S._allMarketImages={};
   S._pendingMarkets=(S.markets||['US']).slice();
   S._currentMarketIdx=0;
-  // Show images loading first
-  showOnly(3);
-  var ld=document.getElementById('p3ImgLoading');if(ld)ld.style.display='block';
-  var ct=document.getElementById('p3ImgContent');if(ct)ct.style.display='none';
-  // Update loading text
-  var statusEl=document.getElementById('p3ImgLoadingStatus');
-  if(statusEl)statusEl.textContent='Generating creative images for '+S._pendingMarkets.join(', ')+', then building HTML mailer. This takes 60-120 seconds.';
-  // Run phase 1 (images) → then auto-continue to phase 2 (HTML)
-  S._autoContinueToHTML=true;
-  _runPipelinePhase1(S._pendingMarkets[0],{regenerate_counter:0});
+  // Run full pipeline — shows both design preview and HTML
+  showOnly(4);
+  _p5ShowLoading(true);
+  _p5UpdateLoadingStatus('Generating design mockup + HTML mailer for '+S._pendingMarkets.join(', ')+'...');
+  _runFullHTMLPipeline(S._pendingMarkets[0]);
 }
 
 // Full HTML pipeline (strategy + variants + images + HTML + score in one go)
@@ -2415,14 +2429,11 @@ async function _runFullHTMLPipeline(mkt){
     var planB=await _pipelinePost('/api/ai/pipeline/variant',Object.assign({},_vBase,{variant:'B'}),58000);
     _pipelineSetStep(2,'done','Plans locked');_pipelineLog(2,'Plans locked','ok');
 
-    // Stage 3: Images
-    _pipelineSetStep(3,'active','Generating images...');
-    var stylelock=strategy.image_style_lock||'';
-    var [imgsA,imgsB]=await Promise.all([
-      _generateImagesForVariant(planA.image_requirements||[],'A',stylelock),
-      _generateImagesForVariant(planB.image_requirements||[],'B',stylelock)
-    ]);
-    _pipelineSetStep(3,'done','Images ready');_pipelineLog(3,'Images generated','ok');
+    // Stage 3: Product Images (from CSV catalog)
+    _pipelineSetStep(3,'active','Collecting product images from catalog...');
+    var imgsA=_collectProductImages(prods);
+    var imgsB=_collectProductImages(prods);
+    _pipelineSetStep(3,'done','Product images ready');_pipelineLog(3,'Product images from catalog','ok');
 
     // Store phase 1 data
     S._phase1Data={strategy:strategy,planA:planA,planB:planB,imgsA:imgsA,imgsB:imgsB,market:market,regen:0,brief:brief};
@@ -2743,7 +2754,7 @@ async function createPromptWithAI(){
   async function _doCreate(){
     var res=await fetch('/api/ai/generate',{
       method:'POST',cache:'no-store',
-      headers:{'Content-Type':'application/json'},
+      headers:_getApiHeaders(),
       body:JSON.stringify({mode:'create_brief',market:primaryMkt,theme:type,campaign_brief:seed,selected_products:prods})
     });
     if(!res.ok){
@@ -2818,14 +2829,23 @@ async function createPromptWithAI(){
     var isRateLimit=!!(e&&(e._rateLimited||(e.message&&(e.message.indexOf('429')!==-1||e.message.indexOf('rate')!==-1||e.message.indexOf('quota')!==-1||e.message.indexOf('RESOURCE_EXHAUSTED')!==-1))));
     var isPermission=!!(e&&e.message&&(e.message.indexOf('403')!==-1||e.message.indexOf('401')!==-1||e.message.indexOf('permission')!==-1||e.message.indexOf('forbidden')!==-1||e.message.indexOf('PERMISSION_DENIED')!==-1||e.message.indexOf('insufficient_quota')!==-1||e.message.indexOf('billing')!==-1));
     var isNoProvider=!!(e&&e.message&&(e.message.indexOf('server_misconfigured')!==-1||e.message.indexOf('No AI provider')!==-1));
-    var errLabel=isNoProvider?'No AI provider configured — add API keys in Vercel env'
-      :isPermission?'API key permission error — check Vercel env key billing/credits'
-      :isRateLimit?'AI rate limit — using heuristic brief (retry in ~60s)'
-      :'Brief creation failed — using heuristic';
-    var errDetail=String(e&&e.message||e).substring(0,250);
-    console.error('[createBrief] Error:',errDetail);
-    if(typeof statusPill==='function')statusPill('err',errLabel,errDetail);
-    else showCopyToast(errLabel);
+    // If quota/permission error and no user key yet — show API key popup
+    if ((isRateLimit || isPermission) && !_userGeminiKey) {
+      if(typeof statusPill==='function')statusPill('warn','API quota exhausted — requesting your key...','');
+      _showApiKeyPopup('AI provider quota exhausted. Provide your own Gemini API key to continue.').then(function(key){
+        if(key){ if(typeof statusPill==='function')statusPill('ok','Key saved — click Enhance with AI again',''); }
+        else { if(typeof statusPill==='function')statusPill('err','No key provided — AI features limited',''); }
+      });
+    } else {
+      var errLabel=isNoProvider?'No AI provider configured — add API keys in Vercel env'
+        :isPermission?'API key permission error — check Vercel env key billing/credits'
+        :isRateLimit?'AI rate limit — using heuristic brief (retry in ~60s)'
+        :'Brief creation failed — using heuristic';
+      var errDetail=String(e&&e.message||e).substring(0,250);
+      console.error('[createBrief] Error:',errDetail);
+      if(typeof statusPill==='function')statusPill('err',errLabel,errDetail);
+      else showCopyToast(errLabel);
+    }
     if(typeof enhancePrompt==='function')try{enhancePrompt();}catch(_){}
   }finally{
     var _fbtn=document.getElementById('smartAIBtn')||btn;
@@ -2849,7 +2869,7 @@ async function enhancePrompt(){
   if(btn){btn.disabled=true;btn.textContent='Enhancing...';}
   try{
     var res=await fetch('/api/ai/generate',{
-      method:'POST',headers:{'Content-Type':'application/json'},
+      method:'POST',headers:_getApiHeaders(),
       body:JSON.stringify({
         mode:'create_brief',
         market:primaryMkt,
@@ -3038,7 +3058,7 @@ async function _generateAISuggestedPrompts(mkts,type){
   try{
     var res=await fetch('/api/ai/generate',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:_getApiHeaders(),
       body:JSON.stringify({mode:'suggested_prompts',markets:mkts,market:mkts[0]||'US',theme:type,season:season})
     });
     if(!res.ok){var e=await res.json().catch(function(){return{};});throw new Error(e.error||'server error');}
@@ -5962,7 +5982,7 @@ async function _autoConceptThenBuild(uploadedImg){
       var srvProducts = products.slice(0,30).map(function(p){return {handle:p.handle,name:p.n,category:p.category,price:p.price,compare_at:p.compare_at,image_url:p.i};});
       var srvRes = await fetch('/api/ai/generate',{
         method:'POST',
-        headers:{'Content-Type':'application/json'},
+        headers:_getApiHeaders(),
         body:JSON.stringify({mode:'concepts',market:markets[0],theme:type,campaign_brief:prompt,selected_products:srvProducts,variant:'A',regenerate_counter:regenCounter})
       });
       if(srvRes.ok){
@@ -6173,6 +6193,54 @@ function _pipelineShowError(title, detail, suggestion) {
     + '</div>';
 }
 
+// ── API Key Fallback Popup Logic ──────────────────────────────────────────
+var _userGeminiKey = '';  // User-provided Gemini key (session only)
+var _apiKeyResolve = null; // Promise resolver for modal
+function _showApiKeyPopup(reason) {
+  return new Promise(function(resolve) {
+    _apiKeyResolve = resolve;
+    var modal = document.getElementById('apiKeyModal');
+    var reasonEl = document.getElementById('apiKeyModalReason');
+    var inputEl = document.getElementById('apiKeyModalInput');
+    var errEl = document.getElementById('apiKeyModalError');
+    if (reasonEl) reasonEl.textContent = reason || 'The configured API keys have been exhausted.';
+    if (inputEl) inputEl.value = _userGeminiKey || '';
+    if (errEl) errEl.style.display = 'none';
+    if (modal) modal.style.display = 'block';
+    setTimeout(function(){ if (inputEl) inputEl.focus(); }, 100);
+  });
+}
+function _apiKeyModalSubmit() {
+  var inputEl = document.getElementById('apiKeyModalInput');
+  var errEl = document.getElementById('apiKeyModalError');
+  var key = (inputEl ? inputEl.value : '').trim();
+  if (!key || key.length < 10) {
+    if (errEl) { errEl.textContent = 'Please enter a valid Gemini API key (starts with AIza...)'; errEl.style.display = 'block'; }
+    return;
+  }
+  _userGeminiKey = key;
+  var modal = document.getElementById('apiKeyModal');
+  if (modal) modal.style.display = 'none';
+  if (_apiKeyResolve) { _apiKeyResolve(key); _apiKeyResolve = null; }
+}
+function _apiKeyModalCancel() {
+  var modal = document.getElementById('apiKeyModal');
+  if (modal) modal.style.display = 'none';
+  if (_apiKeyResolve) { _apiKeyResolve(null); _apiKeyResolve = null; }
+}
+// Enter key submits the modal
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && document.getElementById('apiKeyModal') && document.getElementById('apiKeyModal').style.display !== 'none') {
+    _apiKeyModalSubmit();
+  }
+});
+
+function _getApiHeaders() {
+  var h = { 'Content-Type': 'application/json' };
+  if (_userGeminiKey) h['x-user-gemini-key'] = _userGeminiKey;
+  return h;
+}
+
 async function _pipelinePost(path, body, timeoutMs) {
   if (_PLN_ABORT) throw new Error('Aborted by user');
   timeoutMs = timeoutMs || 35000;
@@ -6182,7 +6250,7 @@ async function _pipelinePost(path, body, timeoutMs) {
     var r = await fetch(path, {
       method: 'POST',
       cache: 'no-store',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _getApiHeaders(),
       body: JSON.stringify(body),
       signal: ctrl.signal
     });
@@ -6204,6 +6272,26 @@ async function _pipelinePost(path, body, timeoutMs) {
     if (e.name === 'AbortError') throw new Error('Request timed out after ' + (timeoutMs/1000) + 's (' + path + ')');
     throw e;
   }
+}
+
+// ── Collect product images from CSV catalog (NOT AI-generated) ───────────
+// Returns { hero: url, product: url, lifestyle: url } from S.finalProds
+function _collectProductImages(prods) {
+  var products = Array.isArray(prods) ? prods : (window.S && S.finalProds) || [];
+  var hero = (products[0] && products[0].i) || (products[0] && products[0].image_url) || '';
+  var product = (products[1] && products[1].i) || (products[1] && products[1].image_url) || hero;
+  var lifestyle = (products[2] && products[2].i) || (products[2] && products[2].image_url) || hero;
+  // Fallback placeholders if no products selected
+  var fallbackHero    = 'https://placehold.co/600x400/0f2a1c/fdf6e8?text=Hero+Product';
+  var fallbackProduct = 'https://placehold.co/400x400/0f2a1c/fdf6e8?text=Product';
+  var fallbackLife    = 'https://placehold.co/600x400/0f2a1c/fdf6e8?text=Lifestyle';
+  return {
+    hero: hero || fallbackHero,
+    product: product || fallbackProduct,
+    lifestyle: lifestyle || fallbackLife,
+    // Also store all product images for the HTML template
+    all_products: products.map(function(p) { return { name: p.n || p.name || '', image: p.i || p.image_url || '', price: p.price || '', compare_at: p.compare_at || '', handle: p.handle || p.h || '' }; }).filter(function(p){ return p.image; })
+  };
 }
 
 // Per-pipeline-run flag: show OpenAI quota note max once across all image slots/variants
@@ -6374,18 +6462,15 @@ async function _runPipelinePhase1(mkt, opts) {
     _pipelineSetStep(2, 'done', 'Plans locked — A: ' + (planA.sections||[]).length + ' sections · B: ' + (planB.sections||[]).length + ' sections');
     _pipelineLog(2, 'Plans locked', 'ok');
 
-    // ─── Stage 3: Images (parallel — image API has separate rate limits) ──
-    _pipelineSetStep(3, 'active', 'Generating images (hero+product+lifestyle) via AI...');
-    _pipelineLog(3, 'Image generation: 3 slots × 2 variants = 6 total', '');
-    var stylelock = strategy.image_style_lock || '';
-    var [imgsA, imgsB] = await Promise.all([
-      _generateImagesForVariant(planA.image_requirements || [], 'A', stylelock),
-      _generateImagesForVariant(planB.image_requirements || [], 'B', stylelock)
-    ]);
+    // ─── Stage 3: Product Images (from CSV catalog, NOT AI-generated) ──────
+    _pipelineSetStep(3, 'active', 'Collecting product images from catalog...');
+    _pipelineLog(3, 'Using real product images from catalog (not AI-generated)', '');
+    var imgsA = _collectProductImages(prods);
+    var imgsB = _collectProductImages(prods);
     var countA = Object.values(imgsA).filter(Boolean).length;
     var countB = Object.values(imgsB).filter(Boolean).length;
-    _pipelineSetStep(3, countA+countB > 0 ? 'done' : 'warn', 'A: '+countA+'/3 · B: '+countB+'/3 images');
-    _pipelineLog(3, 'Images: A='+countA+'/3, B='+countB+'/3', countA+countB > 0 ? 'ok' : 'warn');
+    _pipelineSetStep(3, countA > 0 ? 'done' : 'warn', countA + ' product images from catalog');
+    _pipelineLog(3, 'Product images collected: ' + countA + ' images', countA > 0 ? 'ok' : 'warn');
 
     // Store images in S
     if (!window.S.openaiImages) window.S.openaiImages = {};
@@ -6754,20 +6839,16 @@ async function _runPipeline(mkt, opts) {
 
     // ─── Stage 3: Images (A and B in parallel, 3 slots each) ─────────────
     // Multi-key cascade: OPENAI_API_KEY → OPENAI_API_KEY_2 → OPENAI_API_KEY_3 → Pollinations
-    // Each slot retried up to 3× if generation fails.
-    _pipelineSetStep(3, 'active', 'Generating images (hero+product+lifestyle) via AI...');
-    _pipelineLog(3, 'Image generation: 3 slots × 2 variants = 6 total · OpenAI keys cascade → Pollinations fallback', '');
+    // Stage 3: Product Images (from CSV catalog, NOT AI-generated)
+    _pipelineSetStep(3, 'active', 'Collecting product images from catalog...');
+    _pipelineLog(3, 'Using real product images from catalog (not AI-generated)', '');
 
-    var stylelock = strategy.image_style_lock || '';
-    var [imgsA, imgsB] = await Promise.all([
-      _generateImagesForVariant(planA.image_requirements || [], 'A', stylelock),
-      _generateImagesForVariant(planB.image_requirements || [], 'B', stylelock)
-    ]);
+    var imgsA = _collectProductImages(prods);
+    var imgsB = _collectProductImages(prods);
 
-    var countA = Object.values(imgsA).filter(Boolean).length;
-    var countB = Object.values(imgsB).filter(Boolean).length;
-    _pipelineSetStep(3, countA+countB > 0 ? 'done' : 'warn', 'A: '+countA+'/3 · B: '+countB+'/3 images generated');
-    _pipelineLog(3, 'Images: A='+countA+'/3, B='+countB+'/3', countA+countB > 0 ? 'ok' : 'warn');
+    var countA = Object.values(imgsA).filter(function(v){ return v && typeof v === 'string'; }).length;
+    _pipelineSetStep(3, countA > 0 ? 'done' : 'warn', countA + ' product images from catalog');
+    _pipelineLog(3, 'Product images: ' + countA + ' from catalog', countA > 0 ? 'ok' : 'warn');
 
     // Store in S.openaiImages so the existing preview system can also use them
     if (!window.S.openaiImages) window.S.openaiImages = {};
@@ -6995,17 +7076,43 @@ async function _runPipeline(mkt, opts) {
 
   } catch (e) {
     console.error('[pipeline] Fatal:', e);
-    _PLN_RUNNING = false;
     var errMsg  = (e && e.message) ? e.message : String(e);
     var isAbort = errMsg.indexOf('Aborted') !== -1 || errMsg.indexOf('abort') !== -1;
     _pipelineLog(0, 'Pipeline error: ' + errMsg, 'error');
+
+    // Check if this is a quota/key exhaustion error — offer API key popup
+    var isQuotaErr = errMsg.indexOf('429') !== -1 || errMsg.indexOf('quota') !== -1 ||
+      errMsg.indexOf('billing') !== -1 || errMsg.indexOf('credit') !== -1 ||
+      errMsg.indexOf('exhausted') !== -1 || errMsg.indexOf('permission') !== -1 ||
+      errMsg.indexOf('403') !== -1 || errMsg.indexOf('heuristic') !== -1;
+
+    if (!isAbort && isQuotaErr && !_userGeminiKey) {
+      // Show API key popup — user can provide their own key to retry
+      _pipelineLog(0, 'API quota exhausted — requesting your Gemini API key to continue...', 'warn');
+      var userKey = await _showApiKeyPopup('All configured AI provider keys are exhausted (quota/billing). Provide your own Gemini API key to continue.');
+      if (userKey) {
+        _pipelineLog(0, 'User key provided — retrying pipeline...', 'ok');
+        // Retry the pipeline with user's key
+        try {
+          var retryMkt = (S._pendingMarkets && S._pendingMarkets[S._currentMarketIdx || 0]) ||
+                         (S._pendingHTMLMarkets && S._pendingHTMLMarkets[S._currentHTMLMarketIdx || 0]) || 'US';
+          if (S._outputMode === 'html') {
+            _runFullHTMLPipeline(retryMkt);
+          } else {
+            _runPipelinePhase1(retryMkt, { regenerate_counter: 0 });
+          }
+          return; // Don't show error — retrying
+        } catch (retryErr) {
+          console.error('[pipeline] Retry also failed:', retryErr);
+        }
+      }
+    }
+
+    _PLN_RUNNING = false;
     if (isAbort) {
-      // User-initiated cancel — close overlay and run template fallback immediately
       _showPipelineOverlay(false);
       approveAndBuild(true);
     } else {
-      // Real error — show persistent panel so the user can read the error
-      // Extract stage hint from the error message if available
       var stageHint = '';
       if (errMsg.indexOf('strategy') !== -1)      stageHint = ' (Stage 1 – Strategy)';
       else if (errMsg.indexOf('variant') !== -1)  stageHint = ' (Stage 2 – Variant Plan)';
@@ -7013,21 +7120,30 @@ async function _runPipeline(mkt, opts) {
       else if (errMsg.indexOf('html') !== -1)     stageHint = ' (Stage 4 – HTML)';
       else if (errMsg.indexOf('score') !== -1)    stageHint = ' (Stage 5 – Score)';
 
-      var suggestion = errMsg.indexOf('404') !== -1
-        ? 'Vercel may not have deployed the pipeline files yet. Wait 1-2 min and retry.'
+      var suggestion = isQuotaErr
+        ? 'API keys are exhausted. Click the button below or provide your own Gemini key.'
+        : errMsg.indexOf('404') !== -1
+        ? 'Vercel may not have deployed yet. Wait 1-2 min and retry.'
         : errMsg.indexOf('timeout') !== -1 || errMsg.indexOf('timed out') !== -1
-        ? 'An API call timed out. Check your OPENAI/GEMINI key limits and Vercel function maxDuration.'
-        : errMsg.indexOf('No LLM provider') !== -1 || errMsg.indexOf('API key') !== -1
-        ? 'Set GEMINI_API_KEY or OPENAI_API_KEY in Vercel dashboard → Settings → Environment Variables.'
+        ? 'An API call timed out. Try again or provide your own API key.'
         : 'Check Vercel function logs for details, or click "Use Template Fallback" to continue without AI.';
 
       _pipelineShowError(
         'Pipeline failed' + stageHint,
         errMsg,
-        suggestion
+        suggestion + (isQuotaErr ? ' <button onclick="_retryWithUserKey()" style="margin-top:8px;background:#d4873a;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:11px;font-weight:700;cursor:pointer">🔑 Provide Your API Key</button>' : '')
       );
     }
   }
+}
+
+async function _retryWithUserKey() {
+  var key = await _showApiKeyPopup('Provide your own Gemini API key to retry the pipeline.');
+  if (!key) return;
+  // Re-run the last CTA
+  if (S._outputMode === 'design') ctaCreateDesign();
+  else if (S._outputMode === 'html') ctaCreateHTML();
+  else if (S._outputMode === 'both') ctaCreateDesignAndHTML();
 }
 // ── End pipeline orchestrator ─────────────────────────────────────────────
 

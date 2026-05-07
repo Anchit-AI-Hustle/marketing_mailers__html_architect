@@ -37,7 +37,8 @@ module.exports = async function callLLM(opts) {
     maxTokens     = 2000,
     temperature   = 0.7,
     timeoutMs     = 30000,
-    stage         = 'llm'
+    stage         = 'llm',
+    userGeminiKey = ''
   } = opts;
 
   // APP_AI_PROVIDER env: force a specific provider first (skip others that waste time on 429/400)
@@ -51,7 +52,7 @@ module.exports = async function callLLM(opts) {
   ].filter(Boolean);
 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const geminiKey    = process.env.GEMINI_API_KEY;
+  const geminiKey    = userGeminiKey || process.env.GEMINI_API_KEY;
   const grokKey      = process.env.XAI_API_KEY;
 
   if (!openaiKeys.length && !anthropicKey && !geminiKey && !grokKey) {
@@ -371,5 +372,5 @@ module.exports.parseJSON = function parseJSON(text) {
 module.exports.corsHeaders = function corsHeaders(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-user-gemini-key');
 };

@@ -227,6 +227,8 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
 
+  const userGeminiKey = req.headers['x-user-gemini-key'] || '';
+
   let body = req.body;
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch (_) { return res.status(400).json({ error: 'invalid_json' }); }
@@ -277,7 +279,8 @@ Run Phase 1 → Phase 2 now. Think deeply before locking. Every field matters.`;
       maxTokens: 3000,
       temperature: 0.65 + Math.min(0.3, regenerate_counter * 0.1),
       timeoutMs: 38000,        // 38s internal; vercel maxDuration 45s (7s headroom)
-      stage: 'strategy[regen=' + regenerate_counter + ']'
+      stage: 'strategy[regen=' + regenerate_counter + ']',
+      userGeminiKey
     });
 
     let parsed;
