@@ -236,12 +236,13 @@ module.exports = async function handler(req, res) {
   // 'gemini+' = Gemini first, then Groq+Cerebras as backup (skip paid providers)
   const preferredProvider = (process.env.APP_AI_PROVIDER || '').toLowerCase().trim();
   const isGeminiPlus = preferredProvider === 'gemini+';
-  const skipOpenai    = preferredProvider && preferredProvider !== 'openai' && !isGeminiPlus;
-  const skipAnthropic = preferredProvider && preferredProvider !== 'anthropic' && !isGeminiPlus;
-  const skipGemini    = preferredProvider && preferredProvider !== 'gemini' && !isGeminiPlus;
-  const skipGrok      = preferredProvider && preferredProvider !== 'grok' && !isGeminiPlus;
-  const skipGroq      = preferredProvider && preferredProvider !== 'groq' && !isGeminiPlus;
-  const skipCerebras  = preferredProvider && preferredProvider !== 'cerebras' && !isGeminiPlus;
+  // 'gemini+' = use Gemini + Groq + Cerebras only (skip paid providers with dead credits)
+  const skipOpenai    = isGeminiPlus ? true  : (preferredProvider && preferredProvider !== 'openai');
+  const skipAnthropic = isGeminiPlus ? true  : (preferredProvider && preferredProvider !== 'anthropic');
+  const skipGemini    = isGeminiPlus ? false : (preferredProvider && preferredProvider !== 'gemini');
+  const skipGrok      = isGeminiPlus ? true  : (preferredProvider && preferredProvider !== 'grok');
+  const skipGroq      = isGeminiPlus ? false : (preferredProvider && preferredProvider !== 'groq');
+  const skipCerebras  = isGeminiPlus ? false : (preferredProvider && preferredProvider !== 'cerebras');
 
   const provider  = (!skipOpenai && openaiKey) ? 'openai'
                   : (!skipAnthropic && anthropicKey) ? 'anthropic'

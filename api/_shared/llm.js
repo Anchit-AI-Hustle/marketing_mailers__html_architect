@@ -67,13 +67,14 @@ module.exports = async function callLLM(opts) {
 
   // When a preferred provider is set, skip others to avoid wasting time on failed providers
   // Special: 'gemini+' means Gemini first, then Groq+Cerebras as backup (skip OpenAI/Anthropic/Grok)
+  // 'gemini+' = use Gemini + Groq + Cerebras only (skip paid providers with dead credits)
   const isGeminiPlus = preferredProvider === 'gemini+';
-  const skipOpenai    = preferredProvider && preferredProvider !== 'openai' && !isGeminiPlus;
-  const skipAnthropic = preferredProvider && preferredProvider !== 'anthropic' && !isGeminiPlus;
-  const skipGemini    = preferredProvider && preferredProvider !== 'gemini' && !isGeminiPlus;
-  const skipGrok      = preferredProvider && preferredProvider !== 'grok' && !isGeminiPlus;
-  const skipGroq      = preferredProvider && preferredProvider !== 'groq' && !isGeminiPlus;
-  const skipCerebras  = preferredProvider && preferredProvider !== 'cerebras' && !isGeminiPlus;
+  const skipOpenai    = isGeminiPlus ? true  : (preferredProvider && preferredProvider !== 'openai');
+  const skipAnthropic = isGeminiPlus ? true  : (preferredProvider && preferredProvider !== 'anthropic');
+  const skipGemini    = isGeminiPlus ? false : (preferredProvider && preferredProvider !== 'gemini');
+  const skipGrok      = isGeminiPlus ? true  : (preferredProvider && preferredProvider !== 'grok');
+  const skipGroq      = isGeminiPlus ? false : (preferredProvider && preferredProvider !== 'groq');
+  const skipCerebras  = isGeminiPlus ? false : (preferredProvider && preferredProvider !== 'cerebras');
 
   const seed             = genSeed();
   const seededUserMessage = userMessage + '\n\n<!-- gen_seed:' + seed + ' -->';
