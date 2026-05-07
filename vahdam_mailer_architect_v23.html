@@ -104,7 +104,7 @@ body{font-family:DM Sans,sans-serif;background:var(--bg);background-image:radial
 .app-hdr-logout:hover{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.85)}
 
 /* ── Page body ─────────────────────────────────────────────────────────────── */
-.app{max-width:900px;margin:0 auto;padding:28px 20px 80px}
+.app{max-width:1140px;margin:0 auto;padding:28px 20px 80px}
 /* Keep .site-hdr for compat but hide it — nav is in header now */
 .site-hdr{display:none}
 
@@ -416,6 +416,98 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 }
 .dash-card:hover{box-shadow:var(--shadow-md)}
 
+/* ── Studio Input Page — two-column layout ─────────────────────────────────── */
+.studio-layout{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+.studio-left{min-width:0}
+.studio-right{position:sticky;top:calc(var(--hdr) + 20px)}
+/* ── Selected Products Widget ──────────────────────────────────────────────── */
+.sel-widget{
+  background:#fff;border:1.5px solid var(--border);border-radius:var(--r2);
+  overflow:hidden;box-shadow:var(--shadow-sm);margin-bottom:16px
+}
+.sel-widget-hdr{
+  background:linear-gradient(135deg,var(--g3),var(--g));padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between
+}
+.sel-widget-hdr-title{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold2)}
+.sel-widget-hdr-count{font-size:11px;font-weight:700;color:#fdf6e8;background:rgba(255,255,255,0.15);padding:2px 10px;border-radius:12px}
+.sel-widget-body{padding:12px;max-height:340px;overflow-y:auto}
+.sel-widget-empty{text-align:center;padding:24px 12px;color:#9ca3af;font-size:11px;line-height:1.6}
+.sel-widget-item{
+  display:flex;align-items:center;gap:8px;padding:6px 8px;
+  border:1px solid var(--border);border-radius:8px;margin-bottom:6px;
+  background:#fafaf8;transition:all .15s;position:relative
+}
+.sel-widget-item:hover{border-color:var(--g);background:var(--lightg)}
+.sel-widget-item img{width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0}
+.sel-widget-item .swi-name{font-size:10px;font-weight:600;color:#374151;line-height:1.3;flex:1;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sel-widget-item .swi-remove{
+  width:18px;height:18px;border-radius:50%;background:transparent;border:1px solid #ddd;
+  font-size:10px;color:#999;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .15s;line-height:1
+}
+.sel-widget-item .swi-remove:hover{background:#fef2f2;border-color:#fca5a5;color:#dc2626}
+/* ── Three CTA Buttons ─────────────────────────────────────────────────────── */
+.cta-trio{display:flex;flex-direction:column;gap:10px;margin-top:0}
+.cta-trio-btn{
+  display:flex;align-items:center;gap:12px;padding:14px 18px;
+  border-radius:12px;cursor:pointer;font-family:DM Sans,sans-serif;
+  border:1.5px solid transparent;transition:all .22s;text-align:left;position:relative;overflow:hidden
+}
+.cta-trio-btn::before{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;
+  transition:opacity .22s;border-radius:11px
+}
+.cta-trio-btn:hover::before{opacity:1}
+.cta-trio-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.cta-trio-btn[disabled]{opacity:0.5;pointer-events:none;transform:none!important;box-shadow:none!important}
+.cta-design{
+  background:linear-gradient(135deg,#0f2a1c,#1a4a30);color:#fdf6e8;
+  border-color:rgba(212,135,58,0.3)
+}
+.cta-design::before{background:linear-gradient(135deg,#143322,#1f5c3a)}
+.cta-html{
+  background:linear-gradient(135deg,#1a1040,#2d1b69);color:#fdf6e8;
+  border-color:rgba(124,58,237,0.3)
+}
+.cta-html::before{background:linear-gradient(135deg,#221456,#3a2480)}
+.cta-both{
+  background:linear-gradient(135deg,#7a3e10,#c76b1a);color:#fff;
+  border-color:rgba(212,135,58,0.5)
+}
+.cta-both::before{background:linear-gradient(135deg,#8f4a15,#d4873a)}
+.cta-trio-icon{font-size:22px;flex-shrink:0;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1)}
+.cta-trio-text{flex:1;min-width:0}
+.cta-trio-title{font-size:13px;font-weight:700;letter-spacing:0.02em;margin-bottom:2px}
+.cta-trio-sub{font-size:10px;opacity:0.7;line-height:1.4}
+.cta-trio-arrow{font-size:16px;opacity:0.5;flex-shrink:0;transition:transform .22s}
+.cta-trio-btn:hover .cta-trio-arrow{transform:translateX(3px);opacity:1}
+/* ── Output page header ───────────────────────────────────────────────────── */
+.output-hdr{
+  background:linear-gradient(135deg,var(--g3) 0%,var(--g) 55%,#006b3e 100%);
+  padding:22px 28px 18px;position:relative;overflow:hidden;border-radius:var(--r2) var(--r2) 0 0
+}
+.output-hdr .oh-circle1{position:absolute;top:-20px;right:-20px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.04)}
+.output-hdr .oh-circle2{position:absolute;bottom:-30px;right:40px;width:80px;height:80px;border-radius:50%;background:rgba(171,135,67,0.12)}
+/* ── Output variant cards ─────────────────────────────────────────────────── */
+.output-variant-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px}
+.output-variant-card{
+  background:#fff;border:1.5px solid var(--border);border-radius:14px;
+  overflow:hidden;transition:all .2s;box-shadow:var(--shadow-sm)
+}
+.output-variant-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.ovc-hdr{padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:#fafaf8}
+.ovc-badge{font-size:9px;font-weight:800;color:#fff;padding:3px 10px;border-radius:4px;letter-spacing:0.16em}
+.ovc-badge-a{background:#0f2a1c}
+.ovc-badge-b{background:#d4873a}
+.ovc-label{font-size:12px;font-weight:700;color:#374151}
+.ovc-market{font-size:9px;font-weight:600;background:var(--lightg);color:var(--g);padding:2px 8px;border-radius:8px;margin-left:auto}
+.ovc-preview{width:100%;height:220px;border:0;background:#f5f0e8;display:block}
+.ovc-actions{padding:10px 14px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--border)}
+/* ── Catalog section inside input page ─────────────────────────────────────── */
+.catalog-section{margin-top:20px;border-top:1px solid var(--border);padding-top:18px}
+.catalog-section .cat-grid{max-height:300px}
+
 /* ── Responsive ─────────────────────────────────────────────────────────────── */
 @media(max-width:768px){
   .app{padding:16px 14px 60px}
@@ -443,6 +535,10 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   .app-hdr-nav{display:none}
   #mobileNav{display:flex!important;gap:4px}
   .app-hdr-greet{font-size:11px}
+  .studio-layout{grid-template-columns:1fr}
+  .studio-right{position:static}
+  .sel-widget-body{max-height:200px}
+  .output-variant-grid{grid-template-columns:1fr}
 }
 @media(max-width:420px){
   .app{padding:12px 10px 50px}
@@ -485,6 +581,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 @keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .panel{animation:fadeUp .25s ease both}
+#stepFlow { display: none !important; }
 </style>
 </head>
 <body>
@@ -720,6 +817,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   </div>
 </div>
 <div id="createView">
+<!-- Step wizard kept as hidden compat shim — JS still references sn1-sn4 -->
 <div class="steps" id="stepFlow">
   <div class="step"><div class="step-n active" id="sn1">1</div><div class="step-l active" id="sl1">Input</div></div>
   <div class="step-line" id="sc1"></div>
@@ -729,6 +827,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   <div class="step-line" id="sc3"></div>
   <div class="step"><div class="step-n" id="sn4">4</div><div class="step-l" id="sl4">Mailer</div></div>
 </div>
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- UNIFIED INPUT PAGE (p1) — Campaign Brief + Products + 3 CTAs              -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <div id="p1" class="panel" style="padding:0;overflow:hidden">
 
   <!-- Panel hero strip -->
@@ -737,186 +838,227 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     <div style="position:absolute;bottom:-30px;right:40px;width:80px;height:80px;border-radius:50%;background:rgba(171,135,67,0.12)"></div>
     <div style="position:relative">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-        <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0">1</div>
-        <span style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.6)">Campaign Brief</span>
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.6)">Mailer Studio</span>
       </div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#fdf6e8;margin-bottom:6px;line-height:1.2">What are we sending today?</div>
-      <p style="font-size:12px;color:rgba(251,245,234,0.7);margin:0;line-height:1.6;max-width:520px">Describe your campaign below. Market and campaign type will <strong style="color:#c9a05a">auto-detect</strong> from your description, or set them manually.</p>
+      <p style="font-size:12px;color:rgba(251,245,234,0.7);margin:0;line-height:1.6;max-width:520px">Describe your campaign, select products, and generate mailer designs, HTML, or both.</p>
     </div>
   </div>
 
-  <!-- Form body -->
-  <div style="padding:24px 28px">
+  <!-- Two-column layout -->
+  <div class="studio-layout" style="padding:24px 28px">
 
-    <!-- ① Campaign Description — PRIMARY INPUT (top) -->
-    <div class="field" style="margin-bottom:18px">
-      <label style="display:flex;align-items:center;justify-content:space-between">
-        <span>Campaign Description <span class="req">*</span></span>
-        <span style="font-size:9px;font-weight:500;letter-spacing:0;color:#bbb;text-transform:none" id="promptCharCount"></span>
-      </label>
-      <textarea id="promptIn"
-        style="min-height:120px;font-size:13px;line-height:1.7"
-        oninput="(function(el){var c=document.getElementById('promptCharCount');if(c)c.textContent=el.value.length+' chars';_updateSmartAIBtn(el.value.trim().length>0);_debouncedAutoDetect(el.value);})(this)"
-        placeholder="e.g. 20% off all turmeric &amp; ginger teas with code DETOX20. Focus on gut health, daily wellness ritual, natural ingredients. Free shipping on orders over $49. Warm, inspiring tone."></textarea>
-      <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap">
-        <button class="btn-enhance" id="smartAIBtn" onclick="smartAIBrief(event)" style="background:linear-gradient(135deg,#0f2a1c,#1a3a28);color:#fdf6e8;border:1.5px solid #d4873a">&#127775; Create Brief with AI</button>
-        <span id="smartAIHint" style="font-size:11px;color:#9ca3af;flex:1">Empty → AI writes a director-grade brief from scratch. Already typed something → AI enhances it with D2C growth strategy.</span>
-      </div>
-      <!-- Brief creation inline progress — shown while AI is running -->
-      <div id="briefProgressPanel" style="display:none;margin-top:12px;background:linear-gradient(135deg,#f8f4ee,#fdf6e8);border:1.5px solid #d4873a;border-radius:10px;overflow:hidden">
-        <div style="background:linear-gradient(90deg,#0c2218,#193d28);padding:8px 14px;display:flex;align-items:center;justify-content:space-between">
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="width:14px;height:14px;border:2px solid rgba(212,135,58,0.3);border-top-color:#d4873a;border-radius:50%;animation:spin 0.75s linear infinite"></div>
-            <span style="font-size:9px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#d4873a" id="briefProgressTitle">Creating Brief</span>
-          </div>
-          <span id="briefProgressElapsed" style="font-size:9px;color:rgba(253,246,232,0.4);font-family:monospace">0:00</span>
+    <!-- ═══ LEFT COLUMN — Brief + Settings + Products ═══ -->
+    <div class="studio-left">
+
+      <!-- ① Campaign Description — PRIMARY INPUT -->
+      <div class="field" style="margin-bottom:14px">
+        <label style="display:flex;align-items:center;justify-content:space-between">
+          <span>Campaign Description <span class="req">*</span></span>
+          <span style="font-size:9px;font-weight:500;letter-spacing:0;color:#bbb;text-transform:none" id="promptCharCount"></span>
+        </label>
+        <textarea id="promptIn"
+          style="min-height:120px;font-size:13px;line-height:1.7"
+          oninput="(function(el){var c=document.getElementById('promptCharCount');if(c)c.textContent=el.value.length+' chars';_updateSmartAIBtn(el.value.trim().length>0);_debouncedAutoDetect(el.value);})(this)"
+          placeholder="e.g. 20% off all turmeric &amp; ginger teas with code DETOX20. Focus on gut health, daily wellness ritual, natural ingredients. Free shipping on orders over $49. Warm, inspiring tone."></textarea>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn-enhance" id="smartAIBtn" onclick="smartAIBrief(event)" style="background:linear-gradient(135deg,#0f2a1c,#1a3a28);color:#fdf6e8;border:1.5px solid #d4873a">&#127775; Create Brief with AI</button>
+          <span id="smartAIHint" style="font-size:11px;color:#9ca3af;flex:1">Empty → AI creates a director-grade brief from scratch. Has text → AI enhances it.</span>
         </div>
-        <div style="background:#1a3a28;height:3px"><div id="briefProgressFill" style="height:100%;background:linear-gradient(90deg,#d4873a,#e6a234);width:10%;transition:width 0.5s ease"></div></div>
-        <div id="briefProgressSteps" style="padding:10px 14px;display:flex;flex-direction:column;gap:3px"></div>
+        <!-- Brief creation inline progress -->
+        <div id="briefProgressPanel" style="display:none;margin-top:12px;background:linear-gradient(135deg,#f8f4ee,#fdf6e8);border:1.5px solid #d4873a;border-radius:10px;overflow:hidden">
+          <div style="background:linear-gradient(90deg,#0c2218,#193d28);padding:8px 14px;display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:14px;height:14px;border:2px solid rgba(212,135,58,0.3);border-top-color:#d4873a;border-radius:50%;animation:spin 0.75s linear infinite"></div>
+              <span style="font-size:9px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#d4873a" id="briefProgressTitle">Creating Brief</span>
+            </div>
+            <span id="briefProgressElapsed" style="font-size:9px;color:rgba(253,246,232,0.4);font-family:monospace">0:00</span>
+          </div>
+          <div style="background:#1a3a28;height:3px"><div id="briefProgressFill" style="height:100%;background:linear-gradient(90deg,#d4873a,#e6a234);width:10%;transition:width 0.5s ease"></div></div>
+          <div id="briefProgressSteps" style="padding:10px 14px;display:flex;flex-direction:column;gap:3px"></div>
+        </div>
       </div>
-    </div>
 
-    <!-- ② Divider — Campaign Settings -->
-    <div style="height:1px;background:var(--border);margin-bottom:18px;position:relative">
-      <span style="position:absolute;top:-8px;left:0;background:#fff;padding:0 10px 0 0;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#d1d5db">Campaign Settings</span>
-    </div>
+      <!-- ② Suggested prompts — RIGHT BELOW prompt field -->
+      <div class="sugg-wrap" style="margin-bottom:18px">
+        <div class="sugg-hdr" onclick="toggleSuggestedPrompts()">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--g),#006b3e);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">&#128161;</div>
+            <div>
+              <div class="sugg-hdr-lbl">Suggested Campaign Prompts <span style="font-size:9px;font-weight:700;background:#0f2a1c;color:#d4873a;padding:2px 6px;border-radius:4px;letter-spacing:0.1em;vertical-align:middle">KB</span></div>
+              <div class="sugg-hdr-sub">Pre-built director briefs — click to load, then generate</div>
+            </div>
+          </div>
+          <span class="sugg-arrow" id="suggArrow">&#9660;</span>
+        </div>
+        <div id="suggGrid" class="sugg-grid" style="display:none"></div>
+      </div>
 
-    <!-- ③ Target Market — BELOW prompt -->
-    <div style="margin-bottom:16px">
-      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
-        <label style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin:0">Target Market <span class="req">*</span></label>
-        <span id="mktAutoTag" style="display:none;font-size:8px;font-weight:700;background:#d4873a;color:#fff;padding:1px 6px;border-radius:4px;letter-spacing:0.06em">AUTO-DETECTED</span>
-        <span style="font-size:10px;color:#9ca3af;font-weight:400">Multi-select — each market gets its own mailer</span>
+      <!-- ③ Divider — Campaign Settings -->
+      <div style="height:1px;background:var(--border);margin-bottom:18px;position:relative">
+        <span style="position:absolute;top:-8px;left:0;background:#fff;padding:0 10px 0 0;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#d1d5db">Campaign Settings</span>
       </div>
-      <div class="mkt-chips" id="mktChips">
-        <button class="mkt-chip on" data-mkt="US" onclick="toggleMarket('US',this)">&#127482;&#127480; United States</button>
-        <button class="mkt-chip" data-mkt="UK" onclick="toggleMarket('UK',this)">&#127468;&#127463; United Kingdom</button>
-        <button class="mkt-chip" data-mkt="IN" onclick="toggleMarket('IN',this)">&#127470;&#127475; India</button>
-        <button class="mkt-chip" data-mkt="Global" onclick="toggleMarket('Global',this)">&#127758; Global</button>
-        <button class="mkt-chip" data-mkt="ME" onclick="toggleMarket('ME',this)">&#127462;&#127466; Middle East</button>
-        <button class="mkt-chip" data-mkt="AU" onclick="toggleMarket('AU',this)">&#127462;&#127482; Australia</button>
-        <button class="mkt-chip" data-mkt="EU" onclick="toggleMarket('EU',this)">&#127466;&#127482; Europe</button>
-      </div>
-    </div>
 
-    <!-- ④ Campaign Type — BELOW market -->
-    <div style="margin-bottom:20px">
-      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
-        <label style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin:0">Campaign Type</label>
-        <span id="typeAutoTag" style="display:none;font-size:8px;font-weight:700;background:#d4873a;color:#fff;padding:1px 6px;border-radius:4px;letter-spacing:0.06em">AUTO-DETECTED</span>
-        <span style="font-size:10px;color:#9ca3af;font-weight:400">Auto-detects from your description</span>
+      <!-- ④ Target Market -->
+      <div style="margin-bottom:16px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+          <label style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin:0">Target Market <span class="req">*</span></label>
+          <span id="mktAutoTag" style="display:none;font-size:8px;font-weight:700;background:#d4873a;color:#fff;padding:1px 6px;border-radius:4px;letter-spacing:0.06em">AUTO-DETECTED</span>
+          <span style="font-size:10px;color:#9ca3af;font-weight:400">Multi-select — each market gets its own mailer</span>
+        </div>
+        <div class="mkt-chips" id="mktChips">
+          <button class="mkt-chip on" data-mkt="US" onclick="toggleMarket('US',this)">&#127482;&#127480; United States</button>
+          <button class="mkt-chip" data-mkt="UK" onclick="toggleMarket('UK',this)">&#127468;&#127463; United Kingdom</button>
+          <button class="mkt-chip" data-mkt="IN" onclick="toggleMarket('IN',this)">&#127470;&#127475; India</button>
+          <button class="mkt-chip" data-mkt="Global" onclick="toggleMarket('Global',this)">&#127758; Global</button>
+          <button class="mkt-chip" data-mkt="ME" onclick="toggleMarket('ME',this)">&#127462;&#127466; Middle East</button>
+          <button class="mkt-chip" data-mkt="AU" onclick="toggleMarket('AU',this)">&#127462;&#127482; Australia</button>
+          <button class="mkt-chip" data-mkt="EU" onclick="toggleMarket('EU',this)">&#127466;&#127482; Europe</button>
+        </div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap" id="typeChips">
-        <button class="type-chip on" data-type="" onclick="selectType('',this);S._typeManual=false;">&#x1F916; Auto</button>
-        <button class="type-chip" data-type="Sale" onclick="selectType('Sale',this);S._typeManual=true;">&#127991; Sale</button>
-        <button class="type-chip" data-type="Launch" onclick="selectType('Launch',this);S._typeManual=true;">&#x1F680; Launch</button>
-        <button class="type-chip" data-type="Seasonal" onclick="selectType('Seasonal',this);S._typeManual=true;">&#127807; Seasonal</button>
-        <button class="type-chip" data-type="Bestseller" onclick="selectType('Bestseller',this);S._typeManual=true;">&#11088; Bestsellers</button>
-        <button class="type-chip" data-type="Gift" onclick="selectType('Gift',this);S._typeManual=true;">&#127873; Gifting</button>
-        <button class="type-chip" data-type="Discovery" onclick="selectType('Discovery',this);S._typeManual=true;">&#129514; Discovery</button>
-        <button class="type-chip" data-type="Routine" onclick="selectType('Routine',this);S._typeManual=true;">&#127774; Routine</button>
-        <button class="type-chip" data-type="Story" onclick="selectType('Story',this);S._typeManual=true;">&#128216; Brand Story</button>
-      </div>
-      <!-- Hidden select kept for JS compat -->
-      <select id="typeIn" style="display:none">
-        <option value="">Auto-detect</option>
-        <option value="Sale">Sale / Offer</option>
-        <option value="Launch">New Launch</option>
-        <option value="Seasonal">Seasonal</option>
-        <option value="Bestseller">Bestsellers</option>
-        <option value="Gift">Gifting</option>
-        <option value="Discovery">Discovery / Sampler</option>
-        <option value="Routine">Daily Routine</option>
-        <option value="Story">Brand Story</option>
-      </select>
-    </div>
 
-    <!-- ⑤ Suggested prompts accordion -->
-    <div class="sugg-wrap" style="margin-bottom:22px">
-      <div class="sugg-hdr" onclick="toggleSuggestedPrompts()">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--g),#006b3e);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">&#128161;</div>
+      <!-- ⑤ Campaign Type -->
+      <div style="margin-bottom:20px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
+          <label style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin:0">Campaign Type</label>
+          <span id="typeAutoTag" style="display:none;font-size:8px;font-weight:700;background:#d4873a;color:#fff;padding:1px 6px;border-radius:4px;letter-spacing:0.06em">AUTO-DETECTED</span>
+          <span style="font-size:10px;color:#9ca3af;font-weight:400">Auto-detects from your description</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="typeChips">
+          <button class="type-chip on" data-type="" onclick="selectType('',this);S._typeManual=false;">&#x1F916; Auto</button>
+          <button class="type-chip" data-type="Sale" onclick="selectType('Sale',this);S._typeManual=true;">&#127991; Sale</button>
+          <button class="type-chip" data-type="Launch" onclick="selectType('Launch',this);S._typeManual=true;">&#x1F680; Launch</button>
+          <button class="type-chip" data-type="Seasonal" onclick="selectType('Seasonal',this);S._typeManual=true;">&#127807; Seasonal</button>
+          <button class="type-chip" data-type="Bestseller" onclick="selectType('Bestseller',this);S._typeManual=true;">&#11088; Bestsellers</button>
+          <button class="type-chip" data-type="Gift" onclick="selectType('Gift',this);S._typeManual=true;">&#127873; Gifting</button>
+          <button class="type-chip" data-type="Discovery" onclick="selectType('Discovery',this);S._typeManual=true;">&#129514; Discovery</button>
+          <button class="type-chip" data-type="Routine" onclick="selectType('Routine',this);S._typeManual=true;">&#127774; Routine</button>
+          <button class="type-chip" data-type="Story" onclick="selectType('Story',this);S._typeManual=true;">&#128216; Brand Story</button>
+        </div>
+        <select id="typeIn" style="display:none">
+          <option value="">Auto-detect</option>
+          <option value="Sale">Sale / Offer</option>
+          <option value="Launch">New Launch</option>
+          <option value="Seasonal">Seasonal</option>
+          <option value="Bestseller">Bestsellers</option>
+          <option value="Gift">Gifting</option>
+          <option value="Discovery">Discovery / Sampler</option>
+          <option value="Routine">Daily Routine</option>
+          <option value="Story">Brand Story</option>
+        </select>
+      </div>
+
+      <!-- ⑥ Product Catalog — embedded in input page -->
+      <div class="catalog-section">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap">
           <div>
-            <div class="sugg-hdr-lbl">Suggested Campaign Prompts <span style="font-size:9px;font-weight:700;background:#0f2a1c;color:#d4873a;padding:2px 6px;border-radius:4px;letter-spacing:0.1em;vertical-align:middle">✨ AI</span></div>
-            <div class="sugg-hdr-sub">Opens with AI-generated director briefs based on your market &amp; campaign type</div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#6b7280;margin-bottom:3px">Select Products</div>
+            <p style="font-size:11px;color:#9ca3af;margin:0;line-height:1.5">Browse and select products, or leave empty for AI auto-pick</p>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-outline btn-sm" onclick="activateAutoPick()" style="gap:4px">&#10024; Auto-Pick</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearSel()">Clear</button>
           </div>
         </div>
-        <span class="sugg-arrow" id="suggArrow">&#9660;</span>
-      </div>
-      <div id="suggGrid" class="sugg-grid" style="display:none"></div>
-    </div>
-
-    <!-- ⑥ CTA — Select Products -->
-    <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center;gap:10px;font-size:14px" onclick="go2()">
-      <span>Select Products</span>
-      <span style="font-size:18px;line-height:1">&rarr;</span>
-    </button>
-    <p style="text-align:center;font-size:11px;color:#bbb;margin:10px 0 0;line-height:1.5">
-      Products will be auto-picked based on your campaign description. You can edit the selection in the next step.
-    </p>
-
-  </div>
-</div>
-<div id="p2" class="panel" style="display:none">
-  <div class="plbl">Step 2 — Choose Products</div>
-  <!-- Campaign context injected by go2() -->
-  <div id="p2CampaignCtx" style="display:none;background:linear-gradient(90deg,#0f2a1c,#1a3a28);border-radius:10px;padding:12px 16px;margin-bottom:16px;align-items:flex-start;gap:12px;flex-wrap:wrap"></div>
-
-  <!-- AI Strategy Banner — shown while strategy is loading / when it's ready -->
-  <div id="p2AIPlanning" style="display:none;margin-bottom:16px;border-radius:10px;overflow:hidden;border:1.5px solid #d4873a">
-    <!-- Loading state -->
-    <div id="p2AIPlanningLoading" style="background:linear-gradient(90deg,#0f2a1c,#1a3a28);padding:0;display:flex;flex-direction:column;gap:0">
-      <!-- Header row -->
-      <div style="padding:11px 16px 10px;display:flex;align-items:center;gap:10px">
-        <div style="width:18px;height:18px;border:2.5px solid rgba(212,135,58,0.3);border-top-color:#d4873a;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0"></div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:9.5px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#d4873a;margin-bottom:2px">✦ AI Decision Engine — Stage 1 of 5</div>
-          <div id="p2AIPlanStatus" style="font-size:11px;color:rgba(253,246,232,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Reading your brief &amp; market context…</div>
+        <!-- AI Strategy Banner -->
+        <div id="p2AIPlanning" style="display:none;margin-bottom:12px;border-radius:10px;overflow:hidden;border:1.5px solid #d4873a">
+          <div id="p2AIPlanningLoading" style="background:linear-gradient(90deg,#0f2a1c,#1a3a28);padding:0;display:flex;flex-direction:column;gap:0">
+            <div style="padding:11px 16px 10px;display:flex;align-items:center;gap:10px">
+              <div style="width:18px;height:18px;border:2.5px solid rgba(212,135,58,0.3);border-top-color:#d4873a;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0"></div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:9.5px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#d4873a;margin-bottom:2px">AI Decision Engine</div>
+                <div id="p2AIPlanStatus" style="font-size:11px;color:rgba(253,246,232,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Reading your brief &amp; market context...</div>
+              </div>
+              <div id="p2AIPlanElapsed" style="font-size:10px;color:rgba(212,135,58,0.7);font-variant-numeric:tabular-nums;flex-shrink:0">0:00</div>
+            </div>
+            <div style="padding:0 16px 10px;display:flex;gap:6px;align-items:center">
+              <div class="p2-mstep" id="p2ms1" style="flex:1;height:3px;border-radius:2px;background:rgba(212,135,58,0.5);transition:background 0.4s"></div>
+              <div class="p2-mstep" id="p2ms2" style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.12);transition:background 0.4s"></div>
+              <div class="p2-mstep" id="p2ms3" style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.12);transition:background 0.4s"></div>
+              <div class="p2-mstep" id="p2ms4" style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.12);transition:background 0.4s"></div>
+              <div class="p2-mstep" id="p2ms5" style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.12);transition:background 0.4s"></div>
+            </div>
+          </div>
+          <div id="p2AIStrategyReady" style="display:none;background:#f0faf4;padding:12px 16px">
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#0f2a1c;margin-bottom:6px">Strategy Locked</div>
+            <div id="p2AIStrategyText" style="font-size:12px;color:#1a3a28;line-height:1.6"></div>
+            <div id="p2AIProductsPicked" style="margin-top:8px;font-size:11px;color:#4a7a5a;line-height:1.5"></div>
+          </div>
         </div>
-        <div id="p2AIPlanElapsed" style="font-size:10px;color:rgba(212,135,58,0.7);font-variant-numeric:tabular-nums;flex-shrink:0">0:00</div>
+        <div class="sel-info" id="selInfo">0 products selected (AI will auto-pick based on strategy)</div>
+        <div class="cat-filter" id="catFilter">
+          <button class="cfbtn on" onclick="filterCat('all',this)">All</button>
+          <button class="cfbtn" onclick="filterCat('bestseller',this)">Bestsellers</button>
+          <button class="cfbtn" onclick="filterCat('black',this)">Black Tea</button>
+          <button class="cfbtn" onclick="filterCat('green',this)">Green Tea</button>
+          <button class="cfbtn" onclick="filterCat('chai',this)">Chai</button>
+          <button class="cfbtn" onclick="filterCat('detox',this)">Detox</button>
+          <button class="cfbtn" onclick="filterCat('immunity',this)">Immunity</button>
+          <button class="cfbtn" onclick="filterCat('gift',this)">Gift Sets</button>
+          <button class="cfbtn" onclick="filterCat('discovery',this)">Discovery</button>
+          <button class="cfbtn" onclick="filterCat('premium',this)">Premium</button>
+          <button class="cfbtn" onclick="filterCat('sleep',this)">Sleep</button>
+          <button class="cfbtn" onclick="filterCat('summer',this)">Summer</button>
+        </div>
+        <div class="cat-grid" id="catGrid"></div>
       </div>
-      <!-- Micro-steps track -->
-      <div style="padding:0 16px 10px;display:flex;gap:6px;align-items:center">
-        <div class="p2-mstep" id="p2ms1" style="flex:1;height:3px;border-radius:2px;background:rgba(212,135,58,0.5);transition:background 0.4s"></div>
-        <div class="p2-mstep" id="p2ms2" style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.12);transition:background 0.4s"></div>
-        <div class="p2-mstep" id="p2ms3" style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.12);transition:background 0.4s"></div>
-        <div class="p2-mstep" id="p2ms4" style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.12);transition:background 0.4s"></div>
-        <div class="p2-mstep" id="p2ms5" style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.12);transition:background 0.4s"></div>
-      </div>
-    </div>
-    <!-- Ready state (hidden until strategy loads) -->
-    <div id="p2AIStrategyReady" style="display:none;background:#f0faf4;padding:12px 16px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#0f2a1c;margin-bottom:6px">✓ Campaign Strategy Locked</div>
-      <div id="p2AIStrategyText" style="font-size:12px;color:#1a3a28;line-height:1.6"></div>
-      <div id="p2AIProductsPicked" style="margin-top:8px;font-size:11px;color:#4a7a5a;line-height:1.5"></div>
-    </div>
-  </div>
 
-  <p style="font-size:12px;color:#888;margin-top:-4px;margin-bottom:14px;line-height:1.6">Browse and select products for your mailer — or leave empty to let AI auto-pick based on the strategy above.</p>
-  <div class="sel-info" id="selInfo">0 products selected (AI will auto-pick based on strategy)</div>
-  <div class="cat-filter" id="catFilter">
-    <button class="cfbtn on" onclick="filterCat('all',this)">All</button>
-    <button class="cfbtn" onclick="filterCat('bestseller',this)">Bestsellers</button>
-    <button class="cfbtn" onclick="filterCat('black',this)">Black Tea</button>
-    <button class="cfbtn" onclick="filterCat('green',this)">Green Tea</button>
-    <button class="cfbtn" onclick="filterCat('chai',this)">Chai</button>
-    <button class="cfbtn" onclick="filterCat('detox',this)">Detox</button>
-    <button class="cfbtn" onclick="filterCat('immunity',this)">Immunity</button>
-    <button class="cfbtn" onclick="filterCat('gift',this)">Gift Sets</button>
-    <button class="cfbtn" onclick="filterCat('discovery',this)">Discovery</button>
-    <button class="cfbtn" onclick="filterCat('premium',this)">Premium</button>
-    <button class="cfbtn" onclick="filterCat('sleep',this)">Sleep</button>
-    <button class="cfbtn" onclick="filterCat('summer',this)">Summer</button>
-  </div>
-  <div class="cat-grid" id="catGrid"></div>
-  <div class="btn-row">
-    <button class="btn btn-outline btn-sm" onclick="goBack(1)">&larr; Back</button>
-    <button class="btn btn-outline btn-sm" onclick="clearSel()">Clear</button>
-    <div style="flex:1"></div>
-    <button class="btn btn-outline btn-sm" onclick="activateAutoPick()">&#10024; Auto-Pick</button>
-    <button class="btn btn-primary" style="flex:1" onclick="go3Images()">Generate Images &rarr;</button>
-  </div>
-</div>
+    </div><!-- /studio-left -->
+
+    <!-- ═══ RIGHT COLUMN — Selected Products Widget + 3 CTAs ═══ -->
+    <div class="studio-right">
+
+      <!-- Selected Products Widget -->
+      <div class="sel-widget">
+        <div class="sel-widget-hdr">
+          <span class="sel-widget-hdr-title">Selected Products</span>
+          <span class="sel-widget-hdr-count" id="selWidgetCount">0</span>
+        </div>
+        <div class="sel-widget-body" id="selWidgetBody">
+          <div class="sel-widget-empty" id="selWidgetEmpty">
+            <div style="font-size:24px;margin-bottom:8px;opacity:0.5">&#128722;</div>
+            No products selected yet.<br>Browse the catalog or use <strong>Auto-Pick</strong> to let AI choose the best products for your campaign.
+          </div>
+          <div id="selWidgetList"></div>
+        </div>
+      </div>
+
+      <!-- Campaign context banner (injected by JS) -->
+      <div id="p2CampaignCtx" style="display:none;background:linear-gradient(90deg,#0f2a1c,#1a3a28);border-radius:10px;padding:12px 16px;margin-bottom:12px;align-items:flex-start;gap:12px;flex-wrap:wrap"></div>
+
+      <!-- ═══ THREE CTA BUTTONS ═══ -->
+      <div class="cta-trio">
+        <button class="cta-trio-btn cta-design" onclick="ctaCreateDesign()">
+          <div class="cta-trio-icon">&#127912;</div>
+          <div class="cta-trio-text">
+            <div class="cta-trio-title">Create Mailer Design</div>
+            <div class="cta-trio-sub">AI-generated creative images for all variants &amp; regions</div>
+          </div>
+          <div class="cta-trio-arrow">&rarr;</div>
+        </button>
+        <button class="cta-trio-btn cta-html" onclick="ctaCreateHTML()">
+          <div class="cta-trio-icon">&#128421;</div>
+          <div class="cta-trio-text">
+            <div class="cta-trio-title">Create Mailer HTML</div>
+            <div class="cta-trio-sub">Production-ready HTML email for all variants &amp; regions</div>
+          </div>
+          <div class="cta-trio-arrow">&rarr;</div>
+        </button>
+        <button class="cta-trio-btn cta-both" onclick="ctaCreateDesignAndHTML()">
+          <div class="cta-trio-icon">&#9889;</div>
+          <div class="cta-trio-text">
+            <div class="cta-trio-title">Create Design + HTML</div>
+            <div class="cta-trio-sub">Images first, then matching HTML mailer — complete package</div>
+          </div>
+          <div class="cta-trio-arrow">&rarr;</div>
+        </button>
+      </div>
+
+    </div><!-- /studio-right -->
+  </div><!-- /studio-layout -->
+</div><!-- /p1 -->
+<!-- Hidden p2 compat shim — IDs referenced by legacy JS paths -->
+<div id="p2" style="display:none"></div>
 <div id="p3" class="panel" style="display:none;padding:0;overflow:hidden">
   <!-- Hero strip -->
   <div style="background:linear-gradient(135deg,var(--g3) 0%,var(--g) 55%,#006b3e 100%);padding:22px 28px 18px;position:relative;overflow:hidden">
@@ -953,22 +1095,35 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
       <div id="p3StrategyText" style="font-size:12px;color:#1a3a28;line-height:1.6"></div>
     </div>
 
-    <!-- Image grid — Variant A -->
-    <div style="margin-bottom:24px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <span style="font-size:10px;font-weight:800;color:#fff;background:#0f2a1c;padding:3px 10px;border-radius:4px;letter-spacing:0.16em">A</span>
-        <span style="font-size:13px;font-weight:700;color:#0f2a1c">Variant A — Editorial Hero</span>
+    <!-- Market tabs (shown when multiple markets) -->
+    <div id="p3MarketTabs" style="display:none;margin-bottom:18px;display:flex;gap:6px;flex-wrap:wrap"></div>
+
+    <!-- Dynamic variant × region grid -->
+    <div id="p3VariantGrid"></div>
+
+    <!-- Image prompts panel (collapsible) -->
+    <div style="margin-bottom:20px">
+      <button onclick="(function(){var el=document.getElementById('p3PromptsPanel');el.style.display=el.style.display==='none'?'block':'none';})()" style="display:flex;align-items:center;gap:8px;background:transparent;border:1.5px solid var(--border);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:11px;font-weight:600;color:#374151;font-family:'DM Sans',sans-serif;width:100%;transition:all 0.15s" onmouseover="this.style.borderColor='#0f2a1c'" onmouseout="this.style.borderColor=''">
+        <span style="font-size:14px">&#128203;</span> View Image Generation Prompts <span style="margin-left:auto;font-size:10px;color:#9ca3af">&#9660;</span>
+      </button>
+      <div id="p3PromptsPanel" style="display:none;margin-top:8px;background:#f8f6f2;border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+        <div id="p3PromptA" style="margin-bottom:12px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#0f2a1c;margin-bottom:4px">Variant A Prompt</div>
+          <div id="p3PromptAText" class="prompt-mono" style="max-height:120px;font-size:10px;border-radius:6px"></div>
+        </div>
+        <div id="p3PromptB">
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#d4873a;margin-bottom:4px">Variant B Prompt</div>
+          <div id="p3PromptBText" class="prompt-mono" style="max-height:120px;font-size:10px;border-radius:6px"></div>
+        </div>
       </div>
-      <div id="p3ImgsA" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px"></div>
     </div>
 
-    <!-- Image grid — Variant B -->
-    <div style="margin-bottom:24px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <span style="font-size:10px;font-weight:800;color:#fff;background:#d4873a;padding:3px 10px;border-radius:4px;letter-spacing:0.16em">B</span>
-        <span style="font-size:13px;font-weight:700;color:#d4873a">Variant B — Narrative Story</span>
-      </div>
-      <div id="p3ImgsB" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px"></div>
+    <!-- Download all button row -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+      <button class="btn btn-gold btn-sm" onclick="downloadAllImages()" style="gap:6px">&#11015; Download All Images</button>
+      <button class="btn btn-outline btn-sm" onclick="downloadVariantImages('A')" style="gap:6px">&#11015; Variant A Images</button>
+      <button class="btn btn-outline btn-sm" onclick="downloadVariantImages('B')" style="gap:6px">&#11015; Variant B Images</button>
+      <span id="p3RegenCount" style="font-size:10px;color:#9ca3af;margin-left:auto"></span>
     </div>
 
     <!-- Feedback + actions -->
@@ -977,7 +1132,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
       <textarea id="p3Feedback" rows="3" placeholder="e.g. Make the hero image warmer, use a morning ritual setting, add more gold tones..." style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;resize:vertical;outline:none;transition:border-color 0.15s;box-sizing:border-box" onfocus="this.style.borderColor='#0f2a1c'" onblur="this.style.borderColor=''"></textarea>
       <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap">
         <button class="btn btn-outline btn-sm" onclick="regenerateImages()" style="gap:6px">&#8635; Regenerate Images</button>
-        <span id="p3RegenCount" style="font-size:10px;color:#9ca3af"></span>
         <div style="flex:1"></div>
         <span style="font-size:10px;color:#9ca3af">Not happy? Add feedback above and regenerate.</span>
       </div>
@@ -985,7 +1139,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 
     <!-- CTA row -->
     <div class="btn-row" style="gap:10px">
-      <button class="btn btn-outline btn-sm" onclick="goBack(2)">&larr; Back to Products</button>
+      <button class="btn btn-outline btn-sm" onclick="goBack(1)">&larr; Back to Studio</button>
       <div style="flex:1"></div>
       <button class="btn btn-primary btn-lg" style="gap:10px;font-size:14px" onclick="go4Mailer()">
         <span>Build HTML Mailer</span>
@@ -1034,7 +1188,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
         <div class="btn-row" style="flex-direction:column;gap:8px;margin-top:12px">
           <button class="btn btn-outline btn-sm" style="width:100%" onclick="regenFeedback()">&#8635; Regenerate</button>
           <button class="btn btn-gold btn-sm" style="width:100%" onclick="approveAndBuild()">&#10003; Build HTML Mailer</button>
-          <button class="btn btn-ghost btn-sm" style="width:100%" onclick="goBack(2)">&larr; Back to Products</button>
+          <button class="btn btn-ghost btn-sm" style="width:100%" onclick="goBack(1)">&larr; Back to Studio</button>
         </div>
       </div>
     </div>
@@ -1286,7 +1440,7 @@ async function loadCatalog(market){
 }
 const S={step:1,prompt:'',market:'US',markets:['US'],marketMailers:{},activeMarket:'US',type:'',manualProds:[],finalProds:[],regenCount:0,finalHTML:'',lastImagePrompt:'',generatedPrompt:'',canvasDataUrl:'',uploadedDesignUrl:null,precomputedStrategy:null};
 window.S=S; // Make S accessible via window so the `window.S&&...` safety guards in helper functions actually work (const declarations at top-level do NOT auto-create window.X properties).
-window.__VAHDAM_BUILD__='4step-flow-v92';
+window.__VAHDAM_BUILD__='studio-3cta-v100';
 // On page load, surface Supabase connection state so the user can see if
 // data is going to Supabase or only to localStorage.
 setTimeout(function(){
@@ -1616,15 +1770,15 @@ var _SCHEMA_KEYS = [
   'headline','sub_copy','cta','ann_bar',
   'layout_variant','variant_a_html','variant_b_html','market_mailers',
   'feedback_history','reasoning','strategy_full',
-  'build_version','user_agent','origin'
-  // ── Add after migration ──
-  // 'campaign_title','feature_strip','ingredients','section_title','product_section_title',
-  // 'canvas_market','canvas_variant',
-  // 'variant_a_image_prompt','variant_b_image_prompt','image_prompts_full',
-  // 'generated_images','image_seeds','regen_count','last_feedback',
-  // 'target_segment','segment_size','segment_rationale',
-  // 'campaign_intent','expected_impact','justification','send_window','layout_chosen',
-  // 'hero_image_url','canvas_image_url','thumbnail_url','mailer_image_urls'
+  'build_version','user_agent','origin',
+  // ── Migration columns (run ALTER TABLE in Supabase SQL editor) ──
+  'campaign_title','feature_strip','ingredients','section_title','product_section_title',
+  'canvas_market','canvas_variant',
+  'variant_a_image_prompt','variant_b_image_prompt','image_prompts_full',
+  'generated_images','image_seeds','regen_count','last_feedback',
+  'target_segment','segment_size','segment_rationale',
+  'campaign_intent','expected_impact','justification','send_window','layout_chosen',
+  'hero_image_url','canvas_image_url','thumbnail_url','mailer_image_urls'
 ];
 // Legacy: depth keys kept for back-compat with older code paths
 var _DEPTH_KEYS=['target_segment','segment_size','segment_rationale','campaign_intent','expected_impact','justification','send_window','layout_chosen','campaign_title'];
@@ -1982,26 +2136,29 @@ function setStep(n){
   }
 }
 function show(id,v){const el=document.getElementById(id);if(el)el.style.display=v?'block':'none';}
-// 4-step flow: Step 1→p1, Step 2→p2, Step 3→p3 (images), Step 4→p5 (mailer output)
-var _stepPanelMap={1:'p1',2:'p2',3:'p3',4:'p5'};
+// New flow: Step 1→p1 (input+products), Step 3→p3 (images output), Step 4→p5 (HTML output)
+var _stepPanelMap={1:'p1',2:'p1',3:'p3',4:'p5'};
 function showOnly(stepNum){
   ['p1','p2','p3','p4','p5'].forEach(function(id){show(id,false);});
   var panelId=_stepPanelMap[stepNum]||('p'+stepNum);
   show(panelId,true);
   setStep(stepNum);
+  // Scroll to top when switching panels
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 function goBack(to){
-  showOnly(to);
-  if(to===2){_activeCatFilter='all';renderCatalog('all');}
-  if(to===1){
-    // Returning to Brief — reset strategy prefetch so it re-runs with the new brief
+  if(to===1||to===2){
+    // Both go back to the unified input page
+    showOnly(1);
     _strategyPrefetch=null;_strategyPrefetchKey='';_strategyPrefetching=false;
     S.precomputedStrategy=null;
     var banner=document.getElementById('p2AIPlanning');
     if(banner)banner.style.display='none';
+    renderSelWidget();
+    return;
   }
+  showOnly(to);
   if(to===3){
-    // Show image content if we have it
     if(S._phase1Done){
       var ld=document.getElementById('p3ImgLoading');if(ld)ld.style.display='none';
       var ct=document.getElementById('p3ImgContent');if(ct)ct.style.display='block';
@@ -2033,6 +2190,7 @@ function toggleProd(encName,img,encTags){
   else{S.manualProds.push({n:name,i:img,t:tags});}
   renderCatalog(_activeCatFilter);
   updateSelInfo();
+  renderSelWidget();
 }
 function updateSelInfo(){
   const ct=S.manualProds.length;
@@ -2060,9 +2218,277 @@ function activateAutoPick(){
     renderCatalog('all');
   }
   updateSelInfo();
+  renderSelWidget();
   showCopyToast('Auto-picked '+S.finalProds.length+' products');
 }
-function clearSel(){S.manualProds=[];renderCatalog('all');updateSelInfo();}
+function clearSel(){S.manualProds=[];renderCatalog('all');updateSelInfo();renderSelWidget();}
+
+// ── Selected Products Widget (real-time, right sidebar) ─────────────────────
+function renderSelWidget(){
+  var list=document.getElementById('selWidgetList');
+  var empty=document.getElementById('selWidgetEmpty');
+  var count=document.getElementById('selWidgetCount');
+  if(!list||!empty||!count)return;
+  var prods=S.manualProds||[];
+  count.textContent=prods.length;
+  if(prods.length===0){
+    empty.style.display='block';
+    list.innerHTML='';
+    return;
+  }
+  empty.style.display='none';
+  list.innerHTML=prods.map(function(p,i){
+    var name=(p.n||p.name||'').split(',')[0].substring(0,40);
+    var img=p.i||p.image_url||'';
+    var price=parseFloat(p.price)||0;
+    return '<div class="sel-widget-item">'
+      +(img?'<img src="'+img+'" alt="" onerror="this.style.display=\'none\'">':'<div style="width:36px;height:36px;border-radius:6px;background:#f0ece6;flex-shrink:0"></div>')
+      +'<div class="swi-name">'+name+(price?'<div style="font-size:9px;color:#d4873a;font-weight:700;margin-top:1px">$'+price.toFixed(2)+'</div>':'')+'</div>'
+      +'<button class="swi-remove" onclick="removeFromWidget('+i+')" title="Remove">&times;</button>'
+      +'</div>';
+  }).join('');
+}
+function removeFromWidget(idx){
+  if(S.manualProds&&S.manualProds[idx]){
+    S.manualProds.splice(idx,1);
+    renderCatalog(_activeCatFilter||'all');
+    updateSelInfo();
+    renderSelWidget();
+  }
+}
+
+// ── Three CTA button handlers ───────────────────────────────────────────────
+function _validateInputs(){
+  var p=(document.getElementById('promptIn')||{}).value||'';
+  if(!p.trim()){showValidErr('promptIn','Campaign description is required.');return false;}
+  if(p.trim().length<15){showValidErr('promptIn','Add more detail — what is the offer, season, or product focus?');return false;}
+  S.prompt=p.trim();
+  var selected=[];
+  document.querySelectorAll('#mktChips .mkt-chip.on').forEach(function(c){
+    var m=c.getAttribute('data-mkt');if(m)selected.push(m);
+  });
+  if(selected.length===0){showValidErr('mktChips','Select at least one target market.');return false;}
+  S.markets=selected;
+  S.market=S.markets[0];
+  S.activeMarket=S.markets[0];
+  S.type=document.getElementById('typeIn').value;
+  // Lock products
+  if(!S.manualProds||!S.manualProds.length){
+    S.finalProds=autoPickProducts(S.prompt,S.type||detectType(S.prompt));
+  } else {
+    S.finalProds=S.manualProds.map(function(p,i){return Object.assign({},p,{role:i===0?'hero':i<=2?'featured':'grid'});});
+  }
+  S.activePrompt=S.prompt;
+  S.lastFeedback='';S.feedbackHistory=[];S.regenCount=0;
+  S._phase1Done=false;S._imgRegenCount=0;
+  // Save initial state to Supabase
+  _supabaseSaveInputState();
+  return true;
+}
+
+// Save input state to Supabase at each step
+async function _supabaseSaveInputState(){
+  var sb=getSupabase();if(!sb)return;
+  try{
+    var t=await _resolveTables();
+    var record={
+      user_name:(window.u&&u.name)||'',
+      user_email:(window.u&&u.email)||'',
+      prompt_short:(S.prompt||'').substring(0,80),
+      prompt_full:S.prompt||'',
+      campaign_type:S.type||detectType(S.prompt)||'',
+      primary_market:S.markets[0]||'US',
+      markets:S.markets||['US'],
+      product_names:(S.finalProds||[]).map(function(p){return p.n||p.name||'';}),
+      product_full:S.finalProds||[],
+      build_version:window.__VAHDAM_BUILD__||'',
+      origin:window.location.hostname
+    };
+    var safe={};Object.keys(record).forEach(function(k){if(_SCHEMA_KEYS.indexOf(k)>=0)safe[k]=record[k];});
+    var {data,error}=await sb.from(t.mailers).insert([safe]).select().single();
+    if(data){
+      S._supabaseRowId=data.id;
+      console.log('[Supabase] Input state saved, id='+data.id);
+    }
+    if(error)console.warn('[Supabase] Input save error:',error.message);
+  }catch(e){console.warn('[Supabase] Input save:',e.message);}
+}
+
+// Update existing Supabase row with new data
+async function _supabaseUpdateRow(updates){
+  if(!S._supabaseRowId)return;
+  var sb=getSupabase();if(!sb)return;
+  try{
+    var t=await _resolveTables();
+    var safe={};Object.keys(updates).forEach(function(k){if(_SCHEMA_KEYS.indexOf(k)>=0)safe[k]=updates[k];});
+    await sb.from(t.mailers).update(safe).eq('id',S._supabaseRowId);
+    console.log('[Supabase] Row '+S._supabaseRowId+' updated');
+  }catch(e){console.warn('[Supabase] Update:',e.message);}
+}
+
+// ── CTA 1: Create Mailer Design (images only) ──────────────────────────────
+function ctaCreateDesign(){
+  if(!_validateInputs())return;
+  S._outputMode='design';
+  S._allMarketImages={};
+  S._pendingMarkets=(S.markets||['US']).slice();
+  S._currentMarketIdx=0;
+  // Show output page with loading
+  showOnly(3);
+  var ld=document.getElementById('p3ImgLoading');if(ld)ld.style.display='block';
+  var ct=document.getElementById('p3ImgContent');if(ct)ct.style.display='none';
+  var statusEl=document.getElementById('p3ImgLoadingStatus');
+  if(statusEl)statusEl.textContent='Generating creative images for '+S._pendingMarkets.join(', ')+'. This takes 30-60 seconds per market.';
+  _runPipelinePhase1(S._pendingMarkets[0],{regenerate_counter:0});
+}
+
+// ── CTA 2: Create Mailer HTML (HTML only) ───────────────────────────────────
+function ctaCreateHTML(){
+  if(!_validateInputs())return;
+  S._outputMode='html';
+  S._pendingHTMLMarkets=(S.markets||['US']).slice();
+  S._currentHTMLMarketIdx=0;
+  // Show Step 4 (HTML output) with loading
+  showOnly(4);
+  _p5ShowLoading(true);
+  _p5UpdateLoadingStatus('Running full pipeline for '+S._pendingHTMLMarkets.join(', ')+'...');
+  // Run full pipeline — stages 1-5 for first market
+  _runFullHTMLPipeline(S._pendingHTMLMarkets[0]);
+}
+
+// ── CTA 3: Create Design + HTML (both) ──────────────────────────────────────
+function ctaCreateDesignAndHTML(){
+  if(!_validateInputs())return;
+  S._outputMode='both';
+  S._allMarketImages={};
+  S._pendingMarkets=(S.markets||['US']).slice();
+  S._currentMarketIdx=0;
+  // Show images loading first
+  showOnly(3);
+  var ld=document.getElementById('p3ImgLoading');if(ld)ld.style.display='block';
+  var ct=document.getElementById('p3ImgContent');if(ct)ct.style.display='none';
+  // Update loading text
+  var statusEl=document.getElementById('p3ImgLoadingStatus');
+  if(statusEl)statusEl.textContent='Generating creative images for '+S._pendingMarkets.join(', ')+', then building HTML mailer. This takes 60-120 seconds.';
+  // Run phase 1 (images) → then auto-continue to phase 2 (HTML)
+  S._autoContinueToHTML=true;
+  _runPipelinePhase1(S._pendingMarkets[0],{regenerate_counter:0});
+}
+
+// Full HTML pipeline (strategy + variants + images + HTML + score in one go)
+async function _runFullHTMLPipeline(mkt){
+  if(_PLN_RUNNING)return;
+  _PLN_RUNNING=true;_PLN_ABORT=false;
+  _showPipelineOverlay(true);
+  _pipelineLog(0,'Full Pipeline — Strategy through HTML — market: '+mkt,'ok');
+
+  var brief=(window.S&&(S.activePrompt||S.prompt))||'';
+  var type=(window.S&&S.type)||'';
+  var prods=(window.S&&S.finalProds)||[];
+  var market=mkt||'US';
+
+  try{
+    // Health check
+    _pipelineLog(0,'Checking pipeline endpoints...','');
+    try{
+      var healthRes=await fetch('/api/ai/pipeline/health',{method:'GET',cache:'no-store'});
+      if(!healthRes.ok&&healthRes.status===404){_PLN_RUNNING=false;_pipelineShowError('Pipeline endpoints not deployed','GET /api/ai/pipeline/health returned 404.','Wait 1-2 min, then retry.');return;}
+      _pipelineLog(0,'Health OK','ok');
+    }catch(hErr){_PLN_RUNNING=false;_pipelineShowError('Cannot reach pipeline','Network error.','Check deployment.');return;}
+
+    // Stage 1: Strategy
+    var strategy;
+    var _precomp=(window.S&&S.precomputedStrategy&&S.precomputedStrategy.ok)?S.precomputedStrategy:null;
+    if(_precomp){strategy=_precomp;S.precomputedStrategy=null;_pipelineSetStep(1,'done','Pre-computed');_pipelineLog(1,'Strategy pre-computed','ok');}
+    else{
+      _pipelineSetStep(1,'active','Analysing brief...');
+      strategy=await _pipelinePost('/api/ai/pipeline/strategy',{brief:brief,market:market,type:type,products:(Array.isArray(prods)?prods:[]).slice(0,15),regenerate_counter:0},42000);
+      _pipelineSetStep(1,'done',(strategy.strategy||'?'));_pipelineLog(1,'Strategy locked','ok');
+    }
+
+    // Stage 2: Variants (sequential)
+    _pipelineSetStep(2,'active','Building creative plans...');
+    var _vBase={strategy_output:strategy,brief:brief,market:market,products:(Array.isArray(prods)?prods:[]).slice(0,5),regenerate_counter:0};
+    var planA=await _pipelinePost('/api/ai/pipeline/variant',Object.assign({},_vBase,{variant:'A'}),58000);
+    _pipelineLog(2,'Variant A done','ok');
+    await new Promise(function(r){setTimeout(r,3000);});
+    var planB=await _pipelinePost('/api/ai/pipeline/variant',Object.assign({},_vBase,{variant:'B'}),58000);
+    _pipelineSetStep(2,'done','Plans locked');_pipelineLog(2,'Plans locked','ok');
+
+    // Stage 3: Images
+    _pipelineSetStep(3,'active','Generating images...');
+    var stylelock=strategy.image_style_lock||'';
+    var [imgsA,imgsB]=await Promise.all([
+      _generateImagesForVariant(planA.image_requirements||[],'A',stylelock),
+      _generateImagesForVariant(planB.image_requirements||[],'B',stylelock)
+    ]);
+    _pipelineSetStep(3,'done','Images ready');_pipelineLog(3,'Images generated','ok');
+
+    // Store phase 1 data
+    S._phase1Data={strategy:strategy,planA:planA,planB:planB,imgsA:imgsA,imgsB:imgsB,market:market,regen:0,brief:brief};
+    S._phase1Done=true;
+
+    // Stage 4: HTML
+    _pipelineSetStep(4,'active','Building HTML mailer...');
+    function _injectImages(html,imgs){if(!html)return '';var h=html;h=h.replace(/IMAGE_HERO_URL/g,imgs.hero||'https://placehold.co/600x400/0f2a1c/fdf6e8?text=Hero');h=h.replace(/IMAGE_PRODUCT_URL/g,imgs.product||'https://placehold.co/400x400/0f2a1c/fdf6e8?text=Product');h=h.replace(/IMAGE_LIFESTYLE_URL/g,imgs.lifestyle||'https://placehold.co/600x400/0f2a1c/fdf6e8?text=Lifestyle');return h;}
+    var [htmlA,htmlB]=await Promise.allSettled([
+      _pipelinePost('/api/ai/pipeline/html',{variant:'A',plan:planA,strategy:strategy,brief:brief,market:market,regenerate_counter:0},85000),
+      _pipelinePost('/api/ai/pipeline/html',{variant:'B',plan:planB,strategy:strategy,brief:brief,market:market,regenerate_counter:0},85000)
+    ]);
+    var finalA=(htmlA.status==='fulfilled'&&htmlA.value&&htmlA.value.html)?_injectImages(htmlA.value.html,imgsA):'';
+    var finalB=(htmlB.status==='fulfilled'&&htmlB.value&&htmlB.value.html)?_injectImages(htmlB.value.html,imgsB):'';
+    if(!finalA&&typeof buildEmail==='function'){finalA=buildEmail(null,market)||'';}
+    if(!finalB&&typeof buildEmailVariantB==='function'){finalB=buildEmailVariantB(null,market)||'';}
+    _pipelineSetStep(4,'done','HTML ready');
+
+    // Stage 5: Score
+    _pipelineSetStep(5,'active','Scoring...');
+    var scoreRes=null;
+    try{scoreRes=await _pipelinePost('/api/ai/pipeline/score',{html_a:(finalA||'').substring(0,80000),html_b:(finalB||'').substring(0,80000),variant_a_plan:planA,variant_b_plan:planB,strategy_output:strategy},25000);}catch(_){}
+    _pipelineSetStep(5,'done','Complete');
+
+    // Commit results
+    if(!window.S.marketMailers)window.S.marketMailers={};
+    window.S.marketMailers[market]={A:finalA,B:finalB,_pipelineMeta:{strategy:strategy.strategy,theme:(strategy.theme||{}).name,scores:scoreRes,generated_at:new Date().toISOString()}};
+    if(planA.subject_lines&&planA.subject_lines.length)window.S.subjectLines=planA.subject_lines;
+
+    _pipelineLog(0,'Pipeline complete for '+market+' — HTML mailer ready','ok');
+    setTimeout(function(){
+      _showPipelineOverlay(false);_PLN_RUNNING=false;
+      S.activeVariant=S.activeVariant||'A';
+      S.finalHTML=(window.S.marketMailers[market]||{})[S.activeVariant]||finalA;
+      var frEl=document.getElementById('emailFr');if(frEl)frEl.srcdoc=S.finalHTML;
+      var rawEl=document.getElementById('htmlRaw');if(rawEl)rawEl.textContent=S.finalHTML;
+      // Update Supabase
+      _supabaseUpdateRow({variant_a_html:finalA,variant_b_html:finalB,market_mailers:window.S.marketMailers,strategy_full:strategy});
+      // Check if more markets to process
+      if(S._pendingHTMLMarkets&&S._pendingHTMLMarkets.length>1){
+        S._currentHTMLMarketIdx=(S._currentHTMLMarketIdx||0)+1;
+        if(S._currentHTMLMarketIdx<S._pendingHTMLMarkets.length){
+          var nextMkt=S._pendingHTMLMarkets[S._currentHTMLMarketIdx];
+          _p5UpdateLoadingStatus('Pipeline running for '+nextMkt+' ('+(S._currentHTMLMarketIdx+1)+'/'+S._pendingHTMLMarkets.length+')...');
+          setTimeout(function(){_runFullHTMLPipeline(nextMkt);},1000);
+          return;
+        }
+      }
+      // All markets done — render final UI
+      _p5ShowLoading(false);
+      if(typeof buildStep5UI==='function')buildStep5UI(S.prompt,S.finalProds,S.markets[0]||market);
+      if(typeof renderMarketTabs==='function')renderMarketTabs();
+      if(typeof renderVariantSwitcher==='function')renderVariantSwitcher();
+      if(typeof renderAllMailersMatrix==='function')renderAllMailersMatrix();
+      if(typeof renderStrategicBrief==='function')renderStrategicBrief();
+      if(typeof renderStep5UnifiedPanel==='function')renderStep5UnifiedPanel();
+      if(typeof saveMailerToDashboard==='function')saveMailerToDashboard();
+    },600);
+  }catch(e){
+    console.error('[full-pipeline] Fatal:',e);
+    _PLN_RUNNING=false;
+    _pipelineLog(0,'Pipeline error: '+e.message,'error');
+    _pipelineShowError('Pipeline failed',e.message,'Check logs or try again.');
+  }
+}
+
 // ── Campaign type chip selector ─────────────────────────────────────────────
 function selectType(val,btn){
   S.type=val;
@@ -2390,8 +2816,15 @@ async function createPromptWithAI(){
     _bpDone(false);
     console.warn('[createPromptWithAI] error:',e);
     var isRateLimit=!!(e&&(e._rateLimited||(e.message&&(e.message.indexOf('429')!==-1||e.message.indexOf('rate')!==-1||e.message.indexOf('quota')!==-1||e.message.indexOf('RESOURCE_EXHAUSTED')!==-1))));
-    var errLabel=isRateLimit?'AI rate limit — using heuristic brief (retry in ~60s)':'Brief creation failed — using heuristic';
-    if(typeof statusPill==='function')statusPill('err',errLabel,String(e&&e.message||e).substring(0,200));
+    var isPermission=!!(e&&e.message&&(e.message.indexOf('403')!==-1||e.message.indexOf('401')!==-1||e.message.indexOf('permission')!==-1||e.message.indexOf('forbidden')!==-1||e.message.indexOf('PERMISSION_DENIED')!==-1||e.message.indexOf('insufficient_quota')!==-1||e.message.indexOf('billing')!==-1));
+    var isNoProvider=!!(e&&e.message&&(e.message.indexOf('server_misconfigured')!==-1||e.message.indexOf('No AI provider')!==-1));
+    var errLabel=isNoProvider?'No AI provider configured — add API keys in Vercel env'
+      :isPermission?'API key permission error — check Vercel env key billing/credits'
+      :isRateLimit?'AI rate limit — using heuristic brief (retry in ~60s)'
+      :'Brief creation failed — using heuristic';
+    var errDetail=String(e&&e.message||e).substring(0,250);
+    console.error('[createBrief] Error:',errDetail);
+    if(typeof statusPill==='function')statusPill('err',errLabel,errDetail);
     else showCopyToast(errLabel);
     if(typeof enhancePrompt==='function')try{enhancePrompt();}catch(_){}
   }finally{
@@ -2676,10 +3109,34 @@ var SUGG_PROMPTS=[
   {icon:'🌅',type:'Morning Ritual — US',mkt:'US',ctype:'Routine',
    text:'Morning ritual campaign for US customers — make every morning count. Build your perfect tea routine with India Original Masala Chai for energy, Himalayan Green Tea for antioxidants, and Turmeric Ginger for digestion. The complete morning wellness stack — 3 tins for $59, save 30% with code MORNING30. Includes a free VAHDAM bamboo tea infuser spoon. Free US shipping. Limited bundle quantity.'}
 ];
+// ── Knowledge Base detailed prompt versions ─────────────────────────────────
+// Each SUGG_PROMPTS entry gets a `kb_detail` — the full director-grade brief
+// that loads into the prompt field when the card is clicked. These are the
+// "best practice" versions stored in the app's knowledge base.
+(function _attachKBDetails(){
+  var KB_DETAILS={
+    'Detox Sale — US':'CAMPAIGN OBJECTIVE: Drive a 25% flash-sale conversion on the Detox & Cleanse collection for US customers.\n\nTARGET AUDIENCE: Health-conscious US women 28-45, gut health and daily wellness seekers.\n\nHERO PRODUCTS:\n1. Turmeric Ginger Herbal Tea 100ct — bestseller, anti-inflammatory\n2. Moringa Leaf Green Tea — superfood positioning\n3. Vedic Kadha Herbal Infusion — Ayurvedic authenticity\n4. Citrus Ginger Green Tea — refreshing entry point\n\nOFFER: 25% off with code DETOX25. Free shipping $49+. 72-hour flash sale.\n\nTONE: Warm, empowering, science-backed but approachable. Lead with transformation.\n\nVISUAL DIRECTION: Morning light, warm golden tones, fresh ingredients, clean backgrounds.\n\nEMAIL STRUCTURE: Announcement bar (countdown) > Hero (morning ritual) > Product grid (4 products) > Ingredients strip > Trust bar > CTA > Footer.\n\nSUBJECT LINES: "Your 72-Hour Detox Reset — 25% Off" | "Clean from Within: 25% Off Detox Teas"\n\nAVOID: Medical claims, before/after language, aggressive urgency.',
+    'Summer Iced Teas — UK':'CAMPAIGN OBJECTIVE: Launch Summer Iced Tea Collection for UK — drive trial in a hot-tea market.\n\nTARGET AUDIENCE: UK millennials 22-40, seeking natural refreshment alternatives.\n\nHERO PRODUCTS:\n1. Hibiscus Cranberry Herbal Tea — vibrant ruby red\n2. Lychee Rose Green Tea — floral, Instagram-worthy\n\nOFFER: 15% off with code SUMMER15. Free UK delivery. Limited edition.\n\nTONE: Fresh, vibrant, effortlessly cool. Garden party meets Indian botanical luxury.\n\nVISUAL DIRECTION: Sun-drenched colours, pitcher pours, ice, fresh fruit, outdoor setting.\n\nEMAIL STRUCTURE: Hero (pitcher pour) > Cold Brew guide > Product cards > Bundle > Trust > CTA.\n\nSUBJECT LINES: "Summer in a Glass — New Iced Collection" | "Ditch the Squash: Natural Iced Teas"\n\nAVOID: American language, hot tea prep mentions.',
+    "Mother's Day Gifts — US":"CAMPAIGN OBJECTIVE: Drive Mother's Day gifting revenue for US customers.\n\nTARGET AUDIENCE: Gift buyers 25-55 — daughters, sons, partners shopping for Mom.\n\nHERO PRODUCTS:\n1. Bloom Premium 12-Tea Gift Set — hero visual, luxury packaging\n2. Glow Wellness Gift Set — self-care angle\n3. Best Seller 5-Tea Bundle — value entry point\n\nOFFER: Free gift wrapping + free shipping on all gift orders. Limited availability.\n\nTONE: Warm, elegant, emotional but not saccharine. Celebrate the ritual of tea together.\n\nVISUAL DIRECTION: Soft pink/gold palette, luxury unboxing, flowers, elegant hands holding teacup.\n\nEMAIL STRUCTURE: Hero (gift lifestyle) > \"For Every Kind of Mom\" grid > Gift wrapping CTA > Express delivery banner > Footer.\n\nSUBJECT LINES: \"The Gift She'll Actually Love\" | \"Mom Deserves More Than Flowers\"\n\nAVOID: Cliches, discount-heavy language — this is luxury gifting.",
+    'Discovery Sampler — Global':'CAMPAIGN OBJECTIVE: Acquire new global customers through low-barrier discovery sampler.\n\nTARGET AUDIENCE: Tea-curious first-time buyers worldwide, 25-50.\n\nHERO PRODUCTS:\n1. Assorted Tea Bags Sampler 20 Flavours — hero, exploration angle\n\nOFFER: Free worldwide shipping on first order. Free sampler pouch with orders $60+.\n\nTONE: Inviting, exploratory, culturally rich. "Your first sip of India."\n\nVISUAL DIRECTION: Colourful array of teas, map elements, variety showcase.\n\nEMAIL STRUCTURE: Hero (tea variety spread) > Flavour map > Product card > "Perfect Introduction" > Trust > CTA.\n\nAVOID: Overwhelming product count, discount-first messaging.',
+    'Bestsellers — UK':'CAMPAIGN OBJECTIVE: Social-proof-driven conversion for UK customers using bestseller authority.\n\nTARGET AUDIENCE: UK tea drinkers 30-55, quality-conscious, trust-driven purchasers.\n\nHERO PRODUCTS:\n1. India Original Masala Chai 100ct\n2. Turmeric Ginger Herbal Tea 100ct\n3. Mint Melody Green Tea\n4. English Breakfast Black Tea\n5. Classic Chamomile Herbal Tea\n\nOFFER: Buy any 3, get 10% off. Free UK delivery.\n\nTONE: Confident, social-proof-led, quality-first. "50,000+ verified 5-star reviews."\n\nVISUAL DIRECTION: Clean product photography, star ratings, review quotes.\n\nEMAIL STRUCTURE: Hero (bestseller badge) > "Most Loved" grid > Review quotes > Bundle offer > Trust bar > CTA.\n\nAVOID: Aggressive discounting, new-launch language.',
+    'Sleep & Calm — Australia':'CAMPAIGN OBJECTIVE: Launch evening wellness collection for Australian customers.\n\nTARGET AUDIENCE: Australian wellness-focused adults 28-50, sleep-quality seekers.\n\nHERO PRODUCTS:\n1. Classic Chamomile Herbal Tea\n2. Butterfly Pea Flower Tea\n3. Pure Mint Herbal Tea\n4. Sprightly Spearmint Herbal Tea\n\nOFFER: 20% off with code SLEEP20. Free AU shipping.\n\nTONE: Calm, soothing, ritual-oriented. "Your wind-down ritual starts here."\n\nVISUAL DIRECTION: Twilight/evening colours, soft lighting, cozy blanket aesthetics.\n\nEMAIL STRUCTURE: Hero (evening ritual) > "The Wind-Down Stack" > Product cards > Ritual guide > CTA.\n\nAVOID: Medical sleep claims, stimulant references.',
+    'Authentic Chai — Middle East':'CAMPAIGN OBJECTIVE: Establish chai category dominance in Middle East market.\n\nTARGET AUDIENCE: ME tea drinkers 25-50, chai enthusiasts, premium gifters.\n\nHERO PRODUCTS:\n1. India Original Masala Chai\n2. Cardamom Masala Chai\n3. Double Spice Masala Chai\n4. Kashmiri Kahwa with Saffron\n\nOFFER: Free premium chai sampler with orders $50+. Worldwide shipping.\n\nTONE: Authentic, bold, premium. "Nothing compares to the real thing."\n\nVISUAL DIRECTION: Rich, warm tones, brass/copper vessels, steam, spice close-ups.\n\nEMAIL STRUCTURE: Hero (chai pouring) > Authenticity story > Product grid > Free sampler CTA > Trust > Footer.\n\nAVOID: Western chai-latte associations, budget positioning.',
+    'First Flush Launch — Premium':'CAMPAIGN OBJECTIVE: Drive pre-orders for 2026 First Flush Darjeeling — ultra-premium, limited harvest.\n\nTARGET AUDIENCE: Global tea connoisseurs 35-65, single-estate collectors.\n\nHERO PRODUCTS:\n1. 2026 Arya Diamond First Flush\n2. 2026 Jungpana Premium First Flush\n3. 2026 Giddapahar Premium First Flush\n\nOFFER: Pre-order exclusive. Only 500 units. Worldwide express shipping included.\n\nTONE: Rare, exclusive, terroir-driven. Wine-speak for tea.\n\nVISUAL DIRECTION: Estate photography, misty mountains, golden liquor in glass, minimal luxury.\n\nEMAIL STRUCTURE: Hero (estate landscape) > Harvest story > Estate profiles > Pre-order CTA > Scarcity counter > Footer.\n\nAVOID: Discount language, mass-market positioning.',
+    'Diwali Gift Collection — IN':'CAMPAIGN OBJECTIVE: Drive Diwali gifting revenue for India customers.\n\nTARGET AUDIENCE: Indian premium gift buyers 25-55, corporate + personal gifting.\n\nHERO PRODUCTS:\n1. Diwali Special Gift Box\n2. Premium Gold Gift Set\n3. Assorted 12-Tea Luxury Collection\n\nOFFER: Free personalised gift message. Express delivery. Limited Diwali edition.\n\nTONE: Festive, warm, premium. "The gift of India finest teas."\n\nVISUAL DIRECTION: Gold/deep maroon palette, diyas, festive packaging, luxury unboxing.\n\nEMAIL STRUCTURE: Hero (festive lifestyle) > Gift grid > Personalisation CTA > Express delivery > Footer.\n\nAVOID: Generic "Happy Diwali" — lead with product and premium positioning.',
+    'Immunity Wellness — EU':'CAMPAIGN OBJECTIVE: Launch immunity collection for EU with organic certification positioning.\n\nTARGET AUDIENCE: European health-conscious consumers 28-50, organic-first buyers.\n\nHERO PRODUCTS:\n1. Turmeric Ginger Herbal Tea\n2. Vedic Kadha Immunity Booster\n3. Moringa Green Tea\n4. Holy Basil Tulsi Herbal Tea\n\nOFFER: Free EU shipping on orders EUR 45+. 100% organic certified.\n\nTONE: Clean, scientific, credential-led. "Meets the highest EU quality standards."\n\nVISUAL DIRECTION: Clean white/green, certification badges, ingredient close-ups.\n\nEMAIL STRUCTURE: Hero (ingredients) > Certification strip > Product grid > B-Corp story > CTA.\n\nAVOID: Medical immunity claims, uncertified health statements.',
+    'Himalayan Premium — Global':'CAMPAIGN OBJECTIVE: Position VAHDAM as the world\'s premier single-estate tea brand.\n\nTARGET AUDIENCE: Global luxury tea enthusiasts 35-65, collectors and connoisseurs.\n\nHERO PRODUCTS:\n1. Darjeeling First Flush White Tea\n2. Silver Needle White Tea\n3. Himalayan Gold Black Tea\n4. Exotic Darjeeling Green Tea\n\nOFFER: Free worldwide express shipping. Rare, limited quantities.\n\nTONE: Luxury, contemplative, terroir-driven. "7,000 feet above sea level."\n\nVISUAL DIRECTION: Mountain landscapes, golden light, premium tins, single leaf beauty shots.\n\nEMAIL STRUCTURE: Hero (Himalayan landscape) > Estate story > Product grid > Provenance map > CTA.\n\nAVOID: Mass-market language, discount positioning, rushed urgency.',
+    'Morning Ritual — US':'CAMPAIGN OBJECTIVE: Build daily routine habit with 3-tea morning wellness stack for US.\n\nTARGET AUDIENCE: US wellness-focused professionals 28-45, morning routine optimisers.\n\nHERO PRODUCTS:\n1. India Original Masala Chai — energy\n2. Himalayan Green Tea — antioxidants\n3. Turmeric Ginger — digestion\n\nOFFER: 3 tins for $59 (save 30%) with code MORNING30. Free bamboo infuser. Free shipping.\n\nTONE: Energising, aspirational, habit-building. "Make every morning count."\n\nVISUAL DIRECTION: Golden morning light, sunrise, organised counter, warm tones.\n\nEMAIL STRUCTURE: Hero (morning ritual) > "The Stack" breakdown > Bundle offer > Infuser gift > CTA.\n\nAVOID: Sleep/evening language, overwhelming with too many products.'
+  };
+  SUGG_PROMPTS.forEach(function(s){
+    if(KB_DETAILS[s.type])s.kb_detail=KB_DETAILS[s.type];
+  });
+})();
+
 function renderSuggestedPrompts(aiGenerated){
   var grid=document.getElementById('suggGrid');
   if(!grid)return;
-  var badge=aiGenerated?'<span style="font-size:9px;font-weight:700;color:#d4873a;letter-spacing:0.12em;text-transform:uppercase;margin-left:4px;vertical-align:middle">✨ AI</span>':'';
+  var badge=aiGenerated?'<span style="font-size:9px;font-weight:700;color:#d4873a;letter-spacing:0.12em;text-transform:uppercase;margin-left:4px;vertical-align:middle">AI</span>':'<span style="font-size:9px;font-weight:700;color:var(--g);letter-spacing:0.12em;text-transform:uppercase;margin-left:4px;vertical-align:middle">KB</span>';
   grid.innerHTML=SUGG_PROMPTS.map(function(s,i){
     var preview=s.text.substring(0,96)+(s.text.length>96?'…':'');
     return '<div class="sugg-card" onclick="useSuggestedPromptByIdx('+i+')" title="Click to use this prompt">'
@@ -2692,17 +3149,23 @@ function renderSuggestedPrompts(aiGenerated){
 function useSuggestedPromptByIdx(i){
   var s=SUGG_PROMPTS[i];
   if(!s)return;
+  // Use the detailed KB version if available, otherwise the short version
+  var promptText=s.kb_detail||s.text;
   var ta=document.getElementById('promptIn');
   if(ta){
-    ta.value=s.text;ta.style.minHeight='140px';ta.focus();
+    ta.value=promptText;ta.style.minHeight='180px';ta.focus();
     var cc=document.getElementById('promptCharCount');
-    if(cc)cc.textContent=s.text.length+' chars';
+    if(cc)cc.textContent=promptText.length+' chars';
+    // Update the button to "Enhance" since we now have content
+    _updateSmartAIBtn(true);
   }
-  if(s.mkt&&s.mkt!=='Global'){
-    S.markets=[s.mkt];
+  // Set market chips
+  if(s.mkt){
+    var mkts=s.mkt==='Global'?['Global']:[s.mkt];
+    S.markets=mkts;
     document.querySelectorAll('#mktChips .mkt-chip').forEach(function(c){
-      var on=c.getAttribute('data-mkt')===s.mkt;
-      c.classList.toggle('on',on);
+      var m=c.getAttribute('data-mkt');
+      c.classList.toggle('on',mkts.indexOf(m)>=0);
     });
   }
   if(s.ctype){
@@ -2716,7 +3179,13 @@ function useSuggestedPromptByIdx(i){
   var arrow=document.getElementById('suggArrow');
   if(grid)grid.style.display='none';
   if(arrow)arrow.style.transform='';
-  showCopyToast('Prompt loaded — tweak it and click Select Products');
+  // Auto-load catalog for the selected market and auto-pick products
+  var mkt=S.markets[0]||'US';
+  loadCatalog(mkt).then(function(){
+    activateAutoPick();
+    renderSelWidget();
+  }).catch(function(){});
+  showCopyToast('Director brief loaded — review and generate');
 }
 
 // ── Market tab bar (Step 5) ─────────────────────────────────────────────────
@@ -2917,39 +3386,24 @@ function showValidErr(fieldId,msg){
   setTimeout(function(){var e=document.getElementById('validErr_'+fieldId);if(e)e.remove();},4000);
 }
 function go2(){
-  // Step 1 → Step 2: Validate prompt, then go to product selection with auto-pick
+  // Legacy compat — now products are on the input page, so just load catalog in-place
   var p=(document.getElementById('promptIn')||{}).value||'';
-  if(!p.trim()){showValidErr('promptIn','Campaign description is required. Describe the offer, mood, or product — or use Create Brief with AI.');return;}
-  if(p.trim().length<15){showValidErr('promptIn','Add a bit more detail — what\'s the offer, the season, or the product focus?');return;}
-  S.prompt=p.trim();
-  // Read selected market chips
+  S.prompt=(p||'').trim();
   var selected=[];
   document.querySelectorAll('#mktChips .mkt-chip.on').forEach(function(c){
     var m=c.getAttribute('data-mkt');if(m)selected.push(m);
   });
-  if(selected.length===0){showValidErr('mktChips','Select at least one target market.');return;}
-  S.markets=selected;
+  S.markets=selected.length?selected:['US'];
   S.market=S.markets[0];
   S.activeMarket=S.markets[0];
   S.type=document.getElementById('typeIn').value;
   _activeCatFilter='all';
-  // ── Load region-specific catalog from CSV knowledge base ──
   loadCatalog(S.markets[0]).then(function(){
-    // Auto-pick products based on prompt after catalog loads
-    if(!S.manualProds||!S.manualProds.length){
-      activateAutoPick();
-    }
+    if(!S.manualProds||!S.manualProds.length){activateAutoPick();}
+    renderSelWidget();
   }).catch(function(e){console.warn('[go2] catalog load:',e.message);});
-  showOnly(2);renderCatalog('all');updateSelInfo();
-  injectCtxBanners();
-  // Auto-filter catalog to best matching tab
-  var smartTab=getBestCatalogTab(S.prompt,S.type);
-  if(smartTab!=='all'){
-    var cfBtn=document.querySelector('#catFilter .cfbtn[onclick*="\''+smartTab+'\'"]');
-    if(cfBtn)cfBtn.click();
-  }
-  // ── Fire strategy analysis in background while user browses products ──────
-  _prefetchStrategy(S.prompt, S.markets[0], S.type);
+  renderCatalog('all');updateSelInfo();renderSelWidget();
+  if(typeof _prefetchStrategy==='function')_prefetchStrategy(S.prompt, S.markets[0], S.type);
 }
 
 function go3(){
@@ -3024,6 +3478,10 @@ function regenerateImages(){
 
 // ── Render image results on Step 3 ──
 function _renderP3Images(imgsA,imgsB,strategy,planA,planB){
+  var market=(S._phase1Data&&S._phase1Data.market)||S.markets[0]||'US';
+  // Store images by market for multi-market access
+  if(!S._allMarketImages)S._allMarketImages={};
+  S._allMarketImages[market]={A:imgsA||{},B:imgsB||{}};
   // Strategy summary
   var stratText=document.getElementById('p3StrategyText');
   if(stratText){
@@ -3031,33 +3489,95 @@ function _renderP3Images(imgsA,imgsB,strategy,planA,planB){
       (((strategy||{}).theme||{}).name||'default')+' · '+
       ((strategy||{}).subject_line||'');
   }
-  // Render image grids
-  function renderImgGrid(containerId,imgs){
-    var el=document.getElementById(containerId);if(!el)return;
-    var slots=[
-      {key:'hero',label:'Hero Image'},
-      {key:'product',label:'Product Shot'},
-      {key:'lifestyle',label:'Lifestyle'}
-    ];
-    el.innerHTML=slots.map(function(slot){
-      var url=imgs[slot.key]||'';
-      var fallback='https://placehold.co/400x300/0f2a1c/fdf6e8?text='+encodeURIComponent(slot.label);
-      return '<div style="border:1.5px solid var(--border2);border-radius:10px;overflow:hidden;background:#fff">'
-        +'<img src="'+(url||fallback)+'" alt="'+slot.label+'" style="width:100%;height:200px;object-fit:cover;display:block" onerror="this.src=\''+fallback+'\'">'
-        +'<div style="padding:8px 12px;border-top:1px solid var(--border)">'
-        +'<div style="font-size:10px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.08em">'+slot.label+'</div>'
-        +(url?'<div style="font-size:9px;color:#2d6b4a;margin-top:2px">&#10003; Generated</div>':'<div style="font-size:9px;color:#d4873a;margin-top:2px">&#9888; Placeholder</div>')
-        +'</div></div>';
+  // Market tabs
+  var tabsEl=document.getElementById('p3MarketTabs');
+  if(tabsEl&&S.markets&&S.markets.length>1){
+    var mktLabels={US:'US',UK:'UK',IN:'IN',Global:'Global',ME:'ME',AU:'AU',EU:'EU'};
+    tabsEl.style.display='flex';
+    tabsEl.innerHTML=S.markets.map(function(m){
+      var isActive=m===market;
+      return '<button class="btn btn-sm '+(isActive?'btn-primary':'btn-outline')+'" onclick="_switchP3Market(\''+m+'\')" style="font-size:11px;padding:5px 14px">'+(mktLabels[m]||m)+'</button>';
     }).join('');
+  }else if(tabsEl){tabsEl.style.display='none';}
+  // Render variant grid
+  var gridEl=document.getElementById('p3VariantGrid');
+  if(gridEl){
+    var slots=[{key:'hero',label:'Hero Image'},{key:'product',label:'Product Shot'},{key:'lifestyle',label:'Lifestyle'}];
+    function _imgCard(url,label,variant,slotKey){
+      var fallback='https://placehold.co/400x300/0f2a1c/fdf6e8?text='+encodeURIComponent(label);
+      var src=url||fallback;
+      return '<div style="border:1.5px solid var(--border2);border-radius:10px;overflow:hidden;background:#fff;position:relative">'
+        +'<img src="'+src+'" alt="'+label+'" style="width:100%;height:200px;object-fit:cover;display:block" onerror="this.src=\''+fallback+'\'">'
+        +'<div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:6px">'
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:10px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.08em">'+label+'</div>'
+        +(url?'<div style="font-size:9px;color:#2d6b4a;margin-top:2px">&#10003; Generated</div>':'<div style="font-size:9px;color:#d4873a;margin-top:2px">&#9888; Placeholder</div>')
+        +'</div>'
+        +(url?'<button onclick="downloadSingleImage(\''+url.replace(/'/g,"\\'")+'\',\''+variant+'_'+slotKey+'\')" style="background:transparent;border:1px solid var(--border);border-radius:5px;padding:3px 8px;cursor:pointer;font-size:9px;font-weight:600;color:#374151;font-family:DM Sans,sans-serif" title="Download">&#11015;</button>'
+         +'<button onclick="window.open(\''+url.replace(/'/g,"\\'")+'\',\'_blank\')" style="background:transparent;border:1px solid var(--border);border-radius:5px;padding:3px 8px;cursor:pointer;font-size:9px;font-weight:600;color:#374151;font-family:DM Sans,sans-serif" title="Preview full size">&#128269;</button>':'')
+        +'</div></div>';
+    }
+    var html='';
+    // Variant A card
+    html+='<div style="margin-bottom:24px">';
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">';
+    html+='<span style="font-size:10px;font-weight:800;color:#fff;background:#0f2a1c;padding:3px 10px;border-radius:4px;letter-spacing:0.16em">A</span>';
+    html+='<span style="font-size:13px;font-weight:700;color:#0f2a1c">Variant A — Editorial Hero</span>';
+    html+='<span style="font-size:10px;color:#9ca3af;margin-left:auto">'+market+'</span>';
+    html+='</div>';
+    html+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">';
+    slots.forEach(function(slot){html+=_imgCard((imgsA||{})[slot.key],slot.label,'A',slot.key);});
+    html+='</div></div>';
+    // Variant B card
+    html+='<div style="margin-bottom:24px">';
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">';
+    html+='<span style="font-size:10px;font-weight:800;color:#fff;background:#d4873a;padding:3px 10px;border-radius:4px;letter-spacing:0.16em">B</span>';
+    html+='<span style="font-size:13px;font-weight:700;color:#d4873a">Variant B — Narrative Story</span>';
+    html+='<span style="font-size:10px;color:#9ca3af;margin-left:auto">'+market+'</span>';
+    html+='</div>';
+    html+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">';
+    slots.forEach(function(slot){html+=_imgCard((imgsB||{})[slot.key],slot.label,'B',slot.key);});
+    html+='</div></div>';
+    gridEl.innerHTML=html;
   }
-  renderImgGrid('p3ImgsA',imgsA||{});
-  renderImgGrid('p3ImgsB',imgsB||{});
+  // Prompts
+  var promptAEl=document.getElementById('p3PromptAText');
+  var promptBEl=document.getElementById('p3PromptBText');
+  if(promptAEl&&planA)promptAEl.textContent=JSON.stringify(planA.image_requirements||[],null,2);
+  if(promptBEl&&planB)promptBEl.textContent=JSON.stringify(planB.image_requirements||[],null,2);
   // Regen count
   var rc=document.getElementById('p3RegenCount');
   if(rc&&S._imgRegenCount>0)rc.textContent='Regenerated '+S._imgRegenCount+' time'+(S._imgRegenCount>1?'s':'');
   // Show content, hide loading
   var ld=document.getElementById('p3ImgLoading');if(ld)ld.style.display='none';
   var ct=document.getElementById('p3ImgContent');if(ct)ct.style.display='block';
+}
+// Switch market on p3 image output
+function _switchP3Market(mkt){
+  if(!S._allMarketImages||!S._allMarketImages[mkt])return;
+  var imgs=S._allMarketImages[mkt];
+  var d=S._phase1Data||{};
+  _renderP3Images(imgs.A,imgs.B,d.strategy,d.planA,d.planB);
+}
+// Download a single image
+function downloadSingleImage(url,name){
+  if(!url)return;
+  var a=document.createElement('a');a.href=url;a.download='vahdam_'+name+'_'+(new Date().toISOString().slice(0,10))+'.png';
+  a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+// Download all images for a variant
+function downloadVariantImages(variant){
+  var mkt=(S._phase1Data&&S._phase1Data.market)||S.markets[0]||'US';
+  var imgs=S._allMarketImages&&S._allMarketImages[mkt]?S._allMarketImages[mkt][variant]:null;
+  if(!imgs){showCopyToast('No images for Variant '+variant);return;}
+  ['hero','product','lifestyle'].forEach(function(k){
+    if(imgs[k])downloadSingleImage(imgs[k],variant+'_'+k+'_'+mkt);
+  });
+}
+// Download all images (both variants)
+function downloadAllImages(){
+  downloadVariantImages('A');
+  setTimeout(function(){downloadVariantImages('B');},500);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -5877,12 +6397,31 @@ async function _runPipelinePhase1(mkt, opts) {
     S._phase1Data = { strategy: strategy, planA: planA, planB: planB, imgsA: imgsA, imgsB: imgsB, market: market, regen: regen, brief: brief };
     S._phase1Done = true;
 
-    _pipelineLog(0, '✓ Phase 1 complete — images ready for review', 'ok');
+    _pipelineLog(0, '✓ Phase 1 complete for '+market+' — images ready for review', 'ok');
+    // Update Supabase with image data
+    _supabaseUpdateRow({generated_images:S._allMarketImages||{A:imgsA,B:imgsB},strategy_full:strategy});
     setTimeout(function() {
       _showPipelineOverlay(false);
       _PLN_RUNNING = false;
       // Render images on Step 3
       _renderP3Images(imgsA, imgsB, strategy, planA, planB);
+      // Check if more markets need processing
+      if(S._pendingMarkets&&S._pendingMarkets.length>1){
+        S._currentMarketIdx=(S._currentMarketIdx||0)+1;
+        if(S._currentMarketIdx<S._pendingMarkets.length){
+          var nextMkt=S._pendingMarkets[S._currentMarketIdx];
+          showCopyToast('Starting images for '+nextMkt+'...');
+          var statusEl=document.getElementById('p3ImgLoadingStatus');
+          if(statusEl)statusEl.textContent='Generating images for '+nextMkt+' ('+(S._currentMarketIdx+1)+'/'+S._pendingMarkets.length+')...';
+          setTimeout(function(){_runPipelinePhase1(nextMkt,{regenerate_counter:0});},1000);
+          return;
+        }
+      }
+      // Auto-continue to Phase 2 if "Design + HTML" was clicked
+      if(S._autoContinueToHTML){
+        S._autoContinueToHTML=false;
+        setTimeout(function(){go4Mailer();},800);
+      }
     }, 400);
 
   } catch (e) {
@@ -11407,8 +11946,11 @@ document.addEventListener('DOMContentLoaded',function(){
   initAuth();
   // Load product catalog from CSV-built JSON (async, non-blocking)
   // Loads US by default; switches when user picks a different market
+  // Load product catalog immediately so products are visible on the input page
   loadCatalog(window.S && S.markets && S.markets[0] || 'US').then(function(){
-    console.log('[boot] Catalog ready for Step 2 auto-pick');
+    console.log('[boot] Catalog loaded — '+CAT.length+' products');
+    if(typeof renderCatalog==='function')renderCatalog('all');
+    if(typeof renderSelWidget==='function')renderSelWidget();
   }).catch(function(e){
     console.warn('[boot] catalog load error:',e.message);
   });

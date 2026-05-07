@@ -333,6 +333,6 @@ Run Phase 1 → Phase 2 now. Think deeply before locking. Every field matters.`;
     });
 
   } catch (e) {
-    return res.status(500).json({ error: 'strategy_failed', stage: 'strategy', detail: String(e.message || e).substring(0, 300) });
+    return res.status(500).json({ error: 'strategy_failed', stage: 'strategy', detail: String(e.message || e).substring(0, 500), provider_errors: e._providerErrors || [] });
   }
 };

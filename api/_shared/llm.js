@@ -219,6 +219,7 @@ module.exports = async function callLLM(opts) {
   // ── 4-provider cascade ──────────────────────────────────────────────────────
   let result = null;
   let openaiKeysExhausted = 0;
+  const _providerErrors = []; // Track each provider's failure for diagnostics
 
   // === 1. OpenAI (ChatGPT) ===
   if (openaiKeys.length > 0) {
@@ -239,6 +240,7 @@ module.exports = async function callLLM(opts) {
       return { text: result.text, provider: result.provider, model: result.model, seed,
                quota_warning: openaiKeysExhausted > 0, exhausted_keys: openaiKeysExhausted };
     }
+    _providerErrors.push({ provider: 'openai', status: result.status, err: String(result.err || '').substring(0, 120) });
   }
 
   // === 2. Anthropic (Claude) ===
@@ -261,6 +263,7 @@ module.exports = async function callLLM(opts) {
       return { text: result.text, provider: result.provider, model: result.model, seed,
                quota_warning: openaiKeysExhausted > 0, exhausted_keys: openaiKeysExhausted };
     }
+    _providerErrors.push({ provider: 'anthropic', status: result.status, err: String(result.err || '').substring(0, 120) });
   }
 
   // === 3. Gemini (with rate-limit retry) ===
@@ -295,6 +298,7 @@ module.exports = async function callLLM(opts) {
       return { text: result.text, provider: result.provider, model: result.model, seed,
                quota_warning: openaiKeysExhausted > 0, exhausted_keys: openaiKeysExhausted };
     }
+    _providerErrors.push({ provider: 'gemini', status: result.status, err: String(result.err || '').substring(0, 120) });
   }
 
   // === 4. Grok (xAI) ===
@@ -319,12 +323,20 @@ module.exports = async function callLLM(opts) {
     }
   }
 
-  // === All providers exhausted ===
+  // === All providers exhausted — build detailed diagnostic ===
+  if (result && !result.ok) {
+    _providerErrors.push({ provider: result.provider || 'grok', status: result.status, err: String(result.err || '').substring(0, 120) });
+  }
+  const _failLog = _providerErrors.map(function(e) { return e.provider + ':' + e.status; }).join(' → ');
+  const _fullLog = _providerErrors.map(function(e) { return e.provider + '(' + e.status + '): ' + e.err; }).join(' | ');
+  console.error('[llm][' + stage + '] ALL PROVIDERS FAILED: ' + _fullLog);
   const errMsg = (result && result.err) ? String(result.err).substring(0, 250) : 'All providers exhausted';
   const status = result && result.status;
-  throw new Error(
-    'All providers failed [' + stage + '] status=' + (status || 'none') + ': ' + errMsg
+  const err = new Error(
+    'All providers failed [' + stage + '] cascade=' + _failLog + ' | last=' + errMsg
   );
+  err._providerErrors = _providerErrors;
+  throw err;
 };
 
 /**
