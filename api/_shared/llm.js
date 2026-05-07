@@ -1,12 +1,14 @@
 'use strict';
 // ─────────────────────────────────────────────────────────────────────────────
-// Shared LLM caller — 4-provider waterfall
+// Shared LLM caller — 6-provider waterfall
 //
 // CASCADE ORDER (first available key wins at each tier):
 //   1. OpenAI    (OPENAI_API_KEY / _2 / _3)   — ChatGPT, highest quality
 //   2. Anthropic (ANTHROPIC_API_KEY)           — Claude, strong fallback
 //   3. Gemini    (GEMINI_API_KEY)              — free tier, multi-model
 //   4. Grok/xAI  (XAI_API_KEY)               — OpenAI-compatible fallback
+//   5. Groq      (GROQ_API_KEY)              — free 30 RPM, Llama/Mixtral
+//   6. Cerebras  (CEREBRAS_API_KEY)           — free 30 RPM, ultra-fast
 //
 // Within each provider, quota exhaustion rotates keys/models before
 // falling to the next provider. Rate-limits also fall through.
@@ -19,6 +21,8 @@ const OPENAI_BASE    = 'https://api.openai.com/v1';
 const ANTHROPIC_BASE = 'https://api.anthropic.com/v1';
 const GEMINI_BASE    = 'https://generativelanguage.googleapis.com/v1beta';
 const GROK_BASE      = 'https://api.x.ai/v1';
+const GROQ_BASE      = 'https://api.groq.com/openai/v1';
+const CEREBRAS_BASE  = 'https://api.cerebras.ai/v1';
 
 function genSeed() {
   return Date.now().toString(36) + '-' + Math.floor(Math.random() * 0xffff).toString(16);
@@ -54,16 +58,22 @@ module.exports = async function callLLM(opts) {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const geminiKey    = userGeminiKey || process.env.GEMINI_API_KEY;
   const grokKey      = process.env.XAI_API_KEY;
+  const groqKey      = process.env.GROQ_API_KEY;
+  const cerebrasKey  = process.env.CEREBRAS_API_KEY;
 
-  if (!openaiKeys.length && !anthropicKey && !geminiKey && !grokKey) {
-    throw new Error('No AI provider configured. Set at least one of: OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, XAI_API_KEY');
+  if (!openaiKeys.length && !anthropicKey && !geminiKey && !grokKey && !groqKey && !cerebrasKey) {
+    throw new Error('No AI provider configured. Set at least one of: OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, XAI_API_KEY, GROQ_API_KEY, CEREBRAS_API_KEY');
   }
 
   // When a preferred provider is set, skip others to avoid wasting time on failed providers
-  const skipOpenai    = preferredProvider && preferredProvider !== 'openai';
-  const skipAnthropic = preferredProvider && preferredProvider !== 'anthropic';
-  const skipGemini    = preferredProvider && preferredProvider !== 'gemini';
-  const skipGrok      = preferredProvider && preferredProvider !== 'grok';
+  // Special: 'gemini+' means Gemini first, then Groq+Cerebras as backup (skip OpenAI/Anthropic/Grok)
+  const isGeminiPlus = preferredProvider === 'gemini+';
+  const skipOpenai    = preferredProvider && preferredProvider !== 'openai' && !isGeminiPlus;
+  const skipAnthropic = preferredProvider && preferredProvider !== 'anthropic' && !isGeminiPlus;
+  const skipGemini    = preferredProvider && preferredProvider !== 'gemini' && !isGeminiPlus;
+  const skipGrok      = preferredProvider && preferredProvider !== 'grok' && !isGeminiPlus;
+  const skipGroq      = preferredProvider && preferredProvider !== 'groq' && !isGeminiPlus;
+  const skipCerebras  = preferredProvider && preferredProvider !== 'cerebras' && !isGeminiPlus;
 
   const seed             = genSeed();
   const seededUserMessage = userMessage + '\n\n<!-- gen_seed:' + seed + ' -->';
@@ -221,6 +231,73 @@ module.exports = async function callLLM(opts) {
     }
   }
 
+  // ── Groq (OpenAI-compatible, free 30 RPM, Llama/Mixtral) ─────────────────────
+  async function _groq(model) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    console.log('[llm][' + stage + '] groq model=' + model + ' seed=' + seed);
+    try {
+      const r = await fetch(GROQ_BASE + '/chat/completions', {
+        method: 'POST', cache: 'no-store',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + groqKey },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: seededUserMessage }],
+          max_tokens: maxTokens, temperature,
+          ...(responseFormat ? { response_format: responseFormat } : {})
+        }),
+        signal: ctrl.signal
+      });
+      clearTimeout(t);
+      if (!r.ok) {
+        const err = await r.text().catch(() => '');
+        console.error('[llm][' + stage + '] Groq ' + r.status, err.substring(0, 200));
+        return { ok: false, status: r.status, err };
+      }
+      const data = await r.json();
+      const text = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+      console.log('[llm][' + stage + '] groq ok model=' + model + ' len=' + text.length);
+      return { ok: true, text, provider: 'groq', model };
+    } catch (e) {
+      clearTimeout(t);
+      return { ok: false, status: 0, err: e.message || String(e) };
+    }
+  }
+
+  // ── Cerebras (OpenAI-compatible, free 30 RPM, ultra-fast) ──────────────────
+  async function _cerebras(model) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    console.log('[llm][' + stage + '] cerebras model=' + model + ' seed=' + seed);
+    try {
+      const r = await fetch(CEREBRAS_BASE + '/chat/completions', {
+        method: 'POST', cache: 'no-store',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + cerebrasKey },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: seededUserMessage }],
+          max_tokens: Math.min(maxTokens, 8192), // Cerebras free tier caps at 8K output
+          temperature
+          // Cerebras doesn't support response_format yet
+        }),
+        signal: ctrl.signal
+      });
+      clearTimeout(t);
+      if (!r.ok) {
+        const err = await r.text().catch(() => '');
+        console.error('[llm][' + stage + '] Cerebras ' + r.status, err.substring(0, 200));
+        return { ok: false, status: r.status, err };
+      }
+      const data = await r.json();
+      const text = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+      console.log('[llm][' + stage + '] cerebras ok model=' + model + ' len=' + text.length);
+      return { ok: true, text, provider: 'cerebras', model };
+    } catch (e) {
+      clearTimeout(t);
+      return { ok: false, status: 0, err: e.message || String(e) };
+    }
+  }
+
   // ── Helper: is this a retryable error (rate limit / model issue) ────────────
   function isRetryable(status) {
     // 403 = forbidden/no-credits (Grok), 402 = payment required — both should cascade
@@ -332,6 +409,53 @@ module.exports = async function callLLM(opts) {
       return { text: result.text, provider: result.provider, model: result.model, seed,
                quota_warning: openaiKeysExhausted > 0, exhausted_keys: openaiKeysExhausted };
     }
+  }
+
+  // === 5. Groq (free tier — Llama 3.3 70B, 30 RPM) ===
+  if (groqKey && (!result || !result.ok) && !skipGroq) {
+    console.warn('[llm][' + stage + '] Trying Groq (free tier)');
+    const groqModels = [
+      process.env.GROQ_TEXT_MODEL || 'llama-3.3-70b-versatile',
+      'llama-3.1-8b-instant',
+      'mixtral-8x7b-32768'
+    ];
+    for (const model of groqModels) {
+      result = await _groq(model);
+      if (result.ok) break;
+      if (isRetryable(result.status)) {
+        console.warn('[llm][' + stage + '] Groq ' + result.status + ' on ' + model + ' — trying next');
+        continue;
+      }
+      break;
+    }
+    if (result.ok) {
+      return { text: result.text, provider: result.provider, model: result.model, seed,
+               quota_warning: openaiKeysExhausted > 0, exhausted_keys: openaiKeysExhausted };
+    }
+    _providerErrors.push({ provider: 'groq', status: result.status, err: String(result.err || '').substring(0, 120) });
+  }
+
+  // === 6. Cerebras (free tier — Llama 3.1 70B, 30 RPM, ultra-fast) ===
+  if (cerebrasKey && (!result || !result.ok) && !skipCerebras) {
+    console.warn('[llm][' + stage + '] Trying Cerebras (free tier)');
+    const cerebrasModels = [
+      process.env.CEREBRAS_TEXT_MODEL || 'llama-3.3-70b',
+      'llama-3.1-8b'
+    ];
+    for (const model of cerebrasModels) {
+      result = await _cerebras(model);
+      if (result.ok) break;
+      if (isRetryable(result.status)) {
+        console.warn('[llm][' + stage + '] Cerebras ' + result.status + ' on ' + model + ' — trying next');
+        continue;
+      }
+      break;
+    }
+    if (result.ok) {
+      return { text: result.text, provider: result.provider, model: result.model, seed,
+               quota_warning: openaiKeysExhausted > 0, exhausted_keys: openaiKeysExhausted };
+    }
+    _providerErrors.push({ provider: 'cerebras', status: result.status, err: String(result.err || '').substring(0, 120) });
   }
 
   // === All providers exhausted — build detailed diagnostic ===
