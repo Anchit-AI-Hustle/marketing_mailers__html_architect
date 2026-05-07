@@ -4347,6 +4347,10 @@ function offerSub(p){
   if(code)return 'USE CODE '+code+' AT CHECKOUT';
   return 'LIMITED TIME ONLY';
 }
+function offerPct(p){
+  var m=p.match(/(\d{1,2})\s*%\s*(?:off|discount|sale)/i)||p.match(/(?:flat|up\s*to|save|get)\s*(\d{1,2})\s*%/i)||p.match(/(\d{1,2})%/);
+  return m?m[1]:'';
+}
 function offerCta(p){const code=offerCode(p);return code?'Redeem '+code:ctaText(p);}
 function getMarketIntel(mt,prompt){
   var type=detectType(prompt);
