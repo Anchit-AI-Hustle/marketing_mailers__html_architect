@@ -171,12 +171,17 @@ module.exports = async function handler(req, res) {
             const isQuota = msg.includes('429') || msg.includes('402') ||
                             msg.toLowerCase().includes('quota') ||
                             msg.toLowerCase().includes('billing');
-            if (isQuota && ki < openaiKeys.length - 1) {
-              keyRotated = true;
-              console.warn('[pipeline/images]', variant, slot, 'key', ki + 1, 'quota exhausted — rotating to key', ki + 2);
-              continue;
+            if (isQuota) {
+              if (ki < openaiKeys.length - 1) {
+                keyRotated = true;
+                console.warn('[pipeline/images]', variant, slot, 'key', ki + 1, 'quota exhausted — rotating to key', ki + 2);
+                continue;
+              }
+              // Last key also quota-exhausted — break to Pollinations fallback below
+              console.warn('[pipeline/images]', variant, slot, 'all', openaiKeys.length, 'keys quota exhausted — will try Pollinations');
+              break;
             }
-            throw e; // non-quota error or last key exhausted
+            throw e; // non-quota error
           }
         }
         // All OpenAI keys quota-exhausted → fall back to Pollinations
