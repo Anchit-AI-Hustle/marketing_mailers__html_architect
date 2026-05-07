@@ -40,6 +40,10 @@ module.exports = async function callLLM(opts) {
     stage         = 'llm'
   } = opts;
 
+  // APP_AI_PROVIDER env: force a specific provider first (skip others that waste time on 429/400)
+  // Values: 'gemini', 'openai', 'anthropic', 'grok', or empty (default cascade)
+  const preferredProvider = (process.env.APP_AI_PROVIDER || '').toLowerCase().trim();
+
   const openaiKeys = [
     process.env.OPENAI_API_KEY,
     process.env.OPENAI_API_KEY_2,
@@ -53,6 +57,12 @@ module.exports = async function callLLM(opts) {
   if (!openaiKeys.length && !anthropicKey && !geminiKey && !grokKey) {
     throw new Error('No AI provider configured. Set at least one of: OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, XAI_API_KEY');
   }
+
+  // When a preferred provider is set, skip others to avoid wasting time on failed providers
+  const skipOpenai    = preferredProvider && preferredProvider !== 'openai';
+  const skipAnthropic = preferredProvider && preferredProvider !== 'anthropic';
+  const skipGemini    = preferredProvider && preferredProvider !== 'gemini';
+  const skipGrok      = preferredProvider && preferredProvider !== 'grok';
 
   const seed             = genSeed();
   const seededUserMessage = userMessage + '\n\n<!-- gen_seed:' + seed + ' -->';
@@ -222,7 +232,7 @@ module.exports = async function callLLM(opts) {
   const _providerErrors = []; // Track each provider's failure for diagnostics
 
   // === 1. OpenAI (ChatGPT) ===
-  if (openaiKeys.length > 0) {
+  if (openaiKeys.length > 0 && !skipOpenai) {
     const model = process.env.OPENAI_TEXT_MODEL || 'gpt-4o-mini';
     for (let ki = 0; ki < openaiKeys.length; ki++) {
       result = await _openai(model, openaiKeys[ki]);
@@ -244,7 +254,7 @@ module.exports = async function callLLM(opts) {
   }
 
   // === 2. Anthropic (Claude) ===
-  if (anthropicKey && (!result || !result.ok)) {
+  if (anthropicKey && (!result || !result.ok) && !skipAnthropic) {
     console.warn('[llm][' + stage + '] Trying Anthropic (Claude)');
     const claudeModels = [
       process.env.ANTHROPIC_TEXT_MODEL || 'claude-3-5-haiku-20241022',
@@ -268,7 +278,7 @@ module.exports = async function callLLM(opts) {
 
   // === 3. Gemini (with rate-limit retry) ===
   //    De-duplicate: env var might equal a hardcoded fallback
-  if (geminiKey && (!result || !result.ok)) {
+  if (geminiKey && (!result || !result.ok) && !skipGemini) {
     console.warn('[llm][' + stage + '] Trying Gemini');
     const _gmRaw = [
       process.env.GEMINI_TEXT_MODEL || 'gemini-2.0-flash',
@@ -302,7 +312,7 @@ module.exports = async function callLLM(opts) {
   }
 
   // === 4. Grok (xAI) ===
-  if (grokKey && (!result || !result.ok)) {
+  if (grokKey && (!result || !result.ok) && !skipGrok) {
     console.warn('[llm][' + stage + '] Trying Grok (xAI)');
     const grokModels = [
       process.env.GROK_TEXT_MODEL || 'grok-3-mini-fast',
