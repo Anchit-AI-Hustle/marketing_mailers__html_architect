@@ -229,11 +229,21 @@ module.exports = async function handler(req, res) {
   if (!openaiKey && !anthropicKey && !geminiKey && !grokKey) {
     return res.status(500).json({ error: 'server_misconfigured', detail: 'No AI provider configured. Set OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, or XAI_API_KEY.' });
   }
-  const provider  = openaiKey ? 'openai' : anthropicKey ? 'anthropic' : geminiKey ? 'gemini' : 'grok';
-  const textModel = openaiKey    ? (process.env.OPENAI_TEXT_MODEL    || 'gpt-4o-mini')
-                  : anthropicKey ? (process.env.ANTHROPIC_TEXT_MODEL || 'claude-3-5-haiku-20241022')
-                  : geminiKey    ? (process.env.GEMINI_TEXT_MODEL    || 'gemini-2.0-flash')
-                  :                (process.env.GROK_TEXT_MODEL      || 'grok-3-mini-fast');
+  // APP_AI_PROVIDER: skip dead providers (e.g. 'gemini' skips OpenAI/Anthropic/Grok)
+  const preferredProvider = (process.env.APP_AI_PROVIDER || '').toLowerCase().trim();
+  const skipOpenai    = preferredProvider && preferredProvider !== 'openai';
+  const skipAnthropic = preferredProvider && preferredProvider !== 'anthropic';
+  const skipGemini    = preferredProvider && preferredProvider !== 'gemini';
+  const skipGrok      = preferredProvider && preferredProvider !== 'grok';
+
+  const provider  = (!skipOpenai && openaiKey) ? 'openai'
+                  : (!skipAnthropic && anthropicKey) ? 'anthropic'
+                  : (!skipGemini && geminiKey) ? 'gemini'
+                  : 'grok';
+  const textModel = (!skipOpenai && openaiKey)        ? (process.env.OPENAI_TEXT_MODEL    || 'gpt-4o-mini')
+                  : (!skipAnthropic && anthropicKey)   ? (process.env.ANTHROPIC_TEXT_MODEL || 'claude-3-5-haiku-20241022')
+                  : (!skipGemini && geminiKey)          ? (process.env.GEMINI_TEXT_MODEL    || 'gemini-2.0-flash')
+                  :                                      (process.env.GROK_TEXT_MODEL      || 'grok-3-mini-fast');
 
   let body = req.body;
   if (typeof body === 'string') {
@@ -441,7 +451,7 @@ module.exports = async function handler(req, res) {
 
   try {
     // 1. OpenAI (multi-key rotation on quota exhaustion)
-    if (openaiKey) {
+    if (openaiKey && !skipOpenai) {
       const openaiKeys = [openaiKey, process.env.OPENAI_API_KEY_2, process.env.OPENAI_API_KEY_3].filter(Boolean);
       const model = process.env.OPENAI_TEXT_MODEL || 'gpt-4o-mini';
       for (const key of openaiKeys) {
@@ -454,7 +464,7 @@ module.exports = async function handler(req, res) {
     }
 
     // 2. Anthropic (Claude) — if OpenAI unavailable or failed
-    if (anthropicKey && (!result || !result.ok)) {
+    if (anthropicKey && (!result || !result.ok) && !skipAnthropic) {
       console.warn('[generate] Trying Anthropic (Claude)');
       for (const model of [process.env.ANTHROPIC_TEXT_MODEL || 'claude-3-5-haiku-20241022', 'claude-3-5-sonnet-20241022']) {
         result = await callAnthropic(model);
@@ -466,7 +476,7 @@ module.exports = async function handler(req, res) {
 
     // 3. Gemini — if Claude unavailable or failed
     //    De-duplicate models: env var might equal a hardcoded fallback
-    if (geminiKey && (!result || !result.ok)) {
+    if (geminiKey && (!result || !result.ok) && !skipGemini) {
       console.warn('[generate] Trying Gemini');
       const geminiModels = [];
       const seen = new Set();
@@ -483,7 +493,7 @@ module.exports = async function handler(req, res) {
     }
 
     // 4. Grok (xAI) — final fallback
-    if (grokKey && (!result || !result.ok)) {
+    if (grokKey && (!result || !result.ok) && !skipGrok) {
       console.warn('[generate] Trying Grok (xAI)');
       for (const model of [process.env.GROK_TEXT_MODEL || 'grok-3-mini-fast', 'grok-3-mini']) {
         result = await callGrok(model);
