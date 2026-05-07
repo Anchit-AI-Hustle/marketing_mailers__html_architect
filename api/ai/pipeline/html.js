@@ -723,24 +723,13 @@ Output starts <!DOCTYPE html>, ends </html>. Nothing before or after.`;
       });
     }
     if (!html.toLowerCase().includes('<table') && !html.toLowerCase().includes('<!doctype')) {
-      return res.status(502).json({
-        error: 'html_invalid_structure',
-        variant,
-        provider,
-        detail: 'Response does not contain valid HTML (<table> or <!DOCTYPE> missing)',
-        raw: html.substring(0, 300)
-      });
+      console.warn('[html] LLM output has no valid HTML structure for variant ' + variant + ' — falling to heuristic');
+      throw new Error('html_invalid_structure: LLM response has no <table> or <!DOCTYPE> — using heuristic fallback');
     }
-    // Completeness check: truncated output is caught here rather than rendering broken HTML
+    // Completeness check: truncated output falls through to heuristic fallback
     if (!html.toLowerCase().includes('</html>')) {
-      return res.status(502).json({
-        error: 'html_truncated',
-        variant,
-        provider,
-        detail: 'HTML is missing closing </html> tag — output was truncated (hit token limit or timeout)',
-        length: html.length,
-        raw_tail: html.slice(-200)
-      });
+      console.warn('[html] LLM output truncated (' + html.length + ' chars) for variant ' + variant + ' — falling to heuristic');
+      throw new Error('html_truncated: LLM output was ' + html.length + ' chars, missing </html> — using heuristic fallback');
     }
 
     // Placeholder validation: all three image slots must be present so the client can inject images

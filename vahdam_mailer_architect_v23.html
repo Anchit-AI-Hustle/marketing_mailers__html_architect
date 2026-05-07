@@ -2494,9 +2494,35 @@ async function _runFullHTMLPipeline(mkt){
     },600);
   }catch(e){
     console.error('[full-pipeline] Fatal:',e);
+    var errMsg=(e&&e.message)?e.message:String(e);
+    var isAbort=errMsg.indexOf('Aborted')!==-1||errMsg.indexOf('abort')!==-1;
+    _pipelineLog(0,'Pipeline error: '+errMsg,'error');
+
+    // Check if quota/key exhaustion — offer API key popup
+    var isQuotaErr=errMsg.indexOf('429')!==-1||errMsg.indexOf('quota')!==-1||
+      errMsg.indexOf('billing')!==-1||errMsg.indexOf('credit')!==-1||
+      errMsg.indexOf('exhausted')!==-1||errMsg.indexOf('permission')!==-1||
+      errMsg.indexOf('403')!==-1;
+
+    if(!isAbort&&isQuotaErr&&!_userGeminiKey){
+      _pipelineLog(0,'API quota exhausted — requesting your Gemini API key...','warn');
+      var userKey=await _showApiKeyPopup('All configured AI provider keys are exhausted. Provide your own Gemini API key to continue.');
+      if(userKey){
+        _pipelineLog(0,'User key provided — retrying pipeline...','ok');
+        _PLN_RUNNING=false;
+        try{_runFullHTMLPipeline(mkt);return;}catch(retryErr){console.error('[full-pipeline] Retry failed:',retryErr);}
+      }
+    }
+
     _PLN_RUNNING=false;
-    _pipelineLog(0,'Pipeline error: '+e.message,'error');
-    _pipelineShowError('Pipeline failed',e.message,'Check logs or try again.');
+    if(isAbort){_showPipelineOverlay(false);return;}
+
+    var suggestion=isQuotaErr
+      ?'API keys are exhausted. Click below to provide your own Gemini key. <button onclick="_retryWithUserKey()" style="margin-top:8px;background:#d4873a;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:11px;font-weight:700;cursor:pointer">🔑 Provide Your API Key</button>'
+      :errMsg.indexOf('404')!==-1?'Vercel may not have deployed yet. Wait 1-2 min and retry.'
+      :errMsg.indexOf('timeout')!==-1?'An API call timed out. Try again.'
+      :'Check Vercel function logs or try again.';
+    _pipelineShowError('Pipeline failed',errMsg,suggestion);
   }
 }
 
