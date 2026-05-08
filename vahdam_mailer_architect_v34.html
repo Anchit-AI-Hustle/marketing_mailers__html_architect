@@ -706,6 +706,16 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     <button class="cfbtn" onclick="filterCat('summer',this)">Summer</button>
   </div>
   <div class="cat-grid" id="catGrid"></div>
+  <!-- Selected Products Strip -->
+  <div id="selectedProdsStrip" style="display:none;margin:14px 0;background:#f8f6f2;border:1px solid #ede5d8;border-radius:10px;padding:12px 14px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#004A2B">Selected Products</span>
+      <span id="selProdCount" style="font-size:10px;color:#888"></span>
+      <span style="flex:1"></span>
+      <button onclick="clearSel()" style="font-size:10px;padding:3px 10px;background:transparent;border:1px solid #ccc;border-radius:5px;cursor:pointer;color:#888;font-family:DM Sans,sans-serif">Clear All</button>
+    </div>
+    <div id="selProdsGrid" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px"></div>
+  </div>
   <div class="btn-row">
     <button class="btn btn-outline btn-sm" onclick="goBack(1)">&larr; Back</button>
     <button class="btn btn-outline btn-sm" onclick="clearSel()">Clear</button>
@@ -879,6 +889,20 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     </div>
   </div>
   <div id="p4-upload" style="display:none">
+    <!-- Server-side AI image generation -->
+    <div style="background:linear-gradient(135deg,#004A2B,#1a3a28);border-radius:12px;padding:18px 20px;margin-bottom:16px;color:#FBF5EA">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="font-size:18px">&#9889;</span>
+        <span style="font-size:13px;font-weight:700">Generate Mailer Design with AI</span>
+        <span style="font-size:10px;color:#9fd6b5;margin-left:auto">gpt-image-2 &rarr; Gemini &rarr; Pollinations</span>
+      </div>
+      <p style="font-size:11px;color:#c9e8d5;line-height:1.5;margin:0 0 12px">Creates a complete mailer creative from your campaign brief + real product data. One click &mdash; the AI builds the full design with your products, prices, and brand palette.</p>
+      <div style="display:flex;gap:8px">
+        <button id="serverGenBtn" onclick="generateServerImage('A')" style="flex:1;padding:10px;background:#AB8743;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif">&#9889; Generate Variant A</button>
+        <button onclick="generateServerImage('B')" style="flex:1;padding:10px;background:#AB8743;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif">&#9889; Generate Variant B</button>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:11px;color:#999;margin-bottom:12px;letter-spacing:0.1em">— OR upload your own design —</div>
     <div id="uploadZone" onclick="document.getElementById('imgUploadInput').click()"
       style="border:2px dashed #ccc;border-radius:12px;padding:40px 20px;text-align:center;cursor:pointer;background:#faf8f4;transition:border-color .15s"
       onmouseover="this.style.borderColor='#004A2B'" onmouseout="this.style.borderColor='#ccc'">
@@ -1651,6 +1675,28 @@ function updateSelInfo(){
     if(!cn)return;
     card.classList.toggle('sel',S.manualProds.some(function(p){return p.n===cn.textContent;}));
   });
+  // Render selected products strip
+  var strip=document.getElementById('selectedProdsStrip');
+  var grid=document.getElementById('selProdsGrid');
+  var countEl=document.getElementById('selProdCount');
+  if(strip&&grid){
+    if(ct===0){strip.style.display='none';return;}
+    strip.style.display='block';
+    if(countEl)countEl.textContent='('+ct+')';
+    var curr=(S.markets&&S.markets[0]==='UK')?'£':(S.markets&&S.markets[0]==='IN')?'₹':(S.markets&&S.markets[0]==='EU')?'€':'$';
+    grid.innerHTML=S.manualProds.map(function(p,idx){
+      var priceHtml='';
+      if(p.price){
+        if(p.compare_at&&parseFloat(p.compare_at)>parseFloat(p.price)){
+          var pct=Math.round((1-parseFloat(p.price)/parseFloat(p.compare_at))*100);
+          priceHtml='<div style="font-size:11px;font-weight:700;color:#004A2B">'+curr+p.price+' <span style="font-size:9px;color:#999;text-decoration:line-through">'+curr+p.compare_at+'</span> <span style="font-size:8px;color:#c0392b;font-weight:700">-'+pct+'%</span></div>';
+        } else {
+          priceHtml='<div style="font-size:11px;font-weight:700;color:#004A2B">'+curr+p.price+'</div>';
+        }
+      }
+      return '<div style="flex:0 0 120px;background:#fff;border:1px solid #ede5d8;border-radius:8px;overflow:hidden;position:relative;cursor:pointer" onclick="toggleProd('+CAT.indexOf(p)+')">'+(p.i?'<img src="'+p.i+'" alt="" style="width:120px;height:90px;object-fit:cover;display:block" loading="lazy" onerror="this.style.display=\'none\'">':'<div style="width:120px;height:90px;background:#e8f0e8"></div>')+'<div style="padding:6px 8px"><div style="font-size:10px;font-weight:600;color:#1a1a1a;line-height:1.3;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.n.split(',')[0]+'</div>'+priceHtml+(p.subtitle?'<div style="font-size:8px;color:#888;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.subtitle+'</div>':'')+'</div><div style="position:absolute;top:4px;right:4px;width:18px;height:18px;background:rgba(192,57,43,0.85);border-radius:50%;color:#fff;font-size:11px;line-height:18px;text-align:center;cursor:pointer" title="Remove">&times;</div></div>';
+    }).join('');
+  }
 }
 function activateAutoPick(){
   S.manualProds=[];
@@ -4223,6 +4269,84 @@ async function generateWithOpenAI(){
     console.warn('generateWithOpenAI (non-critical):',e.message);
   }
 }
+// ── Build a rich design prompt from real catalog data for gpt-image-2 ────────
+function buildDesignPromptFromCatalog(market,variant){
+  var st=S.strategy||buildCampaignStrategy();
+  var prods=st.products||S.finalProds||[];
+  var mt=market||S.market||'US';
+  var mktIntel=getMarketIntel(mt,st.activePrompt||st.rawPrompt||S.prompt||'');
+  var hl=st.headline||heroHeadline(S.prompt);
+  var sc=st.subCopy||subCopy(S.prompt);
+  var cta=st.cta||ctaText(S.prompt);
+  var ot=st.offer?st.offer.text:'';
+  var oc=st.offer?st.offer.code:'';
+  var annBar=st.annBar||annBarLine(S.prompt,mt);
+  var detType=st.type||S.type||'Sale';
+  // Build product detail lines from REAL catalog data
+  var currSym={US:'$',UK:'£',IN:'₹',EU:'€',AU:'A$',Global:'$',ME:'$'}[mt]||'$';
+  var prodLines=prods.slice(0,4).map(function(p,i){
+    var role=i===0?'HERO':'PRODUCT '+(i+1);
+    var name=p.n.split(',')[0];
+    var priceStr=p.price?(currSym+p.price):'';
+    var compareStr=(p.compare_at&&parseFloat(p.compare_at)>parseFloat(p.price))?(' was '+currSym+p.compare_at+' ('+Math.round((1-parseFloat(p.price)/parseFloat(p.compare_at))*100)+'% OFF)'):'';
+    var sub=p.subtitle||p.type||'';
+    var notes=p.tasting_notes||'';
+    var visual=prodVisualDesc(p.n);
+    return role+': "'+name+'" | '+priceStr+compareStr+(sub?' | '+sub:'')+(notes?' | '+notes:'')+' | Visual: '+visual;
+  }).join('\n');
+  // Variant-specific layout
+  var layoutDesc=variant==='B'
+    ?'VARIANT B — NARRATIVE STORY: Full-width cinematic hero image top (no side-by-side), headline centred below, vertical product stack (one product per full-width row), single dramatic customer quote, gold offer banner at bottom'
+    :'VARIANT A — EDITORIAL HERO: Side-by-side hero (headlines LEFT, lifestyle product photo RIGHT), 4-column product grid below, 3 small testimonial cards, mid-flow offer banner';
+  return 'VAHDAM India premium tea marketing email design — complete email creative, 600px wide, tall vertical scroll.\n\n'+
+    'CAMPAIGN: '+detType+' | Market: '+mt+' | '+annBar+'\n'+
+    'HEADLINE: "'+hl[0]+'" / "'+( hl[1]||'')+'"\n'+
+    'SUB-COPY: "'+sc+'"\n'+
+    'CTA: "'+cta+'"'+(ot?' | OFFER: '+ot:'')+(oc?' | CODE: '+oc:'')+'\n\n'+
+    'PRODUCTS (show EXACTLY these with real prices):\n'+prodLines+'\n\n'+
+    'LAYOUT: '+layoutDesc+'\n\n'+
+    'BRAND: Forest green #004A2B headers, amber gold #AB8743 accents, parchment cream #FBF5EA body. Serif headlines (Garamond-style), clean sans-serif body.\n'+
+    'STYLE: Premium email marketing creative. Magazine-quality. Photorealistic product photography. Readable typography at all sizes. NOT a photo, this is a DESIGNED email layout with sections, cards, buttons.\n'+
+    'TESTIMONIAL: "'+(_REVIEW_QUOTES[detType]?_REVIEW_QUOTES[detType][0][0]:_REVIEW_QUOTES.default[0][0])+'" — '+_getReviewerName(mt,0)+'\n'+
+    'TRUST: '+mktIntel.social+' | '+mktIntel.shippingNote+'\n'+
+    'FOOTER: VAHDAM EST. 2015 · New Delhi, India | Instagram · Facebook · YouTube';
+}
+// ── Server-side image generation via /api/ai/image ──────────────────────────
+async function generateServerImage(variant){
+  var mt=S.activeImageMarket||S.market||'US';
+  var v=variant||S.activeImageVariant||'A';
+  var prompt=buildDesignPromptFromCatalog(mt,v);
+  showCopyToast('Generating mailer design via server (gpt-image-2 → Gemini → Pollinations)...');
+  // Show loading state
+  var btn=document.getElementById('serverGenBtn');
+  if(btn){btn.disabled=true;btn.innerHTML='&#9889; Generating...';}
+  try{
+    var res=await fetch('/api/ai/image',{
+      method:'POST',
+      headers:_getApiHeaders(),
+      body:JSON.stringify({prompt:prompt,size:'1024x1536',quality:'high',mode:'design'})
+    });
+    if(!res.ok){var err=await res.json().catch(function(){return {};});throw new Error((err.error||'Server error')+' '+res.status);}
+    var data=await res.json();
+    if(!data.ok||!data.image_data_url)throw new Error('No image returned');
+    // Load into upload flow
+    S.uploadedDesignUrl=data.image_data_url;
+    var img=document.getElementById('uploadedImg');
+    var preview=document.getElementById('uploadPreview');
+    var zone=document.getElementById('uploadZone');
+    if(img)img.src=data.image_data_url;
+    if(preview)preview.style.display='block';
+    if(zone)zone.style.display='none';
+    switchP4Tab('upload',document.getElementById('tab-upload'));
+    showCopyToast('Design generated via '+data.provider+' ('+data.model+')! Review then Approve.');
+    if(data.quota_warning)console.warn('[image]',data.quota_note);
+  }catch(e){
+    showCopyToast('Image generation failed: '+e.message+' — try the AI tools tabs instead.');
+    console.warn('generateServerImage:',e.message);
+  }finally{
+    if(btn){btn.disabled=false;btn.innerHTML='&#9889; Generate Design (Server)';}
+  }
+}
 function copyPromptText(){
   const txt=document.getElementById('promptMono').textContent;
   navigator.clipboard.writeText(txt).then(function(){showCopyToast('Prompt copied!');}).catch(function(){
@@ -5407,63 +5531,41 @@ function buildEmailVariantB(uploadedDesignImg,mktOverride){
     // S3 — Full-width editorial hero IMAGE — taller, more cinematic
     (uploadedDesignImg?'<tr><td style="padding:0;line-height:0;font-size:0;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8"><img src="'+uploadedDesignImg+'" alt="'+(hero.n||'').replace(/"/g,'&quot;')+'" width="598" border="0" style="width:100%;max-width:598px;height:auto;display:block;border:0;outline:none;text-decoration:none"></td></tr>\n'
     :'<tr><td style="padding:0;line-height:0;font-size:0;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8"><img src="'+heroVisualPath+'" alt="'+(hero.n||'').replace(/"/g,'&quot;')+'" width="598" border="0" style="width:100%;max-width:598px;height:460px;object-fit:cover;display:block;border:0;outline:none;text-decoration:none;background:#e8f0e8"></td></tr>\n')+
-    // S4 — Centered editorial headline + sub + CTA (BELOW image, not beside)
-    '<tr><td class="pd20" style="background:#FBF5EA;padding:54px 52px 42px;text-align:center;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">'+
-      (ot?'<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;font-weight:800;letter-spacing:0.32em;color:#AB8743;margin:0 0 18px;text-transform:uppercase">— '+ot+' —</p>':'<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;font-weight:800;letter-spacing:0.32em;color:#AB8743;margin:0 0 18px;text-transform:uppercase">— '+st.type.toUpperCase()+' —</p>')+
-      '<p style="font-family:Lao MN,Georgia,serif;font-size:44px;font-weight:bold;color:#004A2B;margin:0 0 8px;line-height:1.05;letter-spacing:-0.012em">'+hl[0]+'</p>'+
-      (hl[1]?'<p style="font-family:Lao MN,Georgia,serif;font-size:42px;font-weight:bold;color:#AB8743;margin:0 0 22px;line-height:1.05;font-style:italic;letter-spacing:-0.005em">'+hl[1]+'</p>':'')+
-      '<div style="width:56px;height:2px;background:#AB8743;margin:22px auto 26px;border-radius:1px"></div>'+
-      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:15px;color:#444;margin:0 0 30px;line-height:1.75;max-width:460px;display:inline-block">'+(sc||'').substring(0,200)+'</p>'+
-      '<br>'+btn(collUrl,cta,'#004A2B','#FBF5EA')+
-      (oc?'<div style="margin:14px 0 0;display:inline-block">'+
-        '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;font-weight:800;color:#AB8743;margin:0 0 4px;letter-spacing:0.2em;text-transform:uppercase">Use code at checkout</p>'+
-        '<p style="font-family:Lao MN,Georgia,serif;font-size:22px;font-weight:bold;color:#fff;margin:0;letter-spacing:0.18em;background:#AB8743;display:inline-block;padding:7px 18px;border-radius:5px;box-shadow:0 2px 8px rgba(171,135,67,0.3)">'+oc+'</p>'+
-      '</div>':'')+
-      // Value summary line — repeats the offer + free shipping for clarity
-      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;font-weight:700;color:#c0392b;margin:16px 0 0;letter-spacing:0.04em;line-height:1.5">&#9889; '+valueSummaryLine((st&&st.activePrompt)||(S&&S.activePrompt)||(S&&S.prompt)||'',mt)+'</p>'+
+    // S4 — Compact centered headline + sub + CTA
+    '<tr><td class="pd20" style="background:#FBF5EA;padding:32px 36px 24px;text-align:center;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">'+
+      (ot?'<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;font-weight:800;letter-spacing:0.28em;color:#AB8743;margin:0 0 12px;text-transform:uppercase">'+ot+'</p>':'')+
+      '<p style="font-family:Lao MN,Georgia,serif;font-size:36px;font-weight:bold;color:#004A2B;margin:0 0 6px;line-height:1.06">'+hl[0]+'</p>'+
+      (hl[1]?'<p style="font-family:Lao MN,Georgia,serif;font-size:34px;font-weight:bold;color:#AB8743;margin:0 0 14px;line-height:1.06;font-style:italic">'+hl[1]+'</p>':'')+
+      '<div style="width:40px;height:2px;background:#AB8743;margin:14px auto 16px;border-radius:1px"></div>'+
+      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:13px;color:#444;margin:0 0 20px;line-height:1.65;max-width:440px;display:inline-block">'+(sc||'').substring(0,160)+'</p><br>'+
+      btn(collUrl,cta,'#004A2B','#FBF5EA')+
+      (oc?'<div style="margin:10px 0 0"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8px;font-weight:800;color:#AB8743;margin:0 0 3px;letter-spacing:0.16em;text-transform:uppercase">Use code</p><p style="font-family:Lao MN,Georgia,serif;font-size:18px;font-weight:bold;color:#fff;margin:0;letter-spacing:0.16em;background:#AB8743;display:inline-block;padding:5px 14px;border-radius:4px">'+oc+'</p></div>':'')+
     '</td></tr>\n'+
-    // S5 — Story / origin section (replaces feature bar from Variant A)
-    '<tr><td class="pd20" style="background:#fff;padding:36px 48px;text-align:center;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">'+
-      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;font-weight:800;letter-spacing:0.28em;color:#AB8743;margin:0 0 12px;text-transform:uppercase">— The Story —</p>'+
-      '<p style="font-family:Lao MN,Georgia,serif;font-size:22px;font-weight:bold;color:#1a1a1a;margin:0 0 14px;line-height:1.3">'+st.sectionTitle+'</p>'+
-      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:13px;color:#666;margin:0;line-height:1.8;max-width:460px;display:inline-block">'+(sc||'').substring(0,260)+'</p>'+
+    // S5 — Compact vertical product stack (max 3 products)
+    '<tr><td style="background:#fff;padding:20px 0 4px;text-align:center;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">'+
+      '<p style="font-family:Lao MN,Georgia,serif;font-size:18px;font-weight:bold;color:#1a1a1a;margin:0 0 14px">'+st.productSectionTitle+'</p>'+
     '</td></tr>\n'+
-    // S6 — Ingredient cards (large, 2x2, on cream)
-    '<tr><td class="pd20" style="background:#f8f4ee;padding:32px 36px;text-align:center;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">'+
-      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;font-weight:800;letter-spacing:0.28em;color:#AB8743;margin:0 0 10px;text-transform:uppercase">— Inside Every Cup —</p>'+
-      '<p style="font-family:Lao MN,Georgia,serif;font-size:20px;font-weight:bold;color:#1a1a1a;margin:0 0 22px">Pure botanicals. Nothing else.</p>'+
-      '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">'+
-        '<tr>'+ings.slice(0,2).map(function(ing){return '<td width="50%" style="padding:0 6px;vertical-align:top"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:#fff;border:1px solid #ede5d8;border-radius:10px"><tr><td style="padding:18px 16px;text-align:center"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:24px;margin:0 0 8px">🌿</p><p style="font-family:Lao MN,Georgia,serif;font-size:14px;font-weight:bold;color:#004A2B;margin:0 0 4px">'+ing.n+'</p><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;color:#666;margin:0;line-height:1.5">'+ing.d+'</p></td></tr></table></td>';}).join('')+'</tr>'+
-        '<tr><td colspan="2" style="height:12px"></td></tr>'+
-        '<tr>'+ings.slice(2,4).map(function(ing){return '<td width="50%" style="padding:0 6px;vertical-align:top"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:#fff;border:1px solid #ede5d8;border-radius:10px"><tr><td style="padding:18px 16px;text-align:center"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:24px;margin:0 0 8px">✨</p><p style="font-family:Lao MN,Georgia,serif;font-size:14px;font-weight:bold;color:#004A2B;margin:0 0 4px">'+ing.n+'</p><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;color:#666;margin:0;line-height:1.5">'+ing.d+'</p></td></tr></table></td>';}).join('')+'</tr>'+
-      '</table>'+
+    prods.slice(0,3).map(prodRow).join('')+
+    // S6 — Compact testimonial strip
+    '<tr><td style="background:#1a3a28;padding:20px 28px;text-align:center;border-left:1px solid #1a3a28;border-right:1px solid #1a3a28">'+
+      '<p style="font-family:Lao MN,Georgia,serif;font-size:32px;color:#AB8743;margin:0;line-height:1">&ldquo;</p>'+
+      '<p style="font-family:Lao MN,Georgia,serif;font-size:13px;color:#FBF5EA;margin:0 0 8px;line-height:1.5;font-style:italic;max-width:420px;display:inline-block">'+pullQuote+'</p>'+
+      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#9fd6b5;margin:0;letter-spacing:0.12em;text-transform:uppercase;font-weight:700">&ndash; '+_getReviewerName(mt,0)+' &middot; <span style="color:#AB8743">&#9733;&#9733;&#9733;&#9733;&#9733;</span></p>'+
     '</td></tr>\n'+
-    // S7 — Vertical product stack (HERO + featured rows, NOT a 4-col grid)
-    '<tr><td style="background:#fff;padding:28px 0 8px;text-align:center;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">'+
-      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;font-weight:800;letter-spacing:0.28em;color:#AB8743;margin:0 0 10px;text-transform:uppercase">— '+st.productSectionTitle+' —</p>'+
-      '<p style="font-family:Lao MN,Georgia,serif;font-size:22px;font-weight:bold;color:#1a1a1a;margin:0 0 22px">Hand-picked for this campaign</p>'+
-    '</td></tr>\n'+
-    prods.slice(0,4).map(prodRow).join('')+
-    // S8 — Large pull-quote testimonial (single, dramatic — not 3 small cards)
-    '<tr><td class="pd20" style="background:#1a3a28;padding:48px 36px;text-align:center;border-left:1px solid #1a3a28;border-right:1px solid #1a3a28">'+
-      '<p style="font-family:Lao MN,Georgia,serif;font-size:48px;color:#AB8743;margin:0 0 8px;line-height:1">"</p>'+
-      '<p style="font-family:Lao MN,Georgia,serif;font-size:19px;color:#FBF5EA;margin:0 0 22px;line-height:1.5;font-style:italic;max-width:440px;display:inline-block">'+pullQuote+'</p>'+
-      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#9fd6b5;margin:0;letter-spacing:0.16em;text-transform:uppercase;font-weight:700">— '+_getReviewerName(mt,0)+' · Verified Customer —</p>'+
-    '</td></tr>\n'+
-    // S9 — Gold-accent offer banner (bottom-of-flow, urgency)
-    (oc||ot?'<tr><td class="pd20" style="background:#AB8743;padding:34px 36px;text-align:center;border-left:1px solid #AB8743;border-right:1px solid #AB8743">'+
-      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;font-weight:800;letter-spacing:0.3em;color:rgba(255,255,255,0.85);margin:0 0 12px;text-transform:uppercase">— Limited Time Offer —</p>'+
-      '<p style="font-family:Lao MN,Georgia,serif;font-size:34px;font-weight:bold;color:#fff;margin:0 0 14px;line-height:1.1">'+(ot||'EXCLUSIVE OFFER')+'</p>'+
-      (oc?'<p style="font-family:Lao MN,Georgia,serif;font-size:18px;font-weight:bold;color:#fff;margin:0 0 22px;letter-spacing:0.2em;border:2px solid rgba(255,255,255,0.85);display:inline-block;padding:6px 22px;border-radius:3px">USE CODE &nbsp;'+oc+'</p><br>':'')+
+    // S7 — Offer banner (if applicable)
+    (oc||ot?'<tr><td style="background:#AB8743;padding:18px 24px;text-align:center">'+
+      '<p style="font-family:Lao MN,Georgia,serif;font-size:22px;font-weight:bold;color:#fff;margin:0 0 6px">'+(ot||'EXCLUSIVE OFFER')+'</p>'+
+      (oc?'<p style="font-family:Lao MN,Georgia,serif;font-size:16px;font-weight:bold;color:#fff;margin:0 0 10px;letter-spacing:0.18em;border:1.5px solid rgba(255,255,255,0.8);display:inline-block;padding:4px 16px;border-radius:3px">'+oc+'</p><br>':'')+
       btn(collUrl,oct||cta,'#004A2B','#FBF5EA')+
-      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:rgba(255,255,255,0.85);margin:14px 0 0;letter-spacing:0.1em">'+os+' &middot; '+mktIntel.shippingNote+'</p>'+
+      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:rgba(255,255,255,0.85);margin:8px 0 0">'+os+' &middot; '+mktIntel.shippingNote+'</p>'+
     '</td></tr>\n':'')+
-    // S10 — Trust footer
-    '<tr><td style="background:#1a3a28;padding:18px 24px;text-align:center;border-left:1px solid #1a3a28;border-right:1px solid #1a3a28"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10.5px;color:#9fd6b5;margin:0;letter-spacing:0.06em">★★★★★ &nbsp;Rated 4.8/5 by 50,000+ tea lovers&nbsp; · &nbsp;100% Natural · Ships to 100+ Countries</p></td></tr>\n'+
-    // S11 — Footer
-    '<tr><td style="background:#111;padding:24px 24px;text-align:center;border-radius:0 0 6px 6px"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:0.18em;color:#FBF5EA;margin:0 0 10px">MAKE EVERY CUP COUNT</p>'+
-    '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:#666;margin:0 0 8px"><a href="https://www.instagram.com/vahdamteas" target="_blank" rel="noopener noreferrer" style="color:#888;text-decoration:none">Instagram</a> &middot; <a href="https://www.facebook.com/vahdamteas" target="_blank" rel="noopener noreferrer" style="color:#888;text-decoration:none">Facebook</a> &middot; <a href="https://www.youtube.com/@vahdamteas" target="_blank" rel="noopener noreferrer" style="color:#888;text-decoration:none">YouTube</a></p>'+
-    '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#444;margin:0;line-height:1.7">VAHDAM India Pvt. Ltd. · New Delhi, India<br><a href="'+base+'/pages/unsubscribe" style="color:#555">Unsubscribe</a> &middot; <a href="'+base+'/pages/privacy-policy" style="color:#555">Privacy Policy</a></p>'+
+    // S8 — Trust + social proof bar
+    '<tr><td style="background:#1a3a28;padding:10px 20px;text-align:center"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#9fd6b5;margin:0;letter-spacing:0.04em"><span style="color:#AB8743">&#9733;&#9733;&#9733;&#9733;&#9733;</span> &nbsp;Rated 4.8/5 by 50,000+ tea lovers &middot; 100% Natural &middot; Ships to 100+ Countries</p></td></tr>\n'+
+    // S9 — Compact footer
+    '<tr><td style="background:#111;padding:18px 20px;text-align:center;border-radius:0 0 6px 6px">'+
+      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:bold;letter-spacing:0.12em;color:#FBF5EA;margin:0 0 8px">MAKE EVERY CUP COUNT</p>'+
+      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#555;margin:0 0 6px"><a href="https://www.instagram.com/vahdamteas" target="_blank" rel="noopener noreferrer" style="color:#666;text-decoration:none">Instagram</a> &middot; <a href="https://www.facebook.com/vahdamteas" target="_blank" rel="noopener noreferrer" style="color:#666;text-decoration:none">Facebook</a> &middot; <a href="https://www.youtube.com/@vahdamteas" target="_blank" rel="noopener noreferrer" style="color:#666;text-decoration:none">YouTube</a></p>'+
+      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8px;color:#444;margin:0;line-height:1.7">VAHDAM India Pvt. Ltd. &middot; New Delhi<br><a href="'+base+'/pages/unsubscribe" style="color:#555">Unsubscribe</a> &middot; <a href="'+base+'/pages/privacy-policy" style="color:#555">Privacy Policy</a></p>'+
     '</td></tr>\n'+
     '</table></td></tr></table>\n</body></html>';
   return html;
@@ -5501,264 +5603,93 @@ function buildEmail(uploadedDesignImg,mktOverride){
     if(!mktOverride){S.finalHTML=html;document.getElementById('emailFr').srcdoc=html;document.getElementById('htmlRaw').textContent=html;buildStep5UI(p,prods,mt);}
     return html;
   }
-  // ── STANDARD / ELITE HTML PATH ──────────────────────────────────────────────
+  // ── COMPACT STANDARD HTML PATH (~1200-1500px, two scrolls) ───────────────────
   const collUrl=collectionUrl(p,mt);
   const GRID_COLS=Math.min(prods.length,4);
   const gcW=Math.floor(560/GRID_COLS);
-  var _prodIdx=0;
-  function prodCardFlex(prod){
-    var isHero=(_prodIdx===0);
-    _prodIdx++;
-    var imgH=isHero?'240px':'210px';
-    var borderTop=isHero?'3px solid #AB8743':'3px solid transparent';
-    var heroBadge=isHero?'<div style="position:absolute;top:10px;left:10px;background:#AB8743;color:#fff;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8px;font-weight:800;letter-spacing:0.18em;padding:3px 8px;border-radius:3px;text-transform:uppercase">★ HERO PICK</div>':'';
-    return '<td width="'+gcW+'" valign="top" style="width:'+gcW+'px;padding:0 5px 20px;vertical-align:top">'+
-      '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,0.07);border-top:'+borderTop+'">'+
-      '<tr><td style="padding:0;line-height:0;font-size:0;position:relative">'+
-        '<div style="position:relative">'+
-        (prod.i?'<img src="'+prod.i+'" alt="'+prod.n.replace(/"/g,'&quot;')+'" width="'+(gcW-10)+'" border="0" style="width:100%;height:'+imgH+';object-fit:cover;display:block;border:0;outline:none;text-decoration:none;background:#e8f0e8;border-radius:8px 8px 0 0">':'<div style="width:100%;height:'+imgH+';background:linear-gradient(135deg,#d8ede2,#e8f0e8);border-radius:8px 8px 0 0"></div>')+
-        heroBadge+
-        '</div>'+
-      '</td></tr>'+
-      // Product NAME
-      '<tr><td style="background:#fff;padding:12px 12px 2px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8"><p style="font-family:Lao MN,Georgia,serif;font-size:'+(isHero?'13':'11.5')+'px;font-weight:bold;color:#1a1a1a;margin:0 0 2px;line-height:1.3">'+prod.n.split(',')[0]+'</p></td></tr>'+
-      // BENEFIT chip — short value statement
-      '<tr><td style="background:#fff;padding:0 12px 4px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">'+prodBenefitHTML(prod)+'</td></tr>'+
-      // PRICE block — sale price + strikethrough + savings (THE conversion fix)
-      '<tr><td style="background:#fff;padding:4px 12px 4px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">'+prodPriceBlockHTML(prod,p,mt)+'</td></tr>'+
-      // Short description
-      '<tr><td style="background:#fff;padding:2px 12px 6px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#777;margin:0;line-height:1.55">'+prodShortDesc(prod.n)+'</p></td></tr>'+
-      // Rating
-      '<tr><td style="background:#fff;padding:5px 12px 8px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8"><span style="color:#AB8743;font-size:12px">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#aaa;margin-left:4px">4.8 &middot; 1,000+ reviews</span></td></tr>'+
-      // CTA button
-      '<tr><td style="background:#fff;padding:6px 12px 12px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8;border-bottom:1px solid #ede5d8;border-radius:0 0 8px 8px"><a href="'+pdpUrl(prod,mt)+'" target="_blank" rel="noopener noreferrer" border="0" style="display:block;text-align:center;background:'+(isHero?'#AB8743':'#004A2B')+';color:#FBF5EA;padding:'+(isHero?'10px':'8px')+';font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:'+(isHero?'11':'10')+'px;font-weight:bold;letter-spacing:0.12em;text-decoration:none;border-radius:5px">'+(isHero?'ADD TO CART &rarr;':'ADD TO CART &rarr;')+'</a></td></tr>'+
-      '</table></td>';
+  // Compact product card function
+  function compactCard(prod,idx){
+    var isHero=idx===0;
+    return '<td width="'+gcW+'" valign="top" style="width:'+gcW+'px;padding:0 4px 12px;vertical-align:top">'+
+      '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border-radius:8px;border:1px solid #ede5d8'+(isHero?';border-top:2px solid #AB8743':'')+'">'+
+      '<tr><td style="padding:0;line-height:0;font-size:0">'+(prod.i?'<img src="'+prod.i+'" alt="'+prod.n.replace(/"/g,'&quot;')+'" width="'+(gcW-8)+'" border="0" style="width:100%;height:140px;object-fit:cover;display:block;border:0;outline:none;text-decoration:none;background:#e8f0e8;border-radius:7px 7px 0 0">':'<div style="width:100%;height:140px;background:linear-gradient(135deg,#d8ede2,#e8f0e8);border-radius:7px 7px 0 0"></div>')+'</td></tr>'+
+      '<tr><td style="background:#fff;padding:8px 10px 4px"><p style="font-family:Lao MN,Georgia,serif;font-size:11px;font-weight:bold;color:#1a1a1a;margin:0;line-height:1.3">'+prod.n.split(',')[0]+'</p></td></tr>'+
+      '<tr><td style="background:#fff;padding:2px 10px 4px">'+prodPriceBlockHTML(prod,p,mt)+'</td></tr>'+
+      '<tr><td style="background:#fff;padding:2px 10px"><span style="color:#AB8743;font-size:11px">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#aaa;margin-left:3px">4.8</span></td></tr>'+
+      '<tr><td style="background:#fff;padding:6px 10px 10px;border-radius:0 0 7px 7px"><a href="'+pdpUrl(prod,mt)+'" target="_blank" rel="noopener noreferrer" style="display:block;text-align:center;background:'+(isHero?'#AB8743':'#004A2B')+';color:#FBF5EA;padding:8px;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:bold;letter-spacing:0.1em;text-decoration:none;border-radius:4px">SHOP NOW</a></td></tr>'+
+    '</table></td>';
   }
-  let html='<!DOCTYPE html>\n<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<meta http-equiv="X-UA-Compatible" content="IE=edge">\n<title>VAHDAM&reg; &ndash; '+p.substring(0,60)+'</title>\n'+msoHead+'\n<style>\n@media only screen and (max-width:600px){\n  .email-wrap{width:100%!important}\n  .pcol{display:block!important;width:100%!important;padding-left:0!important;padding-right:0!important}\n  .hero-left{display:block!important;width:100%!important;padding:24px 20px!important}\n  .hero-right{display:none!important}\n  .hide-mobile{display:none!important}\n  .pd20{padding:14px 16px!important}\n}\n</style>\n</head>\n<body style="margin:0;padding:0;background:#f0ebe0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%">\n';
+  // Compact testimonial
+  var revList=_getReviewList(mt,campaignType);
+  var rev0=revList[0]||['Great tea!','Customer','US'];
+  let html='<!DOCTYPE html>\n<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<meta http-equiv="X-UA-Compatible" content="IE=edge">\n<title>VAHDAM&reg; &ndash; '+p.substring(0,60)+'</title>\n'+msoHead+'\n<style>\n@media only screen and (max-width:600px){\n  .email-wrap{width:100%!important}\n  .pcol{display:block!important;width:100%!important;padding-left:0!important;padding-right:0!important}\n  .hero-left{display:block!important;width:100%!important;padding:24px 20px!important}\n  .hero-right{display:none!important}\n  .pd20{padding:14px 16px!important}\n}\n</style>\n</head>\n<body style="margin:0;padding:0;background:#f0ebe0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%">\n';
   // S0 — Preheader
-  html+='<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#f0ebe0">'+sc.substring(0,110)+' &ndash; VAHDAM&reg; premium Indian teas. '+(ot||cta)+' &ndash; farm direct, ethically sourced.&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div>\n';
+  html+='<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#f0ebe0">'+sc.substring(0,110)+' &ndash; VAHDAM&reg; '+(ot||cta)+' &ndash; farm direct.&zwnj;&nbsp;</div>\n';
   // Outer wrapper
-  html+='<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0ebe0;border-collapse:collapse"><tr><td align="center" style="padding:24px 10px">\n';
+  html+='<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0ebe0;border-collapse:collapse"><tr><td align="center" style="padding:20px 10px">\n';
   html+='<table class="email-wrap" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;border-collapse:collapse">\n';
   // S1 — Announcement bar
   const annLine=annBarLine(p,mt,campaignType);
-  html+='<tr><td style="background:linear-gradient(90deg,#003d24 0%,#004A2B 50%,#003d24 100%);padding:11px 24px;text-align:center;border-radius:8px 8px 0 0">\n';
-  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;letter-spacing:0.24em;text-transform:uppercase;color:#FBF5EA;margin:0">'+annLine+'</p>\n</td></tr>\n';
-  // S2 — Logo / header
-  html+='<tr><td class="pd20" style="background:#ffffff;padding:22px 32px 0;text-align:center;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">\n';
-  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8.5px;letter-spacing:0.36em;text-transform:uppercase;color:#AB8743;margin:0 0 5px">EST. 2015 &middot; NEW DELHI, INDIA</p>\n';
-  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:36px;font-weight:bold;letter-spacing:0.2em;color:#004A2B;margin:0 0 1px"><a href="'+base+'" target="_blank" rel="noopener noreferrer" style="color:#004A2B;text-decoration:none">VAHDAM&reg;</a></p>\n';
-  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8.5px;letter-spacing:0.28em;text-transform:uppercase;color:#888;margin:0 0 16px">PREMIUM INDIAN TEAS &nbsp;&middot;&nbsp; DIRECT FROM SOURCE</p>\n';
-  html+='<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border-top:1px solid #ede5d8"><tr>\n';
-  html+='<td width="33%" style="text-align:center;padding:10px 0;border-right:1px solid #ede5d8"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8.5px;color:#888;margin:0;letter-spacing:0.06em">&#127807; 100% PURE INDIAN TEA</p></td>\n';
-  html+='<td width="34%" style="text-align:center;padding:10px 0;border-right:1px solid #ede5d8"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8.5px;color:#888;margin:0;letter-spacing:0.06em">&#129309; ETHICALLY SOURCED</p></td>\n';
-  html+='<td width="33%" style="text-align:center;padding:10px 0"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8.5px;color:#888;margin:0;letter-spacing:0.06em">&#127807; DIRECT FROM FARMS</p></td>\n';
-  html+='</tr></table>\n</td></tr>\n';
-  // S3 — Hero split (left: copy, right: product image)
+  html+='<tr><td style="background:#004A2B;padding:9px 20px;text-align:center;border-radius:6px 6px 0 0"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#FBF5EA;margin:0">'+annLine+'</p></td></tr>\n';
+  // S2 — Minimal logo header
+  html+='<tr><td style="background:#fff;padding:16px 24px 10px;text-align:center;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8"><p style="font-family:Lao MN,Georgia,serif;font-size:28px;font-weight:bold;letter-spacing:0.2em;color:#004A2B;margin:0"><a href="'+base+'" target="_blank" rel="noopener noreferrer" style="color:#004A2B;text-decoration:none">VAHDAM&reg;</a></p><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#888;margin:4px 0 0">PREMIUM INDIAN TEAS &middot; EST. 2015 &middot; NEW DELHI</p></td></tr>\n';
+  // S3 — Hero split (left: copy, right: product image) — COMPACT
   html+='<tr><td style="padding:0;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">\n';
   html+='<table width="600" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:#FBF5EA"><tr>\n';
-  html+='<td class="hero-left" width="300" valign="middle" style="width:300px;padding:36px 28px 36px 34px;vertical-align:middle;background:#FBF5EA">\n';
+  html+='<td class="hero-left" width="300" valign="middle" style="width:300px;padding:28px 24px 24px 30px;vertical-align:middle;background:#FBF5EA">\n';
   if(ot){
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:0.22em;text-transform:uppercase;color:#AB8743;margin:0 0 10px;display:inline-block;background:rgba(171,135,67,0.1);padding:4px 10px;border-radius:20px;border:1px solid rgba(171,135,67,0.35)">'+ot+'</p>\n';
+    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:#AB8743;margin:0 0 8px;display:inline-block;background:rgba(171,135,67,0.1);padding:3px 8px;border-radius:20px;border:1px solid rgba(171,135,67,0.35)">'+ot+'</p>\n';
   }
-  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:44px;font-weight:bold;color:#004A2B;margin:0 0 8px;line-height:1.04;letter-spacing:-0.01em">'+hl[0]+(hl[1]?'<br>'+hl[1]:'')+'</p>\n';
-  html+='<div style="width:36px;height:2px;background:#AB8743;margin:0 0 14px;border-radius:1px"></div>\n';
-  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12.5px;color:#555;margin:0 0 22px;line-height:1.72">'+sc+'</p>\n';
+  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:36px;font-weight:bold;color:#004A2B;margin:0 0 6px;line-height:1.06;letter-spacing:-0.01em">'+hl[0]+(hl[1]?'<br>'+hl[1]:'')+'</p>\n';
+  html+='<div style="width:30px;height:2px;background:#AB8743;margin:0 0 10px;border-radius:1px"></div>\n';
+  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;color:#555;margin:0 0 16px;line-height:1.65">'+sc.substring(0,160)+'</p>\n';
   html+=bulletBtn(collUrl,cta,'#004A2B','#FBF5EA');
-  // OFFER CODE — large, prominent, impossible to miss (mid-funnel value clarity fix)
   if(oc){
-    html+='\n<div style="margin:12px 0 0;display:inline-block">'+
-      '<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;font-weight:800;color:#AB8743;margin:0 0 4px;letter-spacing:0.18em;text-transform:uppercase">Use code at checkout</p>'+
-      '<p style="font-family:Lao MN,Georgia,serif;font-size:22px;font-weight:bold;color:#fff;margin:0;letter-spacing:0.18em;background:#AB8743;display:inline-block;padding:7px 18px;border-radius:5px;box-shadow:0 2px 8px rgba(171,135,67,0.3)">'+oc+'</p>'+
-    '</div>\n';
+    html+='\n<div style="margin:10px 0 0"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8px;font-weight:800;color:#AB8743;margin:0 0 3px;letter-spacing:0.16em;text-transform:uppercase">Use code</p><p style="font-family:Lao MN,Georgia,serif;font-size:18px;font-weight:bold;color:#fff;margin:0;letter-spacing:0.16em;background:#AB8743;display:inline-block;padding:5px 14px;border-radius:4px">'+oc+'</p></div>\n';
   }
-  // VALUE SUMMARY — % off + code + free shipping at a glance (the visible-offer fix)
   var valueLine=valueSummaryLine(p,mt);
-  if(valueLine)html+='\n<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;font-weight:700;color:#c0392b;margin:14px 0 0;letter-spacing:0.04em;line-height:1.5">&#9889; '+valueLine+'</p>\n';
-  html+='<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border-top:1px solid #e4dbd0;margin-top:16px"><tr>\n';
-  feats.forEach(function(f,i){
-    var sp=f.indexOf(' ');var icon=sp>0?f.substring(0,sp):f;var lbl=sp>0?f.substring(sp+1):f;
-    html+='<td style="text-align:center;padding:8px 2px'+(i<3?';border-right:1px solid #e4dbd0':'')+'">\n';
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:14px;margin:0 0 2px">'+icon+'</p>\n';
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:7.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.07em;color:#888;margin:0;line-height:1.4">'+lbl+'</p>\n</td>\n';
-  });
-  html+='</tr></table>\n';
+  if(valueLine)html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;color:#c0392b;margin:10px 0 0;line-height:1.4">&#9889; '+valueLine+'</p>\n';
   html+='</td>\n';
+  // Hero right — product image
   html+='<td class="hero-right" width="300" valign="top" style="width:300px;padding:0;vertical-align:top;overflow:hidden;background:#c8ddd1">\n';
   if(hero.i){
-    html+='<img src="'+hero.i+'" alt="'+hero.n.split(',')[0].replace(/"/g,'&quot;')+'" width="300" border="0" style="width:300px;height:310px;object-fit:cover;display:block;border:0;outline:none;text-decoration:none;background:#c8ddd1">\n';
-    html+='<div style="background:linear-gradient(0deg,rgba(0,74,43,0.96) 0%,rgba(0,74,43,0.78) 100%);padding:12px 18px;text-align:center">\n';
-    html+='<p style="font-family:Lao MN,Georgia,serif;font-size:12px;color:#FBF5EA;margin:0 0 3px;font-style:italic;letter-spacing:0.03em">'+hero.n.split(',')[0]+'</p>\n';
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#AB8743;margin:0;letter-spacing:0.08em;font-weight:700">&#9733;&#9733;&#9733;&#9733;&#9733; 4.8 &middot; 1,000+ REVIEWS</p>\n</div>\n';
+    html+='<img src="'+hero.i+'" alt="'+hero.n.split(',')[0].replace(/"/g,'&quot;')+'" width="300" border="0" style="width:300px;height:280px;object-fit:cover;display:block;border:0;outline:none;text-decoration:none;background:#c8ddd1">\n';
+    html+='<div style="background:rgba(0,74,43,0.92);padding:8px 14px;text-align:center"><p style="font-family:Lao MN,Georgia,serif;font-size:11px;color:#FBF5EA;margin:0;font-style:italic">'+hero.n.split(',')[0]+'</p><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8px;color:#AB8743;margin:2px 0 0;letter-spacing:0.08em;font-weight:700">&#9733;&#9733;&#9733;&#9733;&#9733; 4.8</p></div>\n';
   } else {
-    html+='<div style="background:#004A2B;width:300px;height:300px;display:block;padding:32px 24px;box-sizing:border-box">\n';
-    html+='<p style="font-family:Lao MN,Georgia,serif;font-size:15px;font-style:italic;color:#9fd6b5;margin:30px 0 16px;line-height:1.6">&ldquo;From the misty slopes of Darjeeling to your morning cup &mdash; uncompromising quality at every step.&rdquo;</p>\n';
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;letter-spacing:0.14em;color:#AB8743;margin:0">VAHDAM&reg; INDIA &middot; EST. 2015</p>\n</div>\n';
+    html+='<div style="background:#004A2B;width:300px;height:280px;padding:40px 20px;box-sizing:border-box;text-align:center"><p style="font-family:Lao MN,Georgia,serif;font-size:14px;font-style:italic;color:#9fd6b5;margin:0;line-height:1.6">&ldquo;From the misty slopes of Darjeeling to your morning cup.&rdquo;</p></div>\n';
   }
   html+='</td>\n</tr></table>\n</td></tr>\n';
-  // S4 — Feature pillars (dark green)
-  html+='<tr><td style="background:#004A2B;padding:0;border-left:1px solid #004A2B;border-right:1px solid #004A2B">\n';
+  // S4 — Compact product grid (max 4 products, single row)
+  html+='<tr><td class="pd20" style="background:#f8f4ee;padding:20px 16px 12px;text-align:center;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">\n';
+  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:16px;font-weight:bold;color:#1a1a1a;margin:0 0 14px;letter-spacing:0.03em">'+prodSecTitle+'</p>\n';
   html+='<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr>\n';
-  feats.forEach(function(f,i){
-    var sp=f.indexOf(' ');var icon=sp>0?f.substring(0,sp):f;var label=sp>0?f.substring(sp+1):f;
-    html+='<td width="25%" style="text-align:center;padding:14px 6px'+(i<3?';border-right:1px solid rgba(255,255,255,0.14)':'')+'">\n';
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:16px;margin:0 0 4px">'+icon+'</p>\n';
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8px;font-weight:bold;text-transform:uppercase;letter-spacing:0.1em;color:#9fd6b5;margin:0">'+label+'</p>\n</td>\n';
-  });
-  html+='</tr></table>\n</td></tr>\n';
-  // S5 — Social proof bar
-  html+='<tr><td style="background:#1a3a28;padding:13px 24px;text-align:center;border-left:1px solid #1a3a28;border-right:1px solid #1a3a28">\n';
-  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#9fd6b5;margin:0;letter-spacing:0.05em"><span style="color:#AB8743">&#9733;&#9733;&#9733;&#9733;&#9733;</span> &nbsp;'+mktIntel.social+' &nbsp;&middot;&nbsp; &#127807; 100% Natural &nbsp;&middot;&nbsp; '+mktIntel.trustBar+'</p>\n</td></tr>\n';
-  // S6 — Product grid (all products, multi-row, 4 per row)
-  _prodIdx=0;
-  html+='<tr><td class="pd20" style="background:#f8f4ee;padding:28px 20px 16px;text-align:center;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">\n';
-  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:#AB8743;margin:0 0 6px">&mdash;&nbsp;SHOP THE COLLECTION&nbsp;&mdash;</p>\n';
-  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:20px;font-weight:bold;color:#1a1a1a;margin:0 0 4px;letter-spacing:0.03em">'+prodSecTitle+'</p>\n';
-  html+='<div style="width:40px;height:2px;background:#AB8743;margin:0 auto 20px;border-radius:1px"></div>\n';
-  for(var gr=0;gr<prods.length;gr+=GRID_COLS){
-    var grow=prods.slice(gr,gr+GRID_COLS);
-    html+='<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr>\n';
-    grow.forEach(function(prod){html+=prodCardFlex(prod);});
-    for(var ge=grow.length;ge<GRID_COLS;ge++)html+='<td width="'+gcW+'" style="width:'+gcW+'px;padding:0 4px 16px"></td>';
-    html+='</tr></table>\n';
-  }
-  html+='<div style="text-align:center;margin-top:4px">'+bulletBtn(collUrl,'SHOP THE FULL COLLECTION &rarr;','#AB8743','#ffffff')+'</div>';
-  html+='\n</td></tr>\n';
-  // S7 — Ingredient spotlight
-  html+='<tr><td class="pd20" style="background:#ffffff;padding:30px 32px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">\n';
-  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:#AB8743;margin:0 0 6px;text-align:center">&mdash;&nbsp;THE INGREDIENTS&nbsp;&mdash;</p>\n';
-  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:20px;font-weight:bold;color:#1a1a1a;margin:0 0 4px;text-align:center;letter-spacing:0.03em">'+secTitle+'</p>\n';
-  html+='<div style="width:40px;height:2px;background:#AB8743;margin:0 auto 22px;border-radius:1px"></div>\n';
-  html+='<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">\n';
-  const ingRows=[];for(var ii=0;ii<ings.length;ii+=2)ingRows.push(ings.slice(ii,ii+2));
-  ingRows.forEach(function(row){
-    html+='<tr>\n';
-    row.forEach(function(ing,j){
-      html+='<td width="50%" style="padding:0 '+(j===0?'8px 12px 0':'0 12px 0 8px')+';vertical-align:top">\n';
-      html+='<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:#f8f4ee;border-radius:8px;border:1px solid #ede5d8">\n';
-      var ingIcon=(function(n){var l=n.toLowerCase();if(l.includes('turmeric'))return '&#127921;';if(l.includes('ginger'))return '&#129370;';if(l.includes('moringa')||l.includes('pepper'))return '&#127807;';if(l.includes('chamomile')||l.includes('lavender'))return '&#127804;';if(l.includes('mint')||l.includes('spearmint'))return '&#127807;';if(l.includes('cinnamon'))return '&#129362;';if(l.includes('cardamom')||l.includes('saffron'))return '&#10024;';if(l.includes('assam')||l.includes('himalayan')||l.includes('flush'))return '&#127861;';if(l.includes('butterfly')||l.includes('hibiscus'))return '&#127866;';if(l.includes('lemon')||l.includes('citrus'))return '&#127819;';return '&#127807;';})(ing.n);
-      html+='<tr><td style="padding:14px 16px">\n';
-      html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:22px;margin:0 0 6px">'+ingIcon+'</p>\n';
-      html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;font-weight:bold;color:#004A2B;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 4px">'+ing.n+'</p>\n';
-      html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;color:#666;margin:0;line-height:1.55">'+ing.d+'</p>\n';
-      html+='</td></tr>\n</table>\n</td>\n';
-    });
-    if(row.length===1)html+='<td width="50%"></td>\n';
-    html+='</tr>\n<tr><td colspan="2" style="padding:0 0 10px"></td></tr>\n';
-  });
-  html+='</table>\n</td></tr>\n';
-  // S8 — Farm origin story
-  html+='<tr><td style="background:#004A2B;padding:32px 36px;text-align:center;border-left:1px solid #004A2B;border-right:1px solid #004A2B">\n';
-  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:#AB8743;margin:0 0 10px">&mdash; FROM THE SOURCE &mdash;</p>\n';
-  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:22px;font-weight:bold;color:#FBF5EA;margin:0 0 6px;line-height:1.3">From the Foothills of the Himalayas</p>\n';
-  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:16px;font-style:italic;color:#9fd6b5;margin:0 0 16px">to Your Morning Cup</p>\n';
-  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;color:#9fd6b5;margin:0 0 24px;line-height:1.75">VAHDAM&reg; was founded with one mission: eliminate the 5-layer supply chain between India\'s tea estates and tea lovers worldwide. We source direct from 150+ estates across Darjeeling, Assam, Nilgiri and the Himalayas &mdash; ensuring unmatched freshness and fair wages for every farmer.</p>\n';
-  html+='<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr>\n';
-  [['&#127807;','FARM DIRECT','150+ estates, no middlemen'],['&#128300;','QUALITY TESTED','Third-party certified'],['&#9889;','FRESHNESS SEALED','Harvest to your door'],['&#127758;','GLOBAL REACH','100+ countries served']].forEach(function(v,i){
-    html+='<td width="25%" style="text-align:center;padding:0 6px'+(i<3?';border-right:1px solid rgba(255,255,255,0.15)':'')+'">\n';
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:20px;margin:0 0 5px">'+v[0]+'</p>\n';
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8px;font-weight:bold;text-transform:uppercase;letter-spacing:0.1em;color:#AB8743;margin:0 0 3px">'+v[1]+'</p>\n';
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#9fd6b5;margin:0;line-height:1.4">'+v[2]+'</p>\n</td>\n';
-  });
-  html+='</tr></table>\n</td></tr>\n';
-  // S9 — Daily ritual
-  html+='<tr><td class="pd20" style="background:#FBF5EA;padding:26px 32px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">\n';
-  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#AB8743;margin:0 0 4px;text-align:center">&mdash; RITUAL &mdash;</p>\n';
-  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:18px;font-weight:bold;color:#1a1a1a;margin:0 0 20px;text-align:center;letter-spacing:0.03em">'+ritualTitle(p)+'</p>\n';
-  html+='<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr>\n';
-  var ritSteps=ritual(p);
-  ritSteps.forEach(function(step,i){
-    html+='<td width="22%" style="text-align:center;padding:0 4px">\n';
-    html+='<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 auto 8px"><tr><td width="42" height="42" style="width:42px;height:42px;border-radius:50%;background:#004A2B;text-align:center;vertical-align:middle"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:16px;font-weight:bold;color:#FBF5EA;margin:0;line-height:42px">'+(i+1)+'</p></td></tr></table>\n';
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:0.08em;color:#004A2B;margin:0">'+step.t+'</p>\n</td>\n';
-    if(i<ritSteps.length-1)html+='<td width="4%" style="text-align:center;vertical-align:middle;padding-bottom:20px"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:20px;color:#AB8743;margin:0">&#8250;</p></td>\n';
-  });
-  html+='</tr></table>\n</td></tr>\n';
-  // S10 — Testimonials
-  html+='<tr><td class="pd20" style="background:#ffffff;padding:26px 32px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">\n';
-  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#AB8743;margin:0 0 4px;text-align:center">&mdash; CUSTOMER REVIEWS &mdash;</p>\n';
-  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:18px;font-weight:bold;color:#1a1a1a;margin:0 0 18px;text-align:center">What Tea Lovers Are Saying</p>\n';
-  html+='<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr>\n';
-  var revList=_getReviewList(mt,campaignType);
-  revList.forEach(function(t,i){
-    html+='<td width="33%" style="padding:0 '+(i===0?'0 7px 0 0':i===1?'0 3px':'0 0 0 7px')+';vertical-align:top">\n';
-    html+='<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:#fff;border-radius:10px;border:1px solid #ede5d8;box-shadow:0 1px 6px rgba(0,0,0,0.04)"><tr><td style="padding:16px 14px 14px">\n';
-    html+='<p style="font-family:Lao MN,Georgia,serif;font-size:36px;color:#AB8743;margin:0 0 0;line-height:1">&ldquo;</p>\n';
-    html+='<p style="font-family:Lao MN,Georgia,serif;font-size:11px;font-style:italic;color:#444;margin:0 0 12px;line-height:1.65">'+t[0]+'</p>\n';
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:bold;color:#555;margin:0 0 3px">&ndash; '+t[1]+', '+t[2]+'</p>\n';
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;color:#AB8743;margin:0">&#9733;&#9733;&#9733;&#9733;&#9733;</p>\n';
-    html+='</td></tr></table>\n</td>\n';
-  });
-  html+='</tr></table>\n</td></tr>\n';
-  // S11 — Why Choose VAHDAM (3-col table + hero image)
-  html+='<tr><td style="background:#f8f4ee;padding:0;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">\n';
-  html+='<table width="600" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr>\n';
-  html+='<td valign="top" style="padding:26px 20px 26px 28px;vertical-align:top;width:340px">\n';
-  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:18px;font-weight:bold;color:#1a1a1a;margin:0 0 16px">Why Choose VAHDAM&reg;?</p>\n';
-  html+='<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border:1px solid #ede5d8;border-radius:6px;overflow:hidden">\n';
-  html+='<tr><td style="background:#004A2B;padding:8px 12px;width:44%"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;font-weight:bold;letter-spacing:0.1em;color:#FBF5EA;margin:0">FEATURES</p></td>';
-  html+='<td style="background:#004A2B;padding:8px 12px;text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;font-weight:bold;letter-spacing:0.1em;color:#FBF5EA;margin:0">VAHDAM&reg;</p></td>';
-  html+='<td style="background:#e8e0d6;padding:8px 12px;text-align:center;border-left:1px solid #ede5d8"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;font-weight:bold;letter-spacing:0.1em;color:#888;margin:0">OTHERS</p></td></tr>\n';
-  var vsFeats=['100% Pure Indian Tea','Single Estate Sourced','Ethical &amp; Sustainable','No Additives','Garden Fresh Flavour'];
-  vsFeats.forEach(function(feat,i){
-    var bg=i%2===0?'#fff':'#faf8f4';
-    html+='<tr><td style="background:'+bg+';padding:8px 12px;border-top:1px solid #ede5d8"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#333;margin:0">'+feat+'</p></td>';
-    html+='<td style="background:'+bg+';padding:8px 12px;text-align:center;border-top:1px solid #ede5d8;border-left:1px solid #ede5d8"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:13px;color:#004A2B;font-weight:bold;margin:0">&#10003;</p></td>';
-    html+='<td style="background:'+bg+';padding:8px 12px;text-align:center;border-top:1px solid #ede5d8;border-left:1px solid #ede5d8"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;color:#ccc;margin:0">&#10007;</p></td></tr>\n';
-  });
-  html+='</table>\n</td>\n';
-  html+='<td valign="top" style="padding:0;vertical-align:top;overflow:hidden;width:260px">\n';
-  if(hero.i){
-    html+='<img src="'+hero.i+'" alt="'+hero.n.split(',')[0].replace(/"/g,'&quot;')+'" width="260" border="0" style="width:260px;height:100%;min-height:260px;object-fit:cover;display:block;border:0;outline:none;text-decoration:none;background:#e8f0e8">\n';
-  } else {
-    html+='<div style="background:#004A2B;width:260px;min-height:260px;padding:32px 20px;text-align:center"><p style="font-family:Lao MN,Georgia,serif;font-size:14px;color:#9fd6b5;margin:40px 0 0;font-style:italic;line-height:1.6">Premium teas. Pure quality. Farm direct.</p></div>\n';
-  }
-  html+='</td>\n</tr></table>\n</td></tr>\n';
-  // S12 — Offer / CTA banner (split: product image left + offer text right)
-  html+='<tr><td style="background:#004A2B;padding:0;border-left:1px solid #004A2B;border-right:1px solid #004A2B">\n';
-  html+='<table width="600" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr>\n';
-  html+='<td valign="middle" style="width:210px;padding:0;vertical-align:middle;overflow:hidden">\n';
-  if(hero.i){
-    html+='<img src="'+hero.i+'" alt="'+hero.n.split(',')[0].replace(/"/g,'&quot;')+'" width="210" border="0" style="width:210px;height:200px;object-fit:cover;display:block;border:0;outline:none;text-decoration:none;background:#1a3a28">\n';
-  } else {
-    html+='<div style="width:210px;height:200px;background:#1a3a28"></div>\n';
-  }
-  html+='</td>\n';
-  html+='<td valign="middle" style="padding:28px 28px 28px 24px;vertical-align:middle;text-align:left">\n';
-  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;font-weight:bold;letter-spacing:0.26em;text-transform:uppercase;color:#AB8743;margin:0 0 8px">LIMITED TIME OFFER</p>\n';
-  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:28px;font-weight:bold;color:#FBF5EA;margin:0 0 10px;line-height:1.15">'+(ot||hl[0])+'</p>\n';
-  if(oc)html+='<p style="font-family:Lao MN,Georgia,serif;font-size:24px;font-weight:bold;color:#AB8743;letter-spacing:0.24em;margin:0 0 14px;border:1.5px solid #AB8743;display:inline-block;padding:3px 18px;border-radius:3px">'+oc+'</p><br>\n';
-  html+=bulletBtn(collUrl,oct,'#AB8743','#ffffff');
-  html+='\n<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#9fd6b5;margin:10px 0 0;letter-spacing:0.04em">&#128666; '+mktIntel.shippingNote+'</p>\n';
-  html+='</td>\n</tr></table>\n</td></tr>\n';
-  // S13 — Trust badges (circle icon style)
-  html+='<tr><td style="background:#FBF5EA;padding:18px 10px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8">\n';
-  html+='<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr>\n';
-  [['&#127807;','SUSTAINABLE'],['&#128154;','WOMEN-LED'],['&#129309;','ETHICAL'],['&#128101;','COMMUNITY'],['&#10084;','LOVED']].forEach(function(b,i){
-    html+='<td style="text-align:center;padding:0 4px'+(i<4?';border-right:1px solid #ede5d8':'')+'">\n';
-    html+='<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 auto 6px"><tr><td width="36" height="36" style="width:36px;height:36px;border-radius:50%;background:#e6f0ea;text-align:center;vertical-align:middle"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:15px;margin:0;line-height:36px">'+b[0]+'</p></td></tr></table>\n';
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8px;font-weight:bold;color:#555;text-transform:uppercase;letter-spacing:0.07em;margin:0;line-height:1.3">'+b[1]+'</p>\n</td>\n';
-  });
-  html+='</tr></table>\n</td></tr>\n';
-  // S14 — Footer
-  html+='<tr><td style="background:#111111;padding:28px 24px 22px;text-align:center;border-radius:0 0 8px 8px">\n';
-  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:13px;font-weight:bold;letter-spacing:0.16em;text-transform:uppercase;color:#FBF5EA;margin:0 0 14px">MAKE EVERY CUP COUNT</p>\n';
-  html+='<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 auto 14px"><tr>\n';
-  [['https://www.instagram.com/vahdamteas','IG'],['https://www.facebook.com/vahdamteas','f'],['https://www.youtube.com/@vahdamteas','YT'],['https://www.pinterest.com/vahdamteas','P']].forEach(function(s){
-    html+='<td style="padding:0 6px"><a href="'+s[0]+'" target="_blank" rel="noopener noreferrer" style="text-decoration:none">';
-    html+='<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr><td width="30" height="30" style="width:30px;height:30px;border-radius:50%;background:#333;text-align:center;vertical-align:middle">';
-    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;font-weight:bold;color:#ccc;margin:0;line-height:30px">'+s[1]+'</p></td></tr></table>';
-    html+='</a></td>\n';
-  });
+  prods.slice(0,GRID_COLS).forEach(function(prod,idx){html+=compactCard(prod,idx);});
+  for(var ge=Math.min(prods.length,GRID_COLS);ge<GRID_COLS;ge++)html+='<td width="'+gcW+'" style="width:'+gcW+'px;padding:0 4px 12px"></td>';
   html+='</tr></table>\n';
-  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#555;margin:0 0 8px;letter-spacing:0.03em">';
-  html+='<a href="'+base+'/pages/about-us" target="_blank" rel="noopener noreferrer" style="color:#666;text-decoration:none">About Us</a>&nbsp;&middot;&nbsp;';
-  html+='<a href="'+base+'/collections/all" target="_blank" rel="noopener noreferrer" style="color:#666;text-decoration:none">Shop</a>&nbsp;&middot;&nbsp;';
-  html+='<a href="'+base+'/blogs/vahdam-blog" target="_blank" rel="noopener noreferrer" style="color:#666;text-decoration:none">Blog</a>&nbsp;&middot;&nbsp;';
-  html+='<a href="'+base+'/pages/contact-us" target="_blank" rel="noopener noreferrer" style="color:#666;text-decoration:none">Contact</a></p>\n';
-  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8.5px;color:#444;margin:0;line-height:1.8">&copy; VAHDAM Teas India Pvt. Ltd. All rights reserved.<br>';
-  html+='<a href="'+base+'/pages/unsubscribe" target="_blank" rel="noopener noreferrer" style="color:#555;text-decoration:underline">Unsubscribe</a>&nbsp;&middot;&nbsp;';
-  html+='<a href="'+base+'/pages/privacy-policy" target="_blank" rel="noopener noreferrer" style="color:#555;text-decoration:underline">Privacy Policy</a></p>\n</td></tr>\n';
+  html+='<div style="text-align:center;margin-top:6px">'+bulletBtn(collUrl,'SHOP THE FULL COLLECTION &rarr;','#AB8743','#ffffff')+'</div>';
+  html+='\n</td></tr>\n';
+  // S5 — Single testimonial strip (compact)
+  html+='<tr><td style="background:#1a3a28;padding:20px 28px;text-align:center;border-left:1px solid #1a3a28;border-right:1px solid #1a3a28">\n';
+  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:32px;color:#AB8743;margin:0;line-height:1">&ldquo;</p>\n';
+  html+='<p style="font-family:Lao MN,Georgia,serif;font-size:13px;color:#FBF5EA;margin:0 0 10px;line-height:1.55;font-style:italic;max-width:440px;display:inline-block">'+rev0[0]+'</p>\n';
+  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#9fd6b5;margin:0;letter-spacing:0.12em;text-transform:uppercase;font-weight:700">&ndash; '+rev0[1]+', '+rev0[2]+' &middot; <span style="color:#AB8743">&#9733;&#9733;&#9733;&#9733;&#9733;</span></p>\n';
+  html+='</td></tr>\n';
+  // S6 — Offer banner (compact, only if offer exists)
+  // S6 — Offer banner (compact, only if offer exists)
+  if(oc||ot){
+    html+='<tr><td style="background:#AB8743;padding:18px 24px;text-align:center"><p style="font-family:Lao MN,Georgia,serif;font-size:22px;font-weight:bold;color:#fff;margin:0 0 6px;line-height:1.15">'+(ot||'EXCLUSIVE OFFER')+'</p>';
+    if(oc)html+='<p style="font-family:Lao MN,Georgia,serif;font-size:16px;font-weight:bold;color:#fff;margin:0 0 10px;letter-spacing:0.18em;border:1.5px solid rgba(255,255,255,0.8);display:inline-block;padding:4px 16px;border-radius:3px">'+oc+'</p><br>';
+    html+=bulletBtn(collUrl,oct||cta,'#004A2B','#FBF5EA');
+    html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:rgba(255,255,255,0.85);margin:8px 0 0;letter-spacing:0.06em">'+os+' &middot; '+mktIntel.shippingNote+'</p></td></tr>\n';
+  }
+  // S7 — Trust bar + social proof (single line)
+  html+='<tr><td style="background:#1a3a28;padding:10px 20px;text-align:center"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#9fd6b5;margin:0;letter-spacing:0.04em"><span style="color:#AB8743">&#9733;&#9733;&#9733;&#9733;&#9733;</span> &nbsp;'+mktIntel.social+' &middot; &#127807; 100% Natural &middot; '+mktIntel.shippingNote+'</p></td></tr>\n';
+  // S8 — Compact footer
+  html+='<tr><td style="background:#111;padding:18px 20px;text-align:center;border-radius:0 0 6px 6px">';
+  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:bold;letter-spacing:0.12em;color:#FBF5EA;margin:0 0 8px">MAKE EVERY CUP COUNT</p>';
+  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#555;margin:0 0 6px"><a href="https://www.instagram.com/vahdamteas" target="_blank" rel="noopener noreferrer" style="color:#666;text-decoration:none">Instagram</a> &middot; <a href="https://www.facebook.com/vahdamteas" target="_blank" rel="noopener noreferrer" style="color:#666;text-decoration:none">Facebook</a> &middot; <a href="https://www.youtube.com/@vahdamteas" target="_blank" rel="noopener noreferrer" style="color:#666;text-decoration:none">YouTube</a></p>';
+  html+='<p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8px;color:#444;margin:0;line-height:1.7">VAHDAM India Pvt. Ltd. &middot; New Delhi<br><a href="'+base+'/pages/unsubscribe" style="color:#555">Unsubscribe</a> &middot; <a href="'+base+'/pages/privacy-policy" style="color:#555">Privacy Policy</a></p>';
+  html+='</td></tr>\n';
   // Close outer wrapper
   html+='</table>\n</td></tr></table>\n</body></html>';
   if(!mktOverride){S.finalHTML=html;document.getElementById('emailFr').srcdoc=html;document.getElementById('htmlRaw').textContent=html;}

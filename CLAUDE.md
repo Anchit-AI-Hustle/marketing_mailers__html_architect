@@ -76,9 +76,10 @@ hero-led-editorial | product-grid-conversion | storytelling-narrative | single-p
 10. **Gemini native image models** — use `generateContent` with `responseModalities: ['IMAGE','TEXT']`, NOT the standard text-only models
 
 ## Environment Variables (Vercel)
-Required: `GEMINI_API_KEY` — key `AIzaSyCJ1NQ7j9_iKNXnmJMGRnrmwrLtoo5QGQI` (free tier, quota limited)
-Optional: `OPENAI_API_KEY` (billing exhausted), `ANTHROPIC_API_KEY` (sk-ant-api03-...slp0gAA — added), `XAI_API_KEY`
+Required: `GEMINI_API_KEY` — set via Vercel dashboard (NEVER commit real keys)
+Optional: `OPENAI_API_KEY`, `OPENAI_API_KEY_2`, `OPENAI_API_KEY_3`, `ANTHROPIC_API_KEY`, `XAI_API_KEY`
 Auto-set: `VERCEL`, `VERCEL_ENV`, `VERCEL_URL`
+⚠️ ALL keys are stored in Vercel env vars only — never hardcode in source files
 
 ## Provider Status (as of 2026-05-08)
 | Provider | Text | Images | Status |
@@ -95,10 +96,29 @@ Auto-set: `VERCEL`, `VERCEL_ENV`, `VERCEL_URL`
 - Avoids generic marketing speak; every line should make the reader feel something
 - Testimonials written as tiny personal stories, not product reviews
 
-## Image Generation (Pollinations)
+## Image Generation
+### Server-side (gpt-image-2 → Gemini → Pollinations cascade)
+- `generateServerImage(variant)` calls `/api/ai/image` with `mode:'design'`
+- `buildDesignPromptFromCatalog(market,variant)` builds rich prompt with real catalog data (names, prices, compare_at, discounts, subtitles, tasting notes)
+- Currency symbols are region-aware (US→$, UK→£, IN→₹, EU→€, AU→A$)
+- Includes variant-specific layout descriptions, brand palette, testimonials, trust signals
+- "Generate Variant A/B" buttons in Step 4 Upload tab
+
+### Pollinations fallback
 - `buildPollinationsPrompt()` generates SCENE-based prompts (lighting, mood, atmosphere) — NOT email layout specifications
 - Variant A = close-up hero product shot, tight crop, studio photography
 - Variant B = wide atmospheric lifestyle photograph, storytelling composition, cinematic depth
 - Explicit "NO text, NO typography" instruction prevents garbled text in generated images
 - Uses `flux-pro` model with `quality=hd` and `enhance=true`
 - Image dimensions: 600x900 (product-hero ratio, not full email height)
+
+## Compact HTML Mailers (as of 2026-05-09)
+- Both `buildEmail()` (Variant A) and `buildEmailVariantB()` standard paths reduced to ~1200-1500px (two scrolls)
+- Variant A: ann bar → logo → hero split (headline left + product image right) → product grid → testimonial strip → offer → trust bar → footer
+- Variant B: ann bar → logo → full-width hero → centered headline → vertical product stack → testimonial → offer → trust bar → footer
+- Uploaded design paths remain compact: design image + product rows + footer
+
+## Step 2 Selected Products Strip
+- Products selected/auto-picked now appear in a dedicated horizontal strip below the catalog grid
+- Each card shows image, name, price (with compare_at/discount), subtitle, and a red × remove button
+- Strip auto-hides when no products are selected
