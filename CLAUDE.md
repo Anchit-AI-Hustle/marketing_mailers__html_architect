@@ -31,9 +31,11 @@ Gemini native (gemini-2.5-flash-image → gemini-3.1-flash-image-preview → gem
 - Global: 102 active products (from `products_export_global.csv`)
 - Built at deploy time via `scripts/build-catalog.js` → `data/catalog/products_{region}.json`
 
-## Market-Specific Store URLs
-- US → vahdamteas.com | UK → uk.vahdamteas.com | IN → vahdamindia.com
-- EU → eu.vahdamteas.com | AU → au.vahdamteas.com | Global/ME → vahdamteas.com
+## Market-Specific Store URLs (VERIFIED)
+- US → www.vahdamteas.com | UK → uk.vahdamteas.com | IN → www.vahdamindia.com
+- EU → eu.vahdamteas.com | AU → au.vahdamteas.com | Global/ME → www.vahdamteas.com
+- PDP pattern: `{base}/products/{handle}` — handle from catalog JSON `h` field
+- Collection pattern: `{base}/collections/{slug}` — mapped via `heroMap` in `collectionUrl()`
 
 ## Brand Constants
 - **Palette**: forest green `#0f2a1c` / `#004A2B`, amber gold `#d4873a` / `#AB8743`, cream `#fdf6e8` / `#FBF5EA`

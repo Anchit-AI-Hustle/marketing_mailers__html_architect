@@ -1435,7 +1435,7 @@ async function supabaseHostImageMatrix(matrix,prefix){
   }
   return out;
 }
-const MARKET_BASE={US:'https://www.vahdam.com',UK:'https://www.vahdam.co.uk',IN:'https://www.vahdam.in',Global:'https://www.vahdam.global',ME:'https://www.vahdam.global',AU:'https://www.vahdam.global',EU:'https://www.vahdam.global'};
+const MARKET_BASE={US:'https://www.vahdamteas.com',UK:'https://uk.vahdamteas.com',IN:'https://www.vahdamindia.com',Global:'https://www.vahdamteas.com',ME:'https://www.vahdamteas.com',AU:'https://au.vahdamteas.com',EU:'https://eu.vahdamteas.com'};
 function getBase(m){return MARKET_BASE[m]||MARKET_BASE.US;}
 function toHandle(n){return n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
 var PROD_HANDLES={
@@ -1515,8 +1515,17 @@ var PROD_HANDLES={
   "herbal tea variety pack, 36 infusion bags":"herbal-tea-variety-pack-36-infusion-bags"
 };
 function pdpUrl(n,m){
-  var handle=PROD_HANDLES[n.toLowerCase()];
-  if(!handle)handle=toHandle(n);
+  // n can be a string (product name) or an object (product with .h handle)
+  if(typeof n==='object'&&n.h)return getBase(m)+'/products/'+n.h;
+  var name=typeof n==='string'?n:'';
+  // Try PROD_HANDLES lookup first
+  var handle=PROD_HANDLES[name.toLowerCase()];
+  // Then try finding the product in CAT to get the real Shopify handle
+  if(!handle&&window.CAT){
+    var found=CAT.find(function(c){return c.n===name;});
+    if(found&&found.h)handle=found.h;
+  }
+  if(!handle)handle=toHandle(name);
   return getBase(m)+'/products/'+handle;
 }
 function collectionUrl(theme,m){
@@ -1577,9 +1586,26 @@ function renderCatalog(filter){
   const items=filter==='all'?CAT:CAT.filter(p=>p.t.includes(filter));
   grid.innerHTML=items.map(p=>{
     const sel=S.manualProds.some(x=>x.n===p.n);
-    const enc=encodeURIComponent(p.n);
-    const encTags=encodeURIComponent(p.t.join(','));
-    return '<div class="cat-card'+(sel?' sel':'')+'" onclick="toggleProd(\''+enc+'\',\''+p.i+'\',\''+encTags+'\')"><img src="'+p.i+'" alt="" loading="lazy" onerror="this.style.display=\'none\'"><div class="cn">'+p.n+'</div></div>';
+    const idx=CAT.indexOf(p);
+    // Price display
+    var priceHtml='';
+    if(p.price){
+      var curr=(S.markets&&S.markets[0]==='UK')?'£':(S.markets&&S.markets[0]==='IN')?'₹':(S.markets&&S.markets[0]==='EU')?'€':'$';
+      if(p.compare_at&&parseFloat(p.compare_at)>parseFloat(p.price)){
+        var pct=Math.round((1-parseFloat(p.price)/parseFloat(p.compare_at))*100);
+        priceHtml='<div style="margin:4px 0 2px;line-height:1.3"><span style="font-size:13px;font-weight:700;color:#004A2B">'+curr+p.price+'</span> <span style="font-size:11px;color:#999;text-decoration:line-through">'+curr+p.compare_at+'</span> <span style="font-size:10px;font-weight:700;color:#c0392b;background:#fef0f0;padding:1px 5px;border-radius:3px">-'+pct+'%</span></div>';
+      } else {
+        priceHtml='<div style="margin:4px 0 2px"><span style="font-size:13px;font-weight:700;color:#004A2B">'+curr+p.price+'</span></div>';
+      }
+    }
+    // Subtitle / type line
+    var metaHtml='';
+    if(p.subtitle)metaHtml='<div style="font-size:10px;color:#888;margin:2px 0;line-height:1.3">'+p.subtitle+'</div>';
+    else if(p.type)metaHtml='<div style="font-size:10px;color:#888;margin:2px 0;line-height:1.3">'+p.type+'</div>';
+    // Tasting notes
+    var notesHtml='';
+    if(p.tasting_notes)notesHtml='<div style="font-size:9px;color:#AB8743;margin:2px 0;line-height:1.2">'+p.tasting_notes+'</div>';
+    return '<div class="cat-card'+(sel?' sel':'')+'" onclick="toggleProd('+idx+')" style="padding-bottom:8px"><img src="'+p.i+'" alt="" loading="lazy" onerror="this.style.display=\'none\'"><div class="cn">'+p.n.split(',')[0]+'</div>'+priceHtml+metaHtml+notesHtml+'</div>';
   }).join('');
 }
 var _activeCatFilter='all';
@@ -1589,12 +1615,29 @@ function filterCat(f,el){
   if(el)el.classList.add('on');
   renderCatalog(_activeCatFilter);
 }
-function toggleProd(encName,img,encTags){
-  const name=decodeURIComponent(encName);
-  const tags=decodeURIComponent(encTags||'').split(',').filter(Boolean);
-  const idx=S.manualProds.findIndex(function(p){return p.n===name;});
+function toggleProd(catIdx){
+  // catIdx can be a number (catalog index) or legacy string (encoded name)
+  var prod;
+  if(typeof catIdx==='number'){
+    prod=CAT[catIdx];
+  } else {
+    // Legacy fallback
+    var name=decodeURIComponent(catIdx);
+    prod=CAT.find(function(p){return p.n===name;});
+  }
+  if(!prod)return;
+  const idx=S.manualProds.findIndex(function(p){return p.n===prod.n;});
   if(idx>=0){S.manualProds.splice(idx,1);}
-  else{S.manualProds.push({n:name,i:img,t:tags});}
+  else{
+    // Store ALL catalog data: name, image, tags, handle, price, compare_at, type, subtitle, etc.
+    S.manualProds.push({
+      n:prod.n, i:prod.i, t:prod.t||[], h:prod.h||'',
+      price:prod.price||'', compare_at:prod.compare_at||'',
+      type:prod.type||'', subtitle:prod.subtitle||'',
+      caffeine:prod.caffeine||'', tasting_notes:prod.tasting_notes||'',
+      form:prod.form||'', cups:prod.cups||'', packaging:prod.packaging||''
+    });
+  }
   renderCatalog(_activeCatFilter);
   updateSelInfo();
 }
@@ -2936,12 +2979,36 @@ function prodBenefit(n){
   return 'Freshness you can taste';
 }
 
-// Per-product retail PRICE — derived from product size/format + market regional pricing
-// Returns { regular, currency, currencySymbol } as numbers + strings
+// Per-product retail PRICE — uses REAL catalog price when available, falls back to estimates
+// `n` can be a string (product name) or an object (product with .price, .compare_at fields)
+// Returns { regular, currency, currencySymbol, display, raw }
 function prodPrice(n,market){
   var cat=(window.getRegionalCatalog?getRegionalCatalog(market||'US'):{currency:'USD',currencySymbol:'$'});
   var sym=cat.currencySymbol||'$';
-  var l=(n||'').toLowerCase();
+  var cur=cat.currency||'USD';
+  // ── PRIORITY: Use real catalog price if available ──
+  var prodObj=typeof n==='object'?n:null;
+  var prodName=prodObj?prodObj.n:(n||'');
+  if(prodObj&&prodObj.price){
+    var realPrice=parseFloat(prodObj.price);
+    if(!isNaN(realPrice)&&realPrice>0){
+      var display=cur==='INR'?(sym+Math.round(realPrice).toLocaleString()):(sym+realPrice.toFixed(2));
+      return {regular:realPrice,currency:cur,currencySymbol:sym,display:display,raw:realPrice};
+    }
+  }
+  // ── Also check: find product in CAT by name to get real price ──
+  if(!prodObj&&typeof n==='string'&&window.CAT){
+    var found=CAT.find(function(c){return c.n===n;});
+    if(found&&found.price){
+      var fp=parseFloat(found.price);
+      if(!isNaN(fp)&&fp>0){
+        var fd=cur==='INR'?(sym+Math.round(fp).toLocaleString()):(sym+fp.toFixed(2));
+        return {regular:fp,currency:cur,currencySymbol:sym,display:fd,raw:fp};
+      }
+    }
+  }
+  // ── FALLBACK: Estimate from product name (legacy behavior) ──
+  var l=(prodName||'').toLowerCase();
   // Detect product format/size from name
   var isGiftSet=l.includes('gift set')||l.includes('bundle')||l.includes('hamper');
   var isCapsule=l.includes('capsule')||l.includes('mg ');
@@ -2981,22 +3048,40 @@ function prodPrice(n,market){
 }
 
 // Apply discount % to regular price → returns sale price
+// If the product object has compare_at, compute the REAL discount from catalog data
 function prodSalePrice(p,offerPct,market){
   var pp=prodPrice(p,market);
+  // ── Use REAL compare_at if product object has it ──
+  var prodObj=typeof p==='object'?p:null;
+  if(prodObj&&prodObj.compare_at&&prodObj.price){
+    var realCompare=parseFloat(prodObj.compare_at);
+    var realPrice=parseFloat(prodObj.price);
+    if(!isNaN(realCompare)&&!isNaN(realPrice)&&realCompare>realPrice){
+      var realPct=Math.round((1-realPrice/realCompare)*100);
+      var sym=pp.currencySymbol||'$';
+      var cur=pp.currency||'USD';
+      var compareDisplay=cur==='INR'?(sym+Math.round(realCompare).toLocaleString()):(sym+realCompare.toFixed(2));
+      var savings=realCompare-realPrice;
+      var savingsDisplay=cur==='INR'?(sym+Math.round(savings).toLocaleString()):(sym+savings.toFixed(2));
+      return {regular:{regular:realCompare,display:compareDisplay,raw:realCompare,currency:cur,currencySymbol:sym},
+              sale:{regular:realPrice,display:pp.display,raw:realPrice,savings:savingsDisplay,pct:realPct}};
+    }
+  }
   if(!offerPct)return {regular:pp,sale:null};
   var pct=parseInt(offerPct,10);if(isNaN(pct)||pct<=0||pct>=100)return {regular:pp,sale:null};
   var saleAmt=pp.raw*(1-pct/100);
   var saleRounded=Math.floor(saleAmt)+0.99;
   var saleDisplay=pp.currency==='INR'?(pp.currencySymbol+Math.round(saleAmt).toLocaleString()):(pp.currencySymbol+saleRounded.toFixed(2));
-  var savings=pp.raw-saleAmt;
-  var savingsDisplay=pp.currency==='INR'?(pp.currencySymbol+Math.round(savings).toLocaleString()):(pp.currencySymbol+savings.toFixed(2));
-  return {regular:pp,sale:{regular:saleRounded,display:saleDisplay,raw:saleAmt,savings:savingsDisplay,pct:pct}};
+  var savings2=pp.raw-saleAmt;
+  var savingsDisplay2=pp.currency==='INR'?(pp.currencySymbol+Math.round(savings2).toLocaleString()):(pp.currencySymbol+savings2.toFixed(2));
+  return {regular:pp,sale:{regular:saleRounded,display:saleDisplay,raw:saleAmt,savings:savingsDisplay2,pct:pct}};
 }
 
 // HTML snippet for a product card price block (regular + strikethrough + savings)
 function prodPriceBlockHTML(p,prompt,market){
   var sig=extractPromptSignals(prompt||'');
-  var pricing=prodSalePrice(p.n,sig.pct,market);
+  // Pass full product object so prodSalePrice can use real catalog price/compare_at
+  var pricing=prodSalePrice(p,sig.pct,market);
   var pp=pricing.regular;
   if(!pricing.sale){
     return '<p style="font-family:Lao MN,Georgia,serif;font-size:16px;font-weight:bold;color:#004A2B;margin:0;letter-spacing:0.02em">'+pp.display+'</p>';
@@ -5290,7 +5375,7 @@ function buildEmailVariantB(uploadedDesignImg,mktOverride){
           '<span style="color:#AB8743;font-size:13px">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#aaa;margin-left:4px">4.8 &middot; 1,000+ reviews</span>'+
           // CTA (Add to Cart for higher conversion intent)
           '<div style="margin-top:14px">'+
-          '<!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="'+pdpUrl(prod.n,mt)+'" style="height:36px;v-text-anchor:middle;width:140px" arcsize="10%" stroke="f" fillcolor="#004A2B"><w:anchorlock/><center style="color:#FBF5EA;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:bold;letter-spacing:0.12em;">ADD TO CART &rarr;</center></v:roundrect><![endif]--><!--[if !mso]><!--><a href="'+pdpUrl(prod.n,mt)+'" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:'+(isHero?'#AB8743':'#004A2B')+';color:#FBF5EA;padding:9px 22px;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:bold;letter-spacing:0.12em;text-decoration:none;border-radius:4px">'+(isHero?'ADD TO CART &rarr;':'ADD TO CART &rarr;')+'</a><!--<![endif]-->'+
+          '<!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="'+pdpUrl(prod,mt)+'" style="height:36px;v-text-anchor:middle;width:140px" arcsize="10%" stroke="f" fillcolor="#004A2B"><w:anchorlock/><center style="color:#FBF5EA;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:bold;letter-spacing:0.12em;">ADD TO CART &rarr;</center></v:roundrect><![endif]--><!--[if !mso]><!--><a href="'+pdpUrl(prod,mt)+'" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:'+(isHero?'#AB8743':'#004A2B')+';color:#FBF5EA;padding:9px 22px;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:bold;letter-spacing:0.12em;text-decoration:none;border-radius:4px">'+(isHero?'ADD TO CART &rarr;':'ADD TO CART &rarr;')+'</a><!--<![endif]-->'+
           '</div>'+
         '</td>'+
       '</tr></table>'+
@@ -5406,11 +5491,11 @@ function buildEmail(uploadedDesignImg,mktOverride){
     return '<!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="'+href+'" style="height:40px;v-text-anchor:middle;width:180px" arcsize="10%" stroke="f" fillcolor="'+bg+'"><w:anchorlock/><center style="color:'+fg+';font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;font-weight:bold;letter-spacing:0.1em;">'+label+'</center></v:roundrect><![endif]--><!--[if !mso]><!--><a href="'+href+'" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:'+bg+';color:'+fg+';padding:11px 26px;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;font-weight:bold;letter-spacing:0.1em;text-decoration:none;border-radius:4px">'+label+'</a><!--<![endif]-->';
   }
   function prodCard(prod){
-    return '<td width="'+colW+'" valign="top" style="width:'+colW+'px;padding:0 4px 16px;vertical-align:top"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr><td style="padding:0;line-height:0;font-size:0">'+(prod.i?'<img src="'+prod.i+'" alt="'+prod.n+'" width="'+(colW-8)+'" border="0" style="width:100%;height:150px;object-fit:cover;display:block;border:0;outline:none;text-decoration:none;border-radius:6px 6px 0 0;background:#e8f0e8">':'<div style="width:100%;height:150px;background:#e8f0e8;border-radius:6px 6px 0 0"></div>')+'</td></tr><tr><td style="background:#fff;padding:10px 8px 4px;border:1px solid #ede5d8;border-top:0"><p style="font-family:Lao MN,Georgia,serif;font-size:11px;font-weight:bold;color:#1a1a1a;margin:0 0 4px;line-height:1.35">'+prod.n.split(',')[0]+'</p></td></tr><tr><td style="background:#fff;padding:0 8px 6px;border:1px solid #ede5d8;border-top:0"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#888;margin:0;line-height:1.5">'+prodShortDesc(prod.n)+'</p></td></tr><tr><td style="background:#fff;padding:4px 8px;border:1px solid #ede5d8;border-top:0"><span style="color:#AB8743;font-size:12px">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#aaa;margin-left:4px">4.8</span></td></tr><tr><td style="background:#fff;padding:4px 8px 10px;border:1px solid #ede5d8;border-top:0;border-radius:0 0 6px 6px"><a href="'+pdpUrl(prod.n,mt)+'" target="_blank" rel="noopener noreferrer" border="0" style="display:block;text-align:center;background:#004A2B;color:#FBF5EA;padding:8px;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:bold;letter-spacing:0.1em;text-decoration:none;border-radius:4px">SHOP NOW</a></td></tr></table></td>';
+    return '<td width="'+colW+'" valign="top" style="width:'+colW+'px;padding:0 4px 16px;vertical-align:top"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr><td style="padding:0;line-height:0;font-size:0">'+(prod.i?'<img src="'+prod.i+'" alt="'+prod.n+'" width="'+(colW-8)+'" border="0" style="width:100%;height:150px;object-fit:cover;display:block;border:0;outline:none;text-decoration:none;border-radius:6px 6px 0 0;background:#e8f0e8">':'<div style="width:100%;height:150px;background:#e8f0e8;border-radius:6px 6px 0 0"></div>')+'</td></tr><tr><td style="background:#fff;padding:10px 8px 4px;border:1px solid #ede5d8;border-top:0"><p style="font-family:Lao MN,Georgia,serif;font-size:11px;font-weight:bold;color:#1a1a1a;margin:0 0 4px;line-height:1.35">'+prod.n.split(',')[0]+'</p></td></tr><tr><td style="background:#fff;padding:0 8px 6px;border:1px solid #ede5d8;border-top:0"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#888;margin:0;line-height:1.5">'+prodShortDesc(prod.n)+'</p></td></tr><tr><td style="background:#fff;padding:4px 8px;border:1px solid #ede5d8;border-top:0"><span style="color:#AB8743;font-size:12px">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#aaa;margin-left:4px">4.8</span></td></tr><tr><td style="background:#fff;padding:4px 8px 10px;border:1px solid #ede5d8;border-top:0;border-radius:0 0 6px 6px"><a href="'+pdpUrl(prod,mt)+'" target="_blank" rel="noopener noreferrer" border="0" style="display:block;text-align:center;background:#004A2B;color:#FBF5EA;padding:8px;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:bold;letter-spacing:0.1em;text-decoration:none;border-radius:4px">SHOP NOW</a></td></tr></table></td>';
   }
   if(uploadedDesignImg){
     const prodRows=prods.map(function(prod){
-      return '<tr><td style="padding:0 20px 10px"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr><td width="80" style="padding:0;vertical-align:top;background:#fff;border:1px solid #ede5d8;border-right:0;border-radius:6px 0 0 6px">'+(prod.i?'<img src="'+prod.i+'" alt="'+prod.n+'" width="80" border="0" style="width:80px;height:80px;object-fit:cover;display:block;border:0;outline:none;text-decoration:none;border-radius:6px 0 0 6px">':'<div style="width:80px;height:80px;background:#e8f0e8;border-radius:6px 0 0 6px"></div>')+'</td><td style="background:#fff;padding:10px 12px;vertical-align:top;border:1px solid #ede5d8;border-left:0;border-right:0"><p style="font-family:Lao MN,Georgia,serif;font-size:12px;font-weight:bold;color:#1a1a1a;margin:0 0 3px;line-height:1.3">'+prod.n.split(',')[0]+'</p><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;color:#888;margin:0 0 6px">'+prodShortDesc(prod.n)+'</p><span style="color:#AB8743;font-size:12px">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#aaa;margin-left:4px">4.8 &middot; 1,000+ reviews</span></td><td width="110" style="background:#fff;padding:10px;vertical-align:middle;text-align:center;border:1px solid #ede5d8;border-left:0;border-radius:0 6px 6px 0"><a href="'+pdpUrl(prod.n,mt)+'" target="_blank" rel="noopener noreferrer" border="0" style="display:inline-block;background:#004A2B;color:#FBF5EA;padding:9px 14px;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:bold;letter-spacing:0.08em;text-decoration:none;border-radius:4px;white-space:nowrap">SHOP NOW</a></td></tr></table></td></tr>';
+      return '<tr><td style="padding:0 20px 10px"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr><td width="80" style="padding:0;vertical-align:top;background:#fff;border:1px solid #ede5d8;border-right:0;border-radius:6px 0 0 6px">'+(prod.i?'<img src="'+prod.i+'" alt="'+prod.n+'" width="80" border="0" style="width:80px;height:80px;object-fit:cover;display:block;border:0;outline:none;text-decoration:none;border-radius:6px 0 0 6px">':'<div style="width:80px;height:80px;background:#e8f0e8;border-radius:6px 0 0 6px"></div>')+'</td><td style="background:#fff;padding:10px 12px;vertical-align:top;border:1px solid #ede5d8;border-left:0;border-right:0"><p style="font-family:Lao MN,Georgia,serif;font-size:12px;font-weight:bold;color:#1a1a1a;margin:0 0 3px;line-height:1.3">'+prod.n.split(',')[0]+'</p><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;color:#888;margin:0 0 6px">'+prodShortDesc(prod.n)+'</p><span style="color:#AB8743;font-size:12px">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#aaa;margin-left:4px">4.8 &middot; 1,000+ reviews</span></td><td width="110" style="background:#fff;padding:10px;vertical-align:middle;text-align:center;border:1px solid #ede5d8;border-left:0;border-radius:0 6px 6px 0"><a href="'+pdpUrl(prod,mt)+'" target="_blank" rel="noopener noreferrer" border="0" style="display:inline-block;background:#004A2B;color:#FBF5EA;padding:9px 14px;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:bold;letter-spacing:0.08em;text-decoration:none;border-radius:4px;white-space:nowrap">SHOP NOW</a></td></tr></table></td></tr>';
     }).join('');
     const html='<!DOCTYPE html>\n<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<meta http-equiv="X-UA-Compatible" content="IE=edge">\n<title>VAHDAM® -- '+p.substring(0,60)+'</title>\n'+msoHead+'\n<style>@media only screen and (max-width:600px){.email-wrap{width:100%!important}.pcol{display:block!important;width:100%!important}}</style>\n</head>\n<body style="margin:0;padding:0;background:#f0ebe0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%">\n<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#f0ebe0">'+sc.substring(0,100)+' -- VAHDAM® '+( ot||cta)+' today. Farm direct Indian teas.</div>\n<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0ebe0;border-collapse:collapse"><tr><td align="center" style="padding:20px 10px">\n<table class="email-wrap" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;border-collapse:collapse">\n<tr><td style="background:#004A2B;padding:8px 20px;text-align:center;border-radius:6px 6px 0 0"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#FBF5EA;margin:0">'+annBarLine(p,mt)+'</p></td></tr>\n<tr><td style="background:#ffffff;padding:18px 30px 14px;text-align:center;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8"><p style="font-family:Lao MN,Georgia,serif;font-size:28px;font-weight:bold;letter-spacing:0.18em;color:#004A2B;margin:0 0 10px">VAHDAM® TEAS</p><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border-top:1px solid #ede5d8"><tr><td width="33%" style="text-align:center;padding:8px 0;border-right:1px solid #ede5d8"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#888;margin:0;letter-spacing:0.05em">🌿 100% PURE INDIAN TEA</p></td><td width="34%" style="text-align:center;padding:8px 0;border-right:1px solid #ede5d8"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#888;margin:0;letter-spacing:0.05em">🤝 ETHICALLY SOURCED</p></td><td width="33%" style="text-align:center;padding:8px 0"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#888;margin:0;letter-spacing:0.05em">🌱 DIRECT FROM FARMS</p></td></tr></table></td></tr>\n<tr><td style="padding:0;line-height:0;font-size:0;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8"><img src="'+uploadedDesignImg+'" alt="'+hero.n+' -- VAHDAM® Campaign" width="598" border="0" style="width:100%;max-width:598px;height:auto;display:block;border:0;outline:none;text-decoration:none"></td></tr>\n<tr><td style="background:#004A2B;padding:20px 30px;text-align:center;border-left:1px solid #004A2B;border-right:1px solid #004A2B"><p style="font-family:Lao MN,Georgia,serif;font-size:20px;font-weight:bold;color:#FBF5EA;margin:0 0 8px;line-height:1.3">'+(ot||hl[0])+'</p>'+(oc?'<p style="font-family:Lao MN,Georgia,serif;font-size:26px;font-weight:bold;color:#AB8743;letter-spacing:0.2em;margin:0 0 14px;border:2px solid #AB8743;display:inline-block;padding:4px 20px">'+oc+'</p><br>':'')+bulletBtn(collectionUrl(p,mt),oct,'#AB8743','#ffffff')+'<br><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#9fd6b5;margin:10px 0 0;letter-spacing:0.05em">🚚 FREE SHIPPING ON ORDERS $49+ &middot; '+os+'</p></td></tr>\n<tr><td style="background:#ffffff;padding:20px 20px 8px;text-align:center;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8"><p style="font-family:Lao MN,Georgia,serif;font-size:15px;font-weight:bold;color:#1a1a1a;margin:0;letter-spacing:0.05em">-- '+prodSecTitle+' --</p></td></tr>\n<tr><td style="background:#ffffff;padding-bottom:8px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">'+prodRows+'</table></td></tr>\n<tr><td style="background:#1a3a28;padding:12px 24px;text-align:center"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;color:#9fd6b5;margin:0;letter-spacing:0.04em">&#9733;&#9733;&#9733;&#9733;&#9733;&nbsp;&nbsp;Rated 4.8/5 by 50,000+ customers&nbsp;|&nbsp;🌿 100% Natural&nbsp;|&nbsp;🤝 Ethically Sourced</p></td></tr>\n<tr><td style="background:#FBF5EA;padding:16px 10px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr>'+['🌿 SUSTAINABLE','💚 WOMEN-LED','🤝 ETHICAL','👥 COMMUNITY','❤ LOVED'].map(function(b){return '<td style="text-align:center;padding:0 4px"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8.5px;font-weight:bold;color:#555;text-transform:uppercase;letter-spacing:0.06em;margin:0;line-height:1.6">'+b+'</p></td>';}).join('')+'</tr></table></td></tr>\n<tr><td style="background:#111111;padding:20px 24px;text-align:center;border-radius:0 0 6px 6px"><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:0.12em;color:#FBF5EA;margin:0 0 8px">MAKE EVERY CUP COUNT</p><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#555;margin:0 0 10px"><a href="https://www.instagram.com/vahdamteas" target="_blank" rel="noopener noreferrer" style="color:#666;text-decoration:none">Instagram</a>&nbsp;&middot;&nbsp;<a href="https://www.facebook.com/vahdamteas" target="_blank" rel="noopener noreferrer" style="color:#666;text-decoration:none">Facebook</a>&nbsp;&middot;&nbsp;<a href="https://www.youtube.com/@vahdamteas" target="_blank" rel="noopener noreferrer" style="color:#666;text-decoration:none">YouTube</a>&nbsp;&middot;&nbsp;<a href="https://www.pinterest.com/vahdamteas" target="_blank" rel="noopener noreferrer" style="color:#666;text-decoration:none">Pinterest</a></p><p style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#444;margin:0;line-height:1.7">VAHDAM India Pvt. Ltd.&nbsp;&middot;&nbsp;New Delhi, India<br>You received this because you subscribed at '+base.replace('https://www.','')+'<br><a href="'+base+'/pages/unsubscribe" style="color:#555">Unsubscribe</a>&nbsp;&middot;&nbsp;<a href="'+base+'/pages/privacy-policy" style="color:#555">Privacy Policy</a>&nbsp;&middot;&nbsp;<a href="'+base+'/pages/contact-us" style="color:#555">Contact</a></p></td></tr>\n</table></td></tr></table>\n</body></html>';
     if(!mktOverride){S.finalHTML=html;document.getElementById('emailFr').srcdoc=html;document.getElementById('htmlRaw').textContent=html;buildStep5UI(p,prods,mt);}
@@ -5446,7 +5531,7 @@ function buildEmail(uploadedDesignImg,mktOverride){
       // Rating
       '<tr><td style="background:#fff;padding:5px 12px 8px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8"><span style="color:#AB8743;font-size:12px">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9px;color:#aaa;margin-left:4px">4.8 &middot; 1,000+ reviews</span></td></tr>'+
       // CTA button
-      '<tr><td style="background:#fff;padding:6px 12px 12px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8;border-bottom:1px solid #ede5d8;border-radius:0 0 8px 8px"><a href="'+pdpUrl(prod.n,mt)+'" target="_blank" rel="noopener noreferrer" border="0" style="display:block;text-align:center;background:'+(isHero?'#AB8743':'#004A2B')+';color:#FBF5EA;padding:'+(isHero?'10px':'8px')+';font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:'+(isHero?'11':'10')+'px;font-weight:bold;letter-spacing:0.12em;text-decoration:none;border-radius:5px">'+(isHero?'ADD TO CART &rarr;':'ADD TO CART &rarr;')+'</a></td></tr>'+
+      '<tr><td style="background:#fff;padding:6px 12px 12px;border-left:1px solid #ede5d8;border-right:1px solid #ede5d8;border-bottom:1px solid #ede5d8;border-radius:0 0 8px 8px"><a href="'+pdpUrl(prod,mt)+'" target="_blank" rel="noopener noreferrer" border="0" style="display:block;text-align:center;background:'+(isHero?'#AB8743':'#004A2B')+';color:#FBF5EA;padding:'+(isHero?'10px':'8px')+';font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:'+(isHero?'11':'10')+'px;font-weight:bold;letter-spacing:0.12em;text-decoration:none;border-radius:5px">'+(isHero?'ADD TO CART &rarr;':'ADD TO CART &rarr;')+'</a></td></tr>'+
       '</table></td>';
   }
   let html='<!DOCTYPE html>\n<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<meta http-equiv="X-UA-Compatible" content="IE=edge">\n<title>VAHDAM&reg; &ndash; '+p.substring(0,60)+'</title>\n'+msoHead+'\n<style>\n@media only screen and (max-width:600px){\n  .email-wrap{width:100%!important}\n  .pcol{display:block!important;width:100%!important;padding-left:0!important;padding-right:0!important}\n  .hero-left{display:block!important;width:100%!important;padding:24px 20px!important}\n  .hero-right{display:none!important}\n  .hide-mobile{display:none!important}\n  .pd20{padding:14px 16px!important}\n}\n</style>\n</head>\n<body style="margin:0;padding:0;background:#f0ebe0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%">\n';
