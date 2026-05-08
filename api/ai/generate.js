@@ -33,34 +33,72 @@ REGENERATE DIVERGENCE: if regenerate_counter > 0, force divergence on hero angle
 
 First char of output MUST be { · last char }. No markdown, no commentary.`;
 
-const SYSTEM_PROMPT_CREATE_BRIEF = `You are the Creative Director at VAHDAM India — a $100M premium D2C Indian heritage tea brand. Write a concise, punchy, actionable campaign brief that a downstream AI pipeline uses to generate a premium email mailer. NO section headers, NO numbered lists, NO labeled fields — write it as a flowing creative brief in plain paragraphs.
+const SYSTEM_PROMPT_CREATE_BRIEF = `You are the Creative Director at VAHDAM India — a $100M premium D2C Indian heritage tea brand. Write a COMPLETE, PRODUCTION-READY campaign brief that gives everything needed to build a high-converting email mailer. The downstream system renders this brief DIRECTLY into a final HTML email — so every detail matters.
 
-BRAND: VAHDAM India. Single-estate teas, wellness blends, gift sets. B-Corp. Garden-fresh within 72 hours of harvest. Palette: forest green #0f2a1c / amber #d4873a / cream #fdf6e8. Voice: calm-confident-premium. PREFERRED words: ritual, restore, balance, origin, single-estate, steep, heritage, crafted.
+BRAND IDENTITY:
+- VAHDAM India. Single-estate teas, wellness blends, gift sets. B-Corp. Garden-fresh within 72 hours of harvest.
+- Palette: forest green #004A2B / amber gold #AB8743 / parchment cream #FBF5EA / near-black #1a1a1a
+- Typography: Lao MN (headings), Proxima Nova (body/buttons)
+- Voice: calm-confident-premium. PREFERRED: ritual, restore, balance, origin, single-estate, steep, heritage, crafted
+- BANNED: wellness journey, transform, liquid gold, game-changer, LIMITED TIME (caps), hurry, don't miss out
+- EMOTIONAL TONE: Write copy that makes people FEEL something. Think of the moment: holding a warm cup on a cold morning, the aroma filling a quiet kitchen, the first sip that slows the whole world down. Copy should read like a letter from a friend, not a billboard. Sensory details (steam, warmth, scent, texture, sound of pouring) create connection. Every headline should make someone pause mid-scroll.
 
-YOUR BRIEF MUST INCLUDE (woven naturally into 250-400 words of flowing prose):
+YOUR BRIEF MUST INCLUDE ALL OF THE FOLLOWING (450-600 words, flowing prose organized in clear sections):
 
-1. CAMPAIGN NAME — 2-4 ownable words (not generic like "Tea Campaign")
-2. THE GOAL — one concrete sentence: who you are converting, at what AOV, through what lever
-3. THE HOOK — lead with: offer/discount first → health benefit + freshness second → origin story third. State exact discount % if products have compare_at prices.
-4. HERO PRODUCT — exact name from the provided list, with price and discount %. Why THIS product anchors the campaign.
-5. SUPPORTING PRODUCTS — 2-3 more from the list with prices. How they build the basket.
-6. AUDIENCE INSIGHT — who is reading this email right now, what they are feeling, what tips them to buy
-7. SUBJECT LINES — exactly 3 options, each under 50 characters, varied in approach (curiosity / benefit / urgency)
-8. ANNOUNCEMENT BAR — exact 8-12 word text combining offer + freshness hook
-9. HEADLINES — Variant A (direct, benefit-first, max 8 words) and Variant B (sensory/poetic, max 8 words)
-10. IMAGE DIRECTION — two 50-word photographic scene descriptions:
-    Image A (product-led): name the product, surface material, light source + direction, camera angle, color temperature, DOF
-    Image B (lifestyle): NO product visible, human warmth, different time of day, atmospheric
-11. CTA — primary action verb (max 3 words), plus one softer alternative
-12. TONE — 3-5 word emotional atmosphere
+━━━ CAMPAIGN IDENTITY ━━━
+• CAMPAIGN NAME — 2-4 ownable words specific to THIS campaign
+• CAMPAIGN GOAL — one concrete sentence: who you are converting, at what AOV, through what lever
+• CAMPAIGN TYPE — Sale / Launch / Gift / Seasonal / Bestseller / Routine / Discovery / Story
+
+━━━ COPY SYSTEM (every word must be final, production-ready) ━━━
+• SUBJECT LINES — exactly 3 options, each under 50 characters, varied: curiosity / benefit / urgency
+• PREHEADER — 80-100 character preview text that complements (not repeats) the subject line
+• ANNOUNCEMENT BAR — exact 8-12 word text. Format: "[OFFER/HOOK] · [FRESHNESS] · [TRUST SIGNAL]"
+• HERO HEADLINE — two variants:
+  Line 1: Emotionally resonant, max 6 words — makes the reader feel understood (e.g. "The Quiet Morning Ritual" or "Some Moments Deserve This")
+  Line 2: Sensory/poetic continuation, max 6 words (e.g. "That Changes Everything" or "Warmth in Every Sip")
+• SUB-COPY — 2-3 sentences (40-60 words). Paint a sensory scene: steam rising, warmth spreading through hands, the moment of stillness before the day begins. Mention the hero product by name. The reader should feel like you wrote this just for them — personal, warm, never salesy.
+• CTA BUTTON TEXT — primary (max 3 words, action verb: "Shop the Collection") + softer alternative ("Explore Now")
+• OFFER DETAILS — exact discount %, promo code (if any), free shipping threshold, expiry/urgency mechanic
+• OFFER SUB-LINE — one line below offer CTA (e.g. "Free shipping on orders $49+ · No minimum")
+
+━━━ PRODUCT SYSTEM (use ONLY products from the provided list) ━━━
+• HERO PRODUCT — exact name, price, discount % (calculate: Math.round((1-price/compare_at)*100)), why it anchors
+• SUPPORTING PRODUCTS — 2-4 more with exact names and prices. Role of each: bundle builder / cross-sell / AOV uplift
+• PRODUCT SECTION TITLE — 4-6 word heading for the product grid (e.g. "Curated For Your Ritual")
+
+━━━ VISUAL DIRECTION ━━━
+• IMAGE A (product-led, 60 words): Name the exact hero product tin. Surface material (marble/linen/wood). Light: direction, color temperature (warm 3500K/cool 5500K). Camera angle (45° overhead/eye-level). DOF. Surrounding botanicals specific to product (turmeric roots for turmeric tea, etc).
+• IMAGE B (lifestyle/editorial, 60 words): NO product visible. Human warmth. Different time of day from A. Atmospheric mood. Steam, hands holding cup, morning ritual, evening calm. Specific setting (kitchen/garden/desk).
+
+━━━ SOCIAL PROOF & TRUST ━━━
+• 3 TESTIMONIAL QUOTES — each 15-25 words, deeply personal and specific (NOT generic praise). Write them as real moments: "There is a moment every morning when I hold the warm cup and the world goes quiet" NOT "Great product, highly recommend". Each should tell a tiny story. Reviewer names MUST match the target market region:
+  US/Global: American names (Sarah M., James T., Michelle R.)
+  UK: British names (Charlotte W., Oliver P., Sophie B.)
+  IN: Indian names (Priya S., Arjun K., Meera R.)
+  AU: Australian names (Emma L., Jack W., Olivia M.)
+  ME: Middle Eastern names (Fatima A., Omar H., Layla K.)
+  EU: European names (Marie L., Thomas B., Anna S.)
+
+━━━ EMAIL STRUCTURE (section-by-section flow) ━━━
+Describe the 11-section email layout:
+S0: Preheader | S1: Announcement bar | S2: Brand header with trust badges
+S3: Hero section (describe split/full-width based on variant) | S4: Feature/benefit strip (4 icons + labels)
+S5: Social proof bar | S6: Campaign highlight / ingredients | S7: Product grid with cards
+S8: Testimonials | S9: Offer banner with CTA | S10: Trust badges | S11: Footer
+
+━━━ AUDIENCE INSIGHT ━━━
+• WHO is reading this right now — their mindset, what they did before opening, what tips them to buy
+• EMOTIONAL TONE — 3-5 word atmosphere description
 
 RULES:
-- NEVER invent product names — only use products from the provided list
+- NEVER invent product names — only use products from the provided list with exact names and real prices
 - ALWAYS calculate discount % from price vs compare_at: Math.round((1 - price/compare_at) * 100)
-- If no discount info exists, say "No code needed — prices as listed"
-- NO section numbers, NO bracketed labels, NO template formatting
-- Write like a senior creative director firing off a brief to the team — direct, specific, vivid
-- Generic output is rejected. Every sentence must be specific to THIS campaign.`;
+- If no discount exists, state "Premium value — no code needed"
+- Every sentence must be specific to THIS campaign — generic output is rejected
+- The brief must feel like a senior creative director firing off a complete production brief
+- Reviewer names MUST match the target market (American names for US, British for UK, Indian for IN, etc)
+- The output must be so detailed that someone could build the complete email from this brief alone`;
 
 
 const SYSTEM_PROMPT_SUGGESTED_PROMPTS = `You are a Creative Director + Director of Growth at VAHDAM India — a premium D2C Indian heritage tea brand (Aesop / AG1 / Net-a-Porter standard). Generate exactly 6 campaign briefs as a JSON array. Each is a director-grade email campaign prompt that a downstream AI pipeline uses to produce a flawless premium mailer.
@@ -298,7 +336,7 @@ module.exports = async function handler(req, res) {
   } else if (mode === 'concepts') {
     systemPrompt = SYSTEM_PROMPT_CONCEPTS;
     response_format = { type: 'json_object' };
-    const productsBlock = selected_products.slice(0, 30).map(p => `- handle:${p.handle||p.id||''} | name:${p.name||p.n||''} | category:${p.category||''} | price:${p.price||''} | compare_at:${p.compare_at||''}`).join('\n');
+    const productsBlock = selected_products.slice(0, 30).map(p => `- handle:${p.handle||p.id||''} | name:${p.name||p.n||''} | category:${p.category||''} | price:${p.price||''} | compare_at:${p.compare_at||''} | image:${p.image_url||p.i||''}`).join('\n');
     userMessage = `BRIEF: ${campaign_brief.substring(0, 800)}\nMARKET: ${market}\nTYPE: ${theme}\nVARIANT: ${variant}\nREGENERATE_COUNTER: ${regenerate_counter}\n${previous_outputs_summary ? 'PREVIOUS_OUTPUT_HASH: ' + previous_outputs_summary + '\n' : ''}\nAVAILABLE_PRODUCTS:\n${productsBlock || '(none provided — use category defaults)'}\n\nGenerate the JSON now.`;
   } else if (mode === 'mailer_full') {
     systemPrompt = SYSTEM_PROMPT_MAILER_FULL;
@@ -319,12 +357,13 @@ module.exports = async function handler(req, res) {
     };
     const audienceCtx = mktContext[market] || `${market} market audience`;
 
-    // Product block — name + price + discount % so the LLM can build a genuine product system
+    // Product block — name + price + discount % + image URL so the LLM can build a genuine product system
     const productsBlock = selected_products.length
       ? selected_products.slice(0, 6).map(p => {
           const name = p.name || p.n || '';
           const price = parseFloat(p.price) || 0;
           const compareAt = parseFloat(p.compare_at || p.compare_price) || 0;
+          const imgUrl = p.image_url || p.i || '';
           const parts = [name];
           if (price) parts.push('$' + price.toFixed(2));
           if (compareAt && compareAt > price) {
@@ -332,6 +371,7 @@ module.exports = async function handler(req, res) {
             parts.push('was $' + compareAt.toFixed(2) + ' (' + disc + '% off)');
           }
           if (p.category || p.type) parts.push(p.category || p.type);
+          if (imgUrl) parts.push('image: ' + imgUrl);
           return '- ' + parts.join(' | ');
         }).join('\n')
       : null;
@@ -351,8 +391,8 @@ module.exports = async function handler(req, res) {
 
   // ── Provider-specific call ──
   const temperature = 0.7 + Math.min(0.3, regenerate_counter * 0.1);
-  // create_brief: 2500 tokens for 250-400 word flowing prose brief with headroom
-  const max_tokens = mode === 'mailer_full' ? 7000 : (mode === 'concepts' ? 4500 : (mode === 'suggested_prompts' ? 3000 : 2500));
+  // create_brief: 4000 tokens for 450-600 word detailed production brief with full structure
+  const max_tokens = mode === 'mailer_full' ? 7000 : (mode === 'concepts' ? 4500 : (mode === 'suggested_prompts' ? 3000 : 4000));
 
   function isRetryable(s) { return s === 429 || s === 503 || s === 404 || s === 400 || s === 529 || s === 403 || s === 402; }
 

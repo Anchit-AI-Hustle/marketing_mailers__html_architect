@@ -242,7 +242,7 @@ module.exports = async function handler(req, res) {
   const regenerate_counter = Number(body.regenerate_counter) || 0;
 
   const productsBlock = products.slice(0, 15)
-    .map(p => `- ${p.name || p.n || '?'} | ${p.price ? '$' + p.price : ''} | ${p.category || ''} | handle:${p.handle || p.id || '?'}`)
+    .map(p => `- ${p.name || p.n || '?'} | ${p.price ? '$' + p.price : ''} | ${p.category || ''} | handle:${p.handle || p.id || '?'} | image:${p.image_url || p.i || ''}`)
     .join('\n');
 
   const marketContext = {

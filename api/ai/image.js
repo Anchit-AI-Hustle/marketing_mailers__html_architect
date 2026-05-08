@@ -291,7 +291,9 @@ module.exports = async function handler(req, res) {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // PROVIDER 3: Pollinations (free, no auth, FLUX model — last resort)
+  // PROVIDER 3: Pollinations (free, no auth — multiple model cascade)
+  // Models tried in quality order:
+  //   flux-pro (best quality) → flux-realism (photorealistic) → flux (standard)
   // ═══════════════════════════════════════════════════════════════════════════
   const hadKeys = !!(geminiKey || openaiKeys.length > 0);
   if (hadKeys) {
@@ -305,41 +307,61 @@ module.exports = async function handler(req, res) {
   };
   const dim = sizeMap[size] || sizeMap['1024x1536'];
   const seed = Math.floor(Math.random() * 1000000);
-  const pollinationsModel = 'flux';
-  const pollUrl = 'https://image.pollinations.ai/prompt/' +
-    encodeURIComponent(finalPrompt.substring(0, 1500)) +
-    '?width=' + dim.w + '&height=' + dim.h +
-    '&seed=' + seed + '&nologo=true&model=' + pollinationsModel + '&enhance=true';
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 90000);
-  try {
-    const imgFetch = await fetch(pollUrl, { signal: controller.signal });
-    clearTimeout(timeout);
-    if (!imgFetch.ok) {
-      return res.status(imgFetch.status).json({
-        error: 'pollinations_error', provider: 'pollinations', status: imgFetch.status,
-        quota_warning: hadKeys
+  // Try multiple Pollinations models in quality order
+  const pollinationsModels = ['flux-pro', 'flux-realism', 'flux'];
+
+  for (let pi = 0; pi < pollinationsModels.length; pi++) {
+    const pollinationsModel = pollinationsModels[pi];
+    const pollUrl = 'https://image.pollinations.ai/prompt/' +
+      encodeURIComponent(finalPrompt.substring(0, 1500)) +
+      '?width=' + dim.w + '&height=' + dim.h +
+      '&seed=' + seed + '&nologo=true&model=' + pollinationsModel + '&enhance=true&quality=hd';
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 90000);
+
+    console.log('[image] Trying Pollinations model=' + pollinationsModel + ' size=' + dim.w + 'x' + dim.h);
+
+    try {
+      const imgFetch = await fetch(pollUrl, { signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (!imgFetch.ok) {
+        console.warn('[image] Pollinations ' + pollinationsModel + ' → HTTP ' + imgFetch.status);
+        continue; // Try next model
+      }
+
+      const buf = await imgFetch.arrayBuffer();
+      // Validate we got actual image data (not an error page)
+      if (buf.byteLength < 5000) {
+        console.warn('[image] Pollinations ' + pollinationsModel + ' — response too small (' + buf.byteLength + ' bytes), skipping');
+        continue;
+      }
+
+      const contentType = imgFetch.headers.get('content-type') || 'image/jpeg';
+      const dataUrl = 'data:' + contentType + ';base64,' + Buffer.from(buf).toString('base64');
+
+      console.log('[image] Success · Pollinations ' + pollinationsModel + ' (' + Math.round(buf.byteLength / 1024) + ' KB)');
+      return res.status(200).json({
+        ok: true, provider: 'pollinations', model: pollinationsModel, size, quality,
+        image_data_url: dataUrl,
+        quota_warning: hadKeys,
+        quota_note: hadKeys
+          ? 'All paid image providers exhausted. Using Pollinations ' + pollinationsModel + ' (free). Check Gemini/OpenAI API credits.'
+          : null
       });
+    } catch (e) {
+      clearTimeout(timeout);
+      console.error('[image] Pollinations ' + pollinationsModel + ' exception:', String(e.message || e).substring(0, 200));
+      continue; // Try next model
     }
-    const buf = await imgFetch.arrayBuffer();
-    const contentType = imgFetch.headers.get('content-type') || 'image/jpeg';
-    const dataUrl = 'data:' + contentType + ';base64,' + Buffer.from(buf).toString('base64');
-
-    return res.status(200).json({
-      ok: true, provider: 'pollinations', model: pollinationsModel, size, quality,
-      image_data_url: dataUrl,
-      quota_warning: hadKeys,
-      quota_note: hadKeys
-        ? 'All paid image providers exhausted. Using Pollinations (free). Check Gemini/OpenAI API credits.'
-        : null
-    });
-  } catch (e) {
-    clearTimeout(timeout);
-    return res.status(502).json({
-      error: 'all_providers_failed', provider: 'pollinations',
-      quota_warning: hadKeys,
-      detail: String(e.message || e).substring(0, 200)
-    });
   }
+
+  // All Pollinations models failed
+  return res.status(502).json({
+    error: 'all_providers_failed', provider: 'pollinations',
+    quota_warning: hadKeys,
+    detail: 'All image providers failed including Pollinations free fallback'
+  });
 };

@@ -1,73 +1,102 @@
 # VAHDAM Mailer Studio — Project Memory (CLAUDE.md)
 
 ## Architecture
-- **Single-file SPA**: `vahdam_mailer_architect_v23.html` (~7700+ lines) — all UI, logic, templates
+- **Single-file SPA**: `vahdam_mailer_architect_v34.html` (~7700+ lines) — all UI, logic, templates
 - **Vercel serverless API**: `api/ai/generate.js` (text), `api/ai/image.js` (images), `api/ai/pipeline/` (multi-stage)
-- **Shared LLM caller**: `api/_shared/llm.js` — 4-provider waterfall with de-duplication
+- **Shared LLM caller**: `api/_shared/llm.js` — 6-provider waterfall with de-duplication
 - **Deployment**: Vercel at https://vahdam-marketing-mailers-architect.vercel.app/
+- **5-step wizard**: Brief → Products → Generation → Review & Refine → Final HTML
 
 ## Provider Waterfall (text)
-OpenAI (gpt-4o-mini) → Anthropic (claude-3-5-haiku) → Gemini (gemini-2.0-flash, free) → Grok (grok-3-mini-fast)
+OpenAI (gpt-4o-mini) → Anthropic (claude-3-5-haiku) → Gemini (gemini-2.0-flash) → Grok (grok-3-mini-fast) → Groq → Cerebras
 
 ## Provider Waterfall (images)
-OpenAI (gpt-image-2 → gpt-image-1) → Pollinations (free, FLUX model)
+Gemini native (gemini-2.5-flash-image → gemini-3.1-flash-image-preview → gemini-3-pro-image-preview) → Gemini Imagen (imagen-4.0-generate-001 → imagen-4.0-fast-generate-001) → OpenAI (gpt-image-2 → gpt-image-1) → Pollinations (flux-pro → flux-realism → flux)
 
 ## Key Files
 | File | Purpose |
 |------|---------|
-| `vahdam_mailer_architect_v23.html` | Production SPA — UI + concept engine + email builders |
+| `vahdam_mailer_architect_v34.html` | **Production SPA** — UI + concept engine + email builders |
 | `api/ai/generate.js` | Text generation: create_brief, concepts, mailer_full, suggested_prompts |
-| `api/ai/image.js` | Image generation with multi-key cascade + Pollinations fallback |
-| `api/_shared/llm.js` | Shared 4-provider LLM caller used by pipeline stages |
+| `api/ai/image.js` | Image generation: Gemini-first cascade → OpenAI → Pollinations |
+| `api/_shared/llm.js` | Shared 6-provider LLM caller used by pipeline stages |
 | `api/ai/pipeline/*.js` | Multi-stage pipeline: strategy → variant → images → html → score |
 | `api/health.js` | Top-level health check for uptime monitors |
-| `vercel.json` | Deployment config: functions, rewrites, headers |
+| `vercel.json` | Deployment config: functions, rewrites (`/` → v34), headers |
 | `.env.example` | Environment variable documentation (no real values) |
 
+## Product Catalogs
+- US: 173 active products (from `products_export_usa.csv`)
+- UK: 101 active products (from `products_export_uk.csv`)
+- Global: 102 active products (from `products_export_global.csv`)
+- Built at deploy time via `scripts/build-catalog.js` → `data/catalog/products_{region}.json`
+
+## Market-Specific Store URLs
+- US → vahdamteas.com | UK → uk.vahdamteas.com | IN → vahdamindia.com
+- EU → eu.vahdamteas.com | AU → au.vahdamteas.com | Global/ME → vahdamteas.com
+
 ## Brand Constants
-- **Palette**: forest green `#0f2a1c`, amber gold `#d4873a`, cream `#fdf6e8`
+- **Palette**: forest green `#0f2a1c` / `#004A2B`, amber gold `#d4873a` / `#AB8743`, cream `#fdf6e8` / `#FBF5EA`
 - **Typography**: Cormorant Garamond (serif headings) + DM Sans (body)
 - **BANNED phrases**: wellness journey, transform, liquid gold, game-changer, LIMITED TIME (caps), hurry, don't miss out, last chance, while supplies last
 - **PREFERRED**: ritual, restore, balance, origin, single-estate, hand-picked, steep, heritage, crafted
+- **VAHDAM packaging**: deep forest-green, warm cream, terracotta, or pink/magenta depending on SKU — gold botanical label
 
 ## Layout Archetypes (11)
 hero-led-editorial | product-grid-conversion | storytelling-narrative | single-product-spotlight | gift-bundle-showcase | ritual-journey | comparison-discovery | founder-note | editorial-trend-roundup | limited-drop-countdown | subscription-anchor
 
+## Two-Variant System
+- **Variant A**: Editorial Hero — split layout with product photography
+- **Variant B**: Narrative Story — full-width editorial approach
+- Forced structural divergence via `_alternateArchetypeForVariantB()`
+
+## Step 1 UI Flow (Campaign Brief)
+1. Campaign Description textarea with "Create Brief with AI" (LLM-powered) + "Enhance with AI" (heuristic)
+2. Suggested Campaign Prompts accordion
+3. Target Market multi-select chips (US, UK, IN, Global, ME, AU, EU)
+4. Campaign Type chips (Auto, Sale, Launch, Seasonal, Bestseller, Gift, Discovery, Routine, Brand Story)
+
+## Step 4 Features (Review & Refine)
+- Content Preview tab — structured preview showing subject line, hero, products with real images/prices/ratings
+- Claude AI tab, ChatGPT tab, Upload tab
+- Content audit checklist (9 checks with pass/warn indicators)
+
 ## Common Bugs to Watch
-1. **Unescaped quotes in JS strings** — apostrophes in single-quoted strings, double-quotes in double-quoted strings
+1. **Unescaped quotes in JS strings** — apostrophes in single-quoted strings
 2. **`const` reassignment** — use `let` when variable will be reassigned later
 3. **Gemini model duplication** — env var can duplicate a hardcoded fallback model; always de-duplicate
 4. **CORS headers** — every serverless function needs Access-Control-Allow-Origin
 5. **Font stack in JS** — never use quoted font names inside JS template strings
-
-## Common Bugs to Watch (cont.)
 6. **OpenAI billing_hard_limit_reached** returns HTTP 400 (not 429/402) — quota detection must include status 400 + billing keywords
-7. **OpenAI output_format** — both gpt-image-1 and gpt-image-2 now use `'png'` (not `'b64_json'`)
-8. **Anthropic credit balance too low** also returns HTTP 400 — same pattern as OpenAI billing
-
-## Current State (v85)
-- Build stamp: `variant-b-divergence-v85`
-- Gemini free tier is primary LLM (user has no paid credits on OpenAI/Anthropic/Grok)
-- Pollinations is primary image generator (OpenAI billing exhausted → free FLUX fallback)
-- Dashboard has type/market filter chips, campaign title headings, deliverables panel
-- Concept ideation engine generates 3 grounded concepts before every Build
-- 11 layout archetypes with deterministic rotation via `_layoutSeed()`
-- Variant A/B forced structural divergence via `_alternateArchetypeForVariantB()`
-- Variant B type-based fallback uses DIFFERENT builders from A (e.g. Sale→StoryMailer)
-- `buildSaleMailer` reads concept overrides via `_vhdSetup()` instead of heuristic functions
-- 12-section director-grade brief system prompt in `generate.js`
-- Billing 400 errors properly detected as quota exhaustion in all 3 files (image.js, generate.js, llm.js)
+7. **Anthropic credit balance too low** also returns HTTP 400 — same pattern
+8. **PowerShell BOM corruption** — piping keys via PowerShell `echo` adds UTF-8 BOM (EF BB BF). Use `cmd /c "type file | vercel env add"` or write ASCII bytes explicitly
+9. **Gemini Imagen predict API** — only works on paid plans, free tier gets 400 "only available on paid plans"
+10. **Gemini native image models** — use `generateContent` with `responseModalities: ['IMAGE','TEXT']`, NOT the standard text-only models
 
 ## Environment Variables (Vercel)
-Required: `GEMINI_API_KEY` (free tier — only working provider currently)
-Optional: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `XAI_API_KEY` (all need billing credits to work)
+Required: `GEMINI_API_KEY` — key `AIzaSyCJ1NQ7j9_iKNXnmJMGRnrmwrLtoo5QGQI` (free tier, quota limited)
+Optional: `OPENAI_API_KEY` (billing exhausted), `ANTHROPIC_API_KEY` (sk-ant-api03-...slp0gAA — added), `XAI_API_KEY`
 Auto-set: `VERCEL`, `VERCEL_ENV`, `VERCEL_URL`
 
-## Provider Status (as of 2026-05-06)
-| Provider | Status | Reason |
-|----------|--------|--------|
-| OpenAI | ❌ | billing_hard_limit_reached (needs credits at platform.openai.com) |
-| Anthropic | ❌ | credit balance too low (needs credits at console.anthropic.com) |
-| Gemini | ⚠️ | Free tier, daily quota limited (~1500 req/day, resets midnight PT) |
-| Grok/xAI | ❌ | No credits or licenses (needs purchase at console.x.ai) |
-| Pollinations | ✅ | Free, unlimited, FLUX model (images only) |
+## Provider Status (as of 2026-05-08)
+| Provider | Text | Images | Status |
+|----------|------|--------|--------|
+| Gemini | ✅ primary | ⚠️ quota-limited | Free tier, daily quota resets midnight PT |
+| OpenAI | ❌ | ❌ | billing_hard_limit_reached |
+| Anthropic | ⚠️ added | N/A | Key added, may have low credits |
+| Grok/xAI | ❌ | N/A | No credits |
+| Pollinations | N/A | ✅ fallback | Free, unlimited, flux-pro → flux-realism → flux |
+
+## Emotional Copy System (as of 2026-05-08)
+- All copy helpers (`heroHeadline`, `subCopy`, `prodShortDesc`, `prodBenefit`, `sectionTitle`, `annBarLine`, `_REVIEW_QUOTES`, pull-quotes) use warm, sensory, emotionally resonant language
+- Style: "There is a moment when the right cup of tea does more than warm your hands" — personal, sensory, story-driven
+- Avoids generic marketing speak; every line should make the reader feel something
+- Testimonials written as tiny personal stories, not product reviews
+
+## Image Generation (Pollinations)
+- `buildPollinationsPrompt()` generates SCENE-based prompts (lighting, mood, atmosphere) — NOT email layout specifications
+- Variant A = close-up hero product shot, tight crop, studio photography
+- Variant B = wide atmospheric lifestyle photograph, storytelling composition, cinematic depth
+- Explicit "NO text, NO typography" instruction prevents garbled text in generated images
+- Uses `flux-pro` model with `quality=hd` and `enhance=true`
+- Image dimensions: 600x900 (product-hero ratio, not full email height)
