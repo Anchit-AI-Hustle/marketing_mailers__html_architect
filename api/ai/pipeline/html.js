@@ -164,7 +164,7 @@ Apply bgcolor to EVERY <td> that has a background color — no exceptions.
       <div style="font-family:DM Sans,Arial,sans-serif;font-size:8.5px;color:#d4873a;letter-spacing:0.22em;text-transform:uppercase;margin-top:4px">PREMIUM INDIAN TEAS · DIRECT FROM SOURCE</div>
     </td>
     <td width="200" style="text-align:right;padding:10px 24px 10px 16px;vertical-align:middle;background:#0f2a1c" bgcolor="#0f2a1c">
-      <a href="#" style="font-family:DM Sans,Arial,sans-serif;font-size:10px;color:#d4873a;text-decoration:none;letter-spacing:0.06em">SHOP ALL →</a>
+      <a href="https://www.vahdamteas.com/collections/all" style="font-family:DM Sans,Arial,sans-serif;font-size:10px;color:#d4873a;text-decoration:none;letter-spacing:0.06em">SHOP ALL →</a>
     </td>
   </tr>
 </table>
@@ -504,6 +504,7 @@ Before outputting, verify:
 If ANY QA check fails → fix it inline before outputting the HTML.
 
 ━━ NON-NEGOTIABLE RULES ━━
+- NEVER use href="#" — every link MUST point to a real URL from the STORE & LINKS section or product data. Dead links kill conversions.
 - NEVER use the same padding value for every section — vary 16px / 20px / 24px / 28px / 32px
 - NEVER produce a section with only a headline and blank space — every section must be content-complete
 - NEVER leave [BRACKET PLACEHOLDERS] in the final output — replace EVERY bracket with real content from the plan
@@ -545,6 +546,7 @@ module.exports = async function handler(req, res) {
   const brief        = (body.brief || '').toString().substring(0, 500);
   const market       = (body.market || 'US').toString();
   const regen        = Number(body.regenerate_counter) || 0;
+  const clientProducts = Array.isArray(body.products) ? body.products : [];  // enriched product data from client
 
   const sections      = Array.isArray(plan.sections) ? plan.sections : [];
   const layoutPlan    = plan.layout_plan || {};
@@ -579,13 +581,45 @@ module.exports = async function handler(req, res) {
   const lockedStructure = strategy.structure || {};
 
   // Rich product data block — passed to LLM for product cards
-  const allProds = [
-    heroProduct.name ? { name: heroProduct.name, handle: heroProduct.handle, role: 'HERO', why: heroProduct.why } : null,
-    ...supportProds.map(p => ({ name: p.name, handle: p.handle, role: p.role || 'supporting', why: p.why }))
-  ].filter(Boolean);
+  // Prefer client-side enriched products (with prices, images, URLs) over strategy-only products
+  const allProds = clientProducts.length > 0
+    ? clientProducts
+    : [
+        heroProduct.name ? { name: heroProduct.name, handle: heroProduct.handle, role: 'HERO', why: heroProduct.why } : null,
+        ...supportProds.map(p => ({ name: p.name, handle: p.handle, role: p.role || 'supporting', why: p.why }))
+      ].filter(Boolean);
+
+  // Market-specific store base URL for links
+  const storeUrlMap = {
+    'US': 'https://www.vahdamteas.com',
+    'UK': 'https://uk.vahdamteas.com',
+    'IN': 'https://www.vahdamindia.com',
+    'EU': 'https://eu.vahdamteas.com',
+    'AU': 'https://au.vahdamteas.com',
+    'Global': 'https://www.vahdamteas.com'
+  };
+  const storeBase = storeUrlMap[market] || storeUrlMap['US'];
 
   const productsBlock = allProds.length > 0
-    ? allProds.map((p, i) => `  ${i + 1}. [${p.role}] ${p.name}${p.why ? ' — ' + p.why : ''} (handle: ${p.handle || '?'})`).join('\n')
+    ? allProds.map((p, i) => {
+        const handle = p.handle || p.h || '';
+        const productUrl = handle ? (storeBase + '/products/' + handle) : (storeBase + '/collections/all');
+        const price = p.price || '';
+        const compareAt = p.compare_at || p.compare_at_price || '';
+        const discountPct = (price && compareAt && parseFloat(compareAt) > parseFloat(price))
+          ? Math.round((1 - parseFloat(price) / parseFloat(compareAt)) * 100) + '%'
+          : '';
+        const imageUrl = p.image_url || p.i || '';
+        return [
+          `  ${i + 1}. [${p.role || 'PRODUCT'}] ${p.name}`,
+          `     Handle: ${handle}`,
+          `     Product URL: ${productUrl}`,
+          `     Image URL: ${imageUrl || 'IMAGE_PRODUCT_' + i + '_URL'}`,
+          `     Price: ${price || 'check store'}${compareAt ? ' (was ' + compareAt + ' — ' + discountPct + ' OFF)' : ''}`,
+          `     Category: ${p.category || ''}`,
+          p.why ? `     Why selected: ${p.why}` : ''
+        ].filter(Boolean).join('\n');
+      }).join('\n\n')
     : '  (no products specified — derive appropriate VAHDAM products from strategy and brief)';
 
   // Campaign name derived from brief — used as context header instead of a generic label
@@ -639,18 +673,28 @@ Sections defined in strategy: ${(lockedStructure.sections || []).join(' → ') |
 Layout rules: ${lockedStructure.layout_rules || ''}
 Visual system: ${JSON.stringify(lockedStructure.visual_system || {}, null, 2)}
 
-━━ PRODUCTS (strategically selected — use in product cards) ━━
+━━ STORE & LINKS ━━
+Store base URL: ${storeBase}
+All CTA/Shop links MUST use real URLs from the product data below. NEVER use href="#".
+"Shop All" → ${storeBase}/collections/all
+"Gift Sets" → ${storeBase}/collections/gift-sets
+"Bestsellers" → ${storeBase}/collections/bestsellers
+"Our Story" → ${storeBase}/pages/our-story
+Unsubscribe → {{UNSUBSCRIBE_URL}}
+Add UTM params to CTA links: ?utm_source=email&utm_medium=mailer&utm_campaign=vahdam_studio
+
+━━ PRODUCTS (with real prices, images & URLs — use these EXACTLY) ━━
 ${productsBlock}
 Product system: ${(strategy.product_selection || {}).product_system || ''}
 AOV logic: ${(strategy.product_selection || {}).aov_logic || ''}
 
 PRODUCT CARD REQUIREMENT: For each product, show:
-- Product image placeholder (use IMAGE_PRODUCT_URL for hero product; use real Shopify image URL pattern for others if available)
-- Star rating: ⭐ 4.8/5 · 50,000+ reviews
+- Product image: use the Image URL from product data above (or IMAGE_PRODUCT_URL placeholder if not available)
+- Star rating: ⭐ 4.8/5 · [realistic review count e.g. 70-200 reviews]
 - Full product name (no truncation)
 - 1-line evocative description derived from product name and type
-- Price in format: $XX.XX with compare-at if available
-- "Add to Cart" CTA button
+- REAL price from product data: $XX.XX with strikethrough compare-at + % OFF badge
+- "Add to Cart" CTA button linking to the Product URL from the data above — NEVER href="#"
 
 ━━ LAYOUT PLAN (from creative plan) ━━
 Flow: ${layoutPlan.flow || ''}
@@ -772,16 +816,25 @@ Output starts <!DOCTYPE html>, ends </html>. Nothing before or after.`;
     const benefitSection = planSections.find(s => s.id === 'benefit_strip' || s.id === 'context') || {};
     const proofSection = planSections.find(s => s.id === 'social_proof') || {};
 
-    const heroHeadline = (heroSection.copy || {}).headline || (isB ? 'The Hill Is Quiet at 7,000 Feet' : 'Crafted Where Tradition Meets Modern Science');
+    // Market-specific store URL
+    const heuristicStoreBase = storeBase || 'https://www.vahdamteas.com';
+    const heuristicShopUrl = heuristicStoreBase + '/collections/all?utm_source=email&utm_medium=mailer&utm_campaign=vahdam_studio';
+    const heuristicHeroProduct = clientProducts[0] || {};
+    const heuristicHeroHandle = heuristicHeroProduct.handle || '';
+    const heuristicHeroUrl = heuristicHeroHandle ? (heuristicStoreBase + '/products/' + heuristicHeroHandle + '?utm_source=email&utm_medium=mailer&utm_campaign=vahdam_studio') : heuristicShopUrl;
+    const heuristicHeroPrice = heuristicHeroProduct.price || '';
+    const heuristicHeroCompare = heuristicHeroProduct.compare_at || '';
+
+    const heroHeadline = (heroSection.copy || {}).headline || (heuristicHeroProduct.name ? heuristicHeroProduct.name : (isB ? 'A Ritual Worth Slowing Down For' : 'Premium Indian Heritage Teas'));
     const heroSubcopy = (heroSection.copy || {}).subcopy || (isB ? 'Where morning mist meets hand-picked leaves, a ritual begins.' : 'Discover single-estate teas crafted with heritage and precision.');
     const heroCta = (heroSection.copy || {}).cta || (isB ? 'Discover the Origin' : 'Shop Now');
-    const productName = (productSection.copy || {}).headline || ((strategy.product_selection || {}).hero || {}).name || 'VAHDAM Signature Collection';
+    const productName = (productSection.copy || {}).headline || ((strategy.product_selection || {}).hero || {}).name || (heuristicHeroProduct.name || 'VAHDAM Signature Collection');
     const productCopy = (productSection.copy || {}).subcopy || 'Premium single-estate tea, hand-picked at peak flavor.';
     const productCta = (productSection.copy || {}).cta || (isB ? 'Explore This Blend' : 'Add to Cart');
-    const offerHeadline = (offerSection.copy || {}).headline || 'Free Shipping on Orders $50+';
-    const offerSubcopy = (offerSection.copy || {}).subcopy || 'Use code HERITAGE at checkout.';
-    const finalCta = (ctaSection.copy || {}).cta || (isB ? 'Explore the Collection →' : 'Shop Now');
-    const proofCopy = (proofSection.copy || {}).subcopy || '"The finest tea I\'ve ever tasted." — Verified Buyer';
+    const offerHeadline = (offerSection.copy || {}).headline || (heuristicHeroPrice ? 'Get ' + heuristicHeroProduct.name + ' Now' : 'Free Shipping on Orders $50+');
+    const offerSubcopy = (offerSection.copy || {}).subcopy || 'Shop now at vahdamteas.com';
+    const finalCta = (ctaSection.copy || {}).cta || (isB ? 'Explore the Collection' : 'Shop Now');
+    const proofCopy = (proofSection.copy || {}).subcopy || '"Absolutely love the rich flavor and aroma. Best tea I\'ve ordered online." — Verified Buyer';
     const subjectLines = plan.subject_lines || [(isB ? 'A tea worth slowing down for' : heroHeadline)];
     const preheader = plan.preheader || 'Premium single-estate teas, crafted for your ritual';
 
@@ -833,7 +886,7 @@ body{margin:0;padding:0;width:100%!important;-webkit-font-smoothing:antialiased}
 <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
 <td style="text-align:left;font-family:Arial,sans-serif;font-size:11px;color:#a89f91;letter-spacing:1px" class="mobile-hide">EST. 2015</td>
 <td style="text-align:center;font-family:Georgia,serif;font-size:22px;color:#fdf6e8;letter-spacing:3px;font-weight:bold">VAHDAM&reg;</td>
-<td style="text-align:right;font-family:Arial,sans-serif;font-size:11px;color:${accentColor};letter-spacing:1px" class="mobile-hide"><a href="#" style="color:${accentColor};text-decoration:none">SHOP ALL →</a></td>
+<td style="text-align:right;font-family:Arial,sans-serif;font-size:11px;color:${accentColor};letter-spacing:1px" class="mobile-hide"><a href="${heuristicShopUrl}" style="color:${accentColor};text-decoration:none">SHOP ALL &rarr;</a></td>
 </tr></table>
 </td></tr>
 </table>
@@ -857,7 +910,7 @@ ${isB ? `
 <p style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:12px;color:${accentColor};letter-spacing:2px;text-transform:uppercase">${(heroSection.copy || {}).eyebrow || 'A STORY IN EVERY STEEP'}</p>
 <h1 style="margin:0 0 16px;font-family:Georgia,serif;font-size:32px;color:#fdf6e8;line-height:1.2;font-weight:normal">${heroHeadline}</h1>
 <p style="margin:0 0 28px;font-family:Arial,sans-serif;font-size:15px;color:#c9bfb0;line-height:1.6;max-width:440px;margin-left:auto;margin-right:auto">${heroSubcopy}</p>
-<a href="#" style="display:inline-block;padding:14px 36px;font-family:Arial,sans-serif;font-size:13px;color:#fdf6e8;border:1px solid #fdf6e8;text-decoration:none;letter-spacing:1px">${heroCta}</a>
+<a href="${heuristicHeroUrl}" style="display:inline-block;padding:14px 36px;font-family:Arial,sans-serif;font-size:13px;color:#fdf6e8;border:1px solid #fdf6e8;text-decoration:none;letter-spacing:1px">${heroCta}</a>
 </td></tr></table>
 ` : `
 <!-- VARIANT A: Split hero -->
@@ -869,7 +922,7 @@ ${isB ? `
 <p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:12px;color:${accentColor};letter-spacing:2px;text-transform:uppercase">${(heroSection.copy || {}).eyebrow || 'NEW ARRIVAL'}</p>
 <h1 style="margin:0 0 14px;font-family:Georgia,serif;font-size:28px;color:#0f2a1c;line-height:1.2">${heroHeadline}</h1>
 <p style="margin:0 0 24px;font-family:Arial,sans-serif;font-size:14px;color:#4a4540;line-height:1.6">${heroSubcopy}</p>
-<a href="#" style="display:inline-block;padding:14px 32px;background:${accentColor};font-family:Arial,sans-serif;font-size:13px;color:#ffffff;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${heroCta}</a>
+<a href="${heuristicHeroUrl}" style="display:inline-block;padding:14px 32px;background:${accentColor};font-family:Arial,sans-serif;font-size:13px;color:#ffffff;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${heroCta}</a>
 </td>
 </tr></table>
 `}
@@ -895,7 +948,7 @@ ${isB ? `<p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:12px;co
 <h2 style="margin:0 0 12px;font-family:Georgia,serif;font-size:24px;color:${textColor};line-height:1.3">${productName}</h2>
 <img src="IMAGE_PRODUCT_URL" alt="${productName}" width="${isB ? 400 : 260}" style="width:${isB ? 400 : 260}px;height:auto;display:block;margin:16px auto;border-radius:4px">
 <p style="margin:12px auto 20px;font-family:Arial,sans-serif;font-size:14px;color:${isB ? '#c9bfb0' : '#4a4540'};line-height:1.6;max-width:420px">${productCopy}</p>
-<a href="#" style="display:inline-block;padding:14px 32px;${isB ? 'border:1px solid #fdf6e8;color:#fdf6e8' : 'background:' + accentColor + ';color:#ffffff'};font-family:Arial,sans-serif;font-size:13px;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${productCta}</a>
+<a href="${heuristicHeroUrl}" style="display:inline-block;padding:14px 32px;${isB ? 'border:1px solid #fdf6e8;color:#fdf6e8' : 'background:' + accentColor + ';color:#ffffff'};font-family:Arial,sans-serif;font-size:13px;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${productCta}</a>
 </td></tr>
 </table>
 
@@ -920,7 +973,7 @@ ${isB ? `<p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:12px;co
 <tr><td style="background:${accentColor};padding:24px 28px;text-align:center" bgcolor="${accentColor}">
 <h3 style="margin:0 0 8px;font-family:Georgia,serif;font-size:20px;color:#ffffff">${offerHeadline}</h3>
 <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:13px;color:#fff5eb">${offerSubcopy}</p>
-<a href="#" style="display:inline-block;padding:12px 28px;background:#0f2a1c;font-family:Arial,sans-serif;font-size:13px;color:#fdf6e8;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${(offerSection.copy || {}).cta || 'Shop the Collection'}</a>
+<a href="${heuristicShopUrl}" style="display:inline-block;padding:12px 28px;background:#0f2a1c;font-family:Arial,sans-serif;font-size:13px;color:#fdf6e8;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${(offerSection.copy || {}).cta || 'Shop the Collection'}</a>
 </td></tr>
 </table>
 
@@ -928,7 +981,7 @@ ${isB ? `<p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:12px;co
 <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
 <tr><td style="background:${bgColor};padding:36px 28px;text-align:center" bgcolor="${bgColor}">
 <h3 style="margin:0 0 16px;font-family:Georgia,serif;font-size:22px;color:${textColor}">${(ctaSection.copy || {}).headline || (isB ? 'Begin Your Ritual' : 'Shop VAHDAM Today')}</h3>
-<a href="#" style="display:inline-block;padding:16px 40px;${isB ? 'border:1px solid #fdf6e8;color:#fdf6e8' : 'background:' + accentColor + ';color:#ffffff'};font-family:Arial,sans-serif;font-size:14px;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${finalCta}</a>
+<a href="${heuristicShopUrl}" style="display:inline-block;padding:16px 40px;${isB ? 'border:1px solid #fdf6e8;color:#fdf6e8' : 'background:' + accentColor + ';color:#ffffff'};font-family:Arial,sans-serif;font-size:14px;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${finalCta}</a>
 </td></tr>
 </table>
 
@@ -937,14 +990,14 @@ ${isB ? `<p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:12px;co
 <tr><td style="background:#0f2a1c;padding:28px 24px;text-align:center" bgcolor="#0f2a1c">
 <p style="margin:0 0 12px;font-family:Georgia,serif;font-size:18px;color:#fdf6e8;letter-spacing:2px">VAHDAM&reg;</p>
 <p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:12px;color:#8a8175">
-<a href="#" style="color:${accentColor};text-decoration:none">Shop All</a> &nbsp;&bull;&nbsp;
-<a href="#" style="color:${accentColor};text-decoration:none">Our Story</a> &nbsp;&bull;&nbsp;
-<a href="#" style="color:${accentColor};text-decoration:none">Gifting</a> &nbsp;&bull;&nbsp;
-<a href="#" style="color:${accentColor};text-decoration:none">Contact</a>
+<a href="${heuristicStoreBase}/collections/all" style="color:${accentColor};text-decoration:none">Shop All</a> &nbsp;&bull;&nbsp;
+<a href="${heuristicStoreBase}/pages/our-story" style="color:${accentColor};text-decoration:none">Our Story</a> &nbsp;&bull;&nbsp;
+<a href="${heuristicStoreBase}/collections/gift-sets" style="color:${accentColor};text-decoration:none">Gifting</a> &nbsp;&bull;&nbsp;
+<a href="${heuristicStoreBase}/pages/contact" style="color:${accentColor};text-decoration:none">Contact</a>
 </p>
 <p style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:11px;color:#6b6255;line-height:1.5">
-You received this email because you signed up at vahdam.com<br>
-<a href="#" style="color:#8a8175;text-decoration:underline">Unsubscribe</a> &nbsp;|&nbsp; <a href="#" style="color:#8a8175;text-decoration:underline">Privacy Policy</a>
+You received this email because you signed up at vahdamteas.com<br>
+<a href="{{UNSUBSCRIBE_URL}}" style="color:#8a8175;text-decoration:underline">Unsubscribe</a> &nbsp;|&nbsp; <a href="${heuristicStoreBase}/pages/privacy-policy" style="color:#8a8175;text-decoration:underline">Privacy Policy</a>
 </p>
 <p style="margin:0;font-family:Arial,sans-serif;font-size:10px;color:#4a4540">&copy; 2026 VAHDAM India. All Rights Reserved.</p>
 </td></tr>

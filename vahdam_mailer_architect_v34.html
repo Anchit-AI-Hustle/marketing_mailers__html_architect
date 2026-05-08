@@ -718,6 +718,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 
   <div class="p4tabs" style="margin-bottom:20px">
     <button class="p4tab on" id="tab-claude" onclick="switchP4Tab('claude',this)">&#128065; Canvas Preview</button>
+    <button class="p4tab" id="tab-content" onclick="switchP4Tab('content',this)">&#128196; Content Preview</button>
     <button class="p4tab" id="tab-chatgpt" onclick="switchP4Tab('chatgpt',this)">&#127775; Prompts</button>
     <button class="p4tab" id="tab-upload" onclick="switchP4Tab('upload',this)">&#128228; Upload Design File</button>
   </div>
@@ -760,6 +761,29 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     </div>
 
   </div>
+  <!-- ── TAB: Content Preview — structured content document with exact copy ── -->
+  <div id="p4-content" style="display:none">
+    <div style="background:linear-gradient(135deg,#004A2B,#1a3a28);border-radius:12px;padding:16px 20px;margin-bottom:16px;color:#FBF5EA">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:9px;font-weight:800;letter-spacing:0.18em;text-transform:uppercase;color:#9fd6b5">Structured Content Preview</span>
+        <span style="font-size:10.5px;color:#fff;font-weight:600">Review exact copy before generating HTML</span>
+        <span style="flex:1"></span>
+        <span id="contentPreviewVariantLabel" style="font-size:10px;color:#c9e8d5;font-style:italic"></span>
+      </div>
+      <p style="font-size:11px;color:#c9e8d5;margin:8px 0 0;line-height:1.5">This is the exact content that will go into your final HTML mailer. Review headlines, subcopy, offer text, product cards, and CTAs. Use the feedback box to request changes, then regenerate.</p>
+    </div>
+    <div id="contentPreviewBody" style="border:1.5px solid #ede5d8;border-radius:12px;overflow:hidden;background:#fff">
+      <!-- Populated by renderContentPreview() -->
+      <div style="padding:40px;text-align:center;color:#aaa;font-size:13px">Generating content preview...</div>
+    </div>
+    <div class="btn-row" style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+      <span style="font-size:11px;color:#9ca3af;flex:1">Happy with the content?</span>
+      <button class="btn btn-ghost btn-sm" onclick="goBack(2)">&larr; Back</button>
+      <button class="btn btn-outline btn-sm" onclick="switchP4Tab('claude',document.getElementById('tab-claude'))">&#128065; Canvas View</button>
+      <button class="btn btn-gold" onclick="approveAndBuild()">&#10003; Build HTML Mailer &rarr;</button>
+    </div>
+  </div>
+
   <div id="p4-chatgpt" style="display:none">
     <p style="font-size:12px;color:#6b7280;margin-bottom:16px;line-height:1.6">Choose an AI image generation tool below. The full campaign prompt is <strong>auto-copied</strong> to your clipboard when you click Open. Paste it into the tool, generate your image, download it, then come back and upload it in the <strong>Upload Design File</strong> tab.</p>
 
@@ -3525,6 +3549,7 @@ async function runGeneration(feedback){
   var lblEl=document.getElementById('activeImagePromptVariantLabel');if(lblEl)lblEl.textContent=(S.activeImageMarket||'US')+' · Variant '+(S.activeImageVariant||'A');
   renderImageVariantSwitcher();
   renderGeneratedImagesMatrix();
+  renderContentPreview(); // Pre-render content preview so it's ready when user switches tab
   var chipsRev=document.getElementById('prodChipsReview');
   if(chipsRev)chipsRev.innerHTML=S.finalProds.map(function(p){
     return '<div class="pchip"><img src="'+p.i+'" alt="" onerror="this.style.display=\'none\'">'+'<span class="pchip-name">'+p.n+'</span>'+(p.role==='hero'?'<span class="badge badge-gold">HERO</span>':'')+(p.role==='featured'?'<span class="badge badge-g">FEAT</span>':'')+'</div>';
@@ -3568,11 +3593,251 @@ function switchPromptTab(which){
   }
 }
 function switchP4Tab(tab,btn){
-  ['claude','chatgpt','upload'].forEach(function(id){const el=document.getElementById('p4-'+id);if(el)el.style.display='none';});
+  ['claude','content','chatgpt','upload'].forEach(function(id){const el=document.getElementById('p4-'+id);if(el)el.style.display='none';});
   document.querySelectorAll('.p4tab').forEach(function(b){b.classList.remove('on');});
   const panel=document.getElementById('p4-'+tab);if(panel)panel.style.display='block';
   if(btn)btn.classList.add('on');
+  // Auto-render content preview when switching to that tab
+  if(tab==='content')renderContentPreview();
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CONTENT PREVIEW — Structured document showing exact copy, real product images,
+// prices, offers, CTAs — everything that will go into the final HTML mailer.
+// This is the MOCK PREVIEW the user reviews before approving HTML generation.
+// ══════════════════════════════════════════════════════════════════════════════
+function renderContentPreview(){
+  var container=document.getElementById('contentPreviewBody');
+  if(!container)return;
+  var st=S.strategy||buildCampaignStrategy();
+  var prods=S.finalProds||[];
+  var p=S.activePrompt||S.prompt||'';
+  var mkt=S.canvasMarket||S.market||'US';
+  var variant=S.canvasVariant||st.primaryVariant||'A';
+  var ep=buildEffectivePrompt(p,prods);
+  var type=S.type||detectType(p);
+  var base=getBase(mkt);
+  // Copy elements — exact same functions used by buildEmail
+  var hl=heroHeadline(ep,type);
+  var sc=subCopy(ep,type);
+  var cta=ctaText(ep,type);
+  var feats=featureStrip(ep);
+  var ings=ingredients(ep);
+  var secTitle=sectionTitle(ep,type);
+  var prodSecTitle=productSectionTitle(ep,type);
+  var ot=offerText(p);
+  var oc=offerCode(p);
+  var os=offerSub(p);
+  var oct=offerCta(p);
+  var ann=annBarLine(p,mkt,type);
+  var mktIntel=getMarketIntel(mkt,p);
+  var mktLabels={US:'United States',UK:'United Kingdom',IN:'India',Global:'Global',ME:'Middle East',AU:'Australia',EU:'Europe'};
+  var currSymbol={US:'$',UK:'£',IN:'₹',EU:'€',AU:'A$',ME:'AED',Global:'$'}[mkt]||'$';
+
+  // Label
+  var lblEl=document.getElementById('contentPreviewVariantLabel');
+  if(lblEl)lblEl.textContent=mkt+' · Variant '+variant;
+
+  // Build the structured preview HTML
+  var h='';
+
+  // ── SUBJECT LINE ──
+  h+='<div style="padding:16px 20px;border-bottom:1px solid #ede5d8;background:#faf8f4">';
+  h+='<div style="font-size:9px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#AB8743;margin-bottom:6px">SUBJECT LINE</div>';
+  h+='<div style="font-size:14px;font-weight:700;color:#1a1a1a;line-height:1.4">VAHDAM &ndash; '+(typeof hl==='object'?hl.join(' '):hl)+'</div>';
+  h+='</div>';
+
+  // ── PREHEADER ──
+  h+='<div style="padding:12px 20px;border-bottom:1px solid #ede5d8;background:#fff">';
+  h+='<div style="font-size:9px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#888;margin-bottom:4px">PREHEADER TEXT <span style="font-weight:400;color:#bbb">(hidden preview text in inbox)</span></div>';
+  h+='<div style="font-size:12px;color:#555;line-height:1.5">'+sc.substring(0,120)+' &ndash; VAHDAM premium Indian teas. '+(ot||cta)+'</div>';
+  h+='</div>';
+
+  // ── S1: ANNOUNCEMENT BAR ──
+  h+='<div style="background:linear-gradient(90deg,#003d24,#004A2B,#003d24);padding:12px 20px;text-align:center">';
+  h+='<div style="font-size:10px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:#FBF5EA">'+ann+'</div>';
+  h+='</div>';
+
+  // ── S2: BRAND HEADER ──
+  h+='<div style="background:#fff;padding:18px 20px;text-align:center;border-bottom:1px solid #ede5d8">';
+  h+='<div style="font-size:8px;font-weight:700;letter-spacing:0.36em;text-transform:uppercase;color:#AB8743;margin-bottom:4px">EST. 2015 &middot; NEW DELHI, INDIA</div>';
+  h+='<div style="font-family:Georgia,serif;font-size:28px;font-weight:bold;letter-spacing:0.2em;color:#004A2B">VAHDAM&reg;</div>';
+  h+='<div style="font-size:8px;font-weight:600;letter-spacing:0.28em;text-transform:uppercase;color:#888;margin-top:2px">PREMIUM INDIAN TEAS &middot; DIRECT FROM SOURCE</div>';
+  h+='</div>';
+
+  // ── S3: TRUST BADGES ──
+  h+='<div style="background:#fff;padding:10px 20px;display:flex;justify-content:center;gap:16px;border-bottom:1px solid #ede5d8;flex-wrap:wrap">';
+  ['🌿 100% Pure Indian Tea','🤝 Ethically Sourced','🌱 Direct from Farms'].forEach(function(b){
+    h+='<span style="font-size:9px;font-weight:600;color:#888;letter-spacing:0.05em;text-transform:uppercase">'+b+'</span>';
+  });
+  h+='</div>';
+
+  // ── S4: HERO SECTION ──
+  h+='<div style="border-bottom:1px solid #ede5d8">';
+  h+='<div style="padding:14px 20px 8px;background:#faf8f4">';
+  h+='<div style="font-size:9px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#AB8743;margin-bottom:6px">HERO SECTION &middot; VARIANT '+variant+'</div>';
+  h+='</div>';
+  if(variant==='A'){
+    // Split hero — image + copy side by side
+    h+='<div style="display:flex;gap:0;min-height:200px">';
+    // Image side
+    h+='<div style="flex:1;min-width:200px;background:#e8f0e8;position:relative">';
+    var heroImg=(prods[0]&&prods[0].i)?prods[0].i:'';
+    if(heroImg){
+      h+='<img src="'+heroImg+'" alt="Hero" style="width:100%;height:100%;object-fit:cover;display:block;min-height:200px">';
+    } else {
+      h+='<div style="width:100%;height:200px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:12px;background:linear-gradient(135deg,#d8ede2,#e8f0e8)">Hero image (from catalog or upload)</div>';
+    }
+    h+='</div>';
+    // Copy side
+    h+='<div style="flex:1;min-width:200px;padding:28px 24px;background:#fff">';
+    h+='<div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#AB8743;margin-bottom:8px">'+(secTitle||'NEW ARRIVAL')+'</div>';
+    h+='<div style="font-family:Georgia,serif;font-size:22px;font-weight:bold;color:#004A2B;line-height:1.2;margin-bottom:4px">'+(typeof hl==='object'?hl[0]:hl)+'</div>';
+    if(typeof hl==='object'&&hl[1]) h+='<div style="font-family:Georgia,serif;font-size:18px;font-weight:bold;color:#AB8743;line-height:1.2;margin-bottom:10px">'+hl[1]+'</div>';
+    h+='<div style="font-size:13px;color:#4a4540;line-height:1.6;margin-bottom:18px">'+sc+'</div>';
+    h+='<div style="display:inline-block;background:#AB8743;color:#fff;padding:11px 26px;font-size:12px;font-weight:700;letter-spacing:0.1em;border-radius:4px">'+cta+'</div>';
+    h+='</div>';
+    h+='</div>';
+  } else {
+    // Variant B — full-width hero + centered copy below
+    var heroImg=(prods[0]&&prods[0].i)?prods[0].i:'';
+    if(heroImg){
+      h+='<img src="'+heroImg+'" alt="Hero" style="width:100%;height:auto;display:block;max-height:280px;object-fit:cover">';
+    } else {
+      h+='<div style="width:100%;height:220px;display:flex;align-items:center;justify-content:center;color:#c9bfb0;font-size:12px;background:linear-gradient(135deg,#1a3a28,#0f2a1c)">Full-width hero image</div>';
+    }
+    h+='<div style="background:#0f2a1c;padding:32px 28px;text-align:center">';
+    h+='<div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#d4873a;margin-bottom:8px">'+(secTitle||'A STORY IN EVERY STEEP')+'</div>';
+    h+='<div style="font-family:Georgia,serif;font-size:24px;color:#fdf6e8;line-height:1.2;margin-bottom:4px">'+(typeof hl==='object'?hl[0]:hl)+'</div>';
+    if(typeof hl==='object'&&hl[1]) h+='<div style="font-family:Georgia,serif;font-size:18px;color:#d4873a;line-height:1.2;margin-bottom:12px">'+hl[1]+'</div>';
+    h+='<div style="font-size:13px;color:#c9bfb0;line-height:1.6;margin-bottom:20px;max-width:400px;margin-left:auto;margin-right:auto">'+sc+'</div>';
+    h+='<div style="display:inline-block;border:1px solid #fdf6e8;color:#fdf6e8;padding:11px 28px;font-size:12px;font-weight:700;letter-spacing:0.1em;border-radius:3px">'+cta+'</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+
+  // ── S5: BENEFIT STRIP ──
+  h+='<div style="padding:16px 20px;background:'+(variant==='B'?'#0a1f13':'#fff')+';display:flex;justify-content:space-around;flex-wrap:wrap;gap:8px;border-bottom:1px solid #ede5d8">';
+  feats.forEach(function(f){
+    h+='<div style="text-align:center;padding:4px 8px;font-size:11px;font-weight:600;color:'+(variant==='B'?'#c9bfb0':'#6b6255')+'">'+f+'</div>';
+  });
+  h+='</div>';
+
+  // ── S6: PRODUCT SECTION ──
+  h+='<div style="padding:20px;background:#fff;border-bottom:1px solid #ede5d8">';
+  h+='<div style="font-size:9px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#AB8743;margin-bottom:6px">PRODUCT SECTION</div>';
+  h+='<div style="font-family:Georgia,serif;font-size:18px;font-weight:bold;color:#004A2B;text-align:center;margin-bottom:16px">'+prodSecTitle+'</div>';
+  // Product cards grid
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">';
+  prods.forEach(function(prod,idx){
+    var isHero=idx===0;
+    h+='<div style="border:1.5px solid '+(isHero?'#AB8743':'#ede5d8')+';border-radius:10px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,0.05)">';
+    // Product image
+    if(prod.i){
+      h+='<img src="'+prod.i+'" alt="'+prod.n.split(',')[0]+'" style="width:100%;height:140px;object-fit:cover;display:block">';
+    } else {
+      h+='<div style="width:100%;height:140px;background:#e8f0e8;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">No image</div>';
+    }
+    // Hero badge
+    if(isHero) h+='<div style="background:#AB8743;color:#fff;padding:3px 8px;font-size:8px;font-weight:800;letter-spacing:0.16em;text-align:center">★ HERO PICK</div>';
+    // Content
+    h+='<div style="padding:10px 12px">';
+    h+='<div style="font-family:Georgia,serif;font-size:12px;font-weight:bold;color:#1a1a1a;margin-bottom:4px;line-height:1.3">'+prod.n.split(',')[0]+'</div>';
+    // Price
+    var price=prod.p||prod.price||'';
+    var compareAt=prod.cp||prod.compare_at_price||'';
+    if(price){
+      h+='<div style="margin-bottom:4px">';
+      if(compareAt && parseFloat(compareAt)>parseFloat(price)){
+        var savings=Math.round((1-parseFloat(price)/parseFloat(compareAt))*100);
+        h+='<span style="font-size:13px;font-weight:700;color:#AB8743">'+currSymbol+parseFloat(price).toFixed(2)+'</span>';
+        h+=' <span style="font-size:10px;color:#aaa;text-decoration:line-through">'+currSymbol+parseFloat(compareAt).toFixed(2)+'</span>';
+        h+=' <span style="font-size:9px;font-weight:700;color:#d4873a;background:#fff3e0;padding:2px 6px;border-radius:10px">-'+savings+'%</span>';
+      } else {
+        h+='<span style="font-size:13px;font-weight:700;color:#004A2B">'+currSymbol+parseFloat(price).toFixed(2)+'</span>';
+      }
+      h+='</div>';
+    }
+    // Rating
+    h+='<div style="margin-bottom:6px"><span style="color:#AB8743;font-size:11px">★★★★★</span><span style="font-size:9px;color:#aaa;margin-left:4px">4.8</span></div>';
+    // CTA
+    h+='<div style="background:'+(isHero?'#AB8743':'#004A2B')+';color:#FBF5EA;padding:7px;text-align:center;font-size:10px;font-weight:700;letter-spacing:0.1em;border-radius:4px">ADD TO CART</div>';
+    h+='</div></div>';
+  });
+  h+='</div>';
+  h+='</div>';
+
+  // ── S7: SOCIAL PROOF ──
+  h+='<div style="padding:20px;background:'+(variant==='B'?'#0a1f13':'#faf8f4')+';text-align:center;border-bottom:1px solid #ede5d8">';
+  h+='<div style="font-size:9px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:'+(variant==='B'?'#9fd6b5':'#888')+';margin-bottom:8px">SOCIAL PROOF</div>';
+  h+='<div style="color:#AB8743;font-size:14px;margin-bottom:6px">★★★★★</div>';
+  // Pick testimonial based on type
+  var testimonials={
+    'Seasonal':'Best iced tea I have ever made at home.',
+    'Gift':'She absolutely loved this gift!',
+    'Sale':'The quality is unmatched. Farm direct really makes a difference.',
+    'Story':'The finest tea I have ever tasted.',
+    'Routine':'My morning ritual has completely changed.',
+    'Launch':'The quality is unmatched. Farm direct really makes a difference.'
+  };
+  var testimonial=testimonials[type]||'The finest tea I have ever tasted.';
+  h+='<div style="font-family:Georgia,serif;font-size:15px;font-style:italic;color:'+(variant==='B'?'#fdf6e8':'#1a1a1a')+';line-height:1.5;margin-bottom:6px">&ldquo;'+testimonial+'&rdquo; &mdash; Verified Buyer</div>';
+  h+='<div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:'+(variant==='B'?'#c9e8d5':'#888')+'">50,000+ 5-STAR REVIEWS</div>';
+  h+='</div>';
+
+  // ── S9: OFFER BAR ──
+  if(ot||oc){
+    h+='<div style="background:#AB8743;padding:20px;text-align:center;border-bottom:1px solid #ede5d8">';
+    h+='<div style="font-size:9px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:8px">OFFER BAR</div>';
+    h+='<div style="font-family:Georgia,serif;font-size:18px;font-weight:bold;color:#fff;margin-bottom:6px">'+ot+'</div>';
+    if(oc) h+='<div style="font-size:12px;color:#fff5eb;margin-bottom:12px">Use code <strong style="letter-spacing:0.1em">'+oc+'</strong> at checkout.</div>';
+    h+='<div style="display:inline-block;background:#004A2B;color:#FBF5EA;padding:10px 24px;font-size:12px;font-weight:700;letter-spacing:0.08em;border-radius:4px">'+(oct||'Shop the Collection')+'</div>';
+    h+='</div>';
+  }
+
+  // ── S10: FINAL CTA ──
+  h+='<div style="padding:24px 20px;background:'+(variant==='B'?'#0f2a1c':'#faf8f4')+';text-align:center;border-bottom:1px solid #ede5d8">';
+  h+='<div style="font-size:9px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:'+(variant==='B'?'#9fd6b5':'#888')+';margin-bottom:8px">FINAL CTA</div>';
+  h+='<div style="font-family:Georgia,serif;font-size:20px;font-weight:bold;color:'+(variant==='B'?'#fdf6e8':'#004A2B')+';margin-bottom:12px">'+(variant==='B'?'Begin Your Ritual':'Shop VAHDAM Today')+'</div>';
+  h+='<div style="display:inline-block;background:'+(variant==='B'?'transparent':'#AB8743')+';color:'+(variant==='B'?'#fdf6e8':'#fff')+';border:'+(variant==='B'?'1px solid #fdf6e8':'none')+';padding:13px 32px;font-size:13px;font-weight:700;letter-spacing:0.08em;border-radius:4px">Explore the Collection &rarr;</div>';
+  h+='</div>';
+
+  // ── S11: FOOTER ──
+  h+='<div style="background:#111;padding:18px 20px;text-align:center">';
+  h+='<div style="font-size:9px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#888;margin-bottom:6px">FOOTER</div>';
+  h+='<div style="font-family:Georgia,serif;font-size:14px;font-weight:bold;letter-spacing:0.18em;color:#FBF5EA;margin-bottom:6px">VAHDAM&reg;</div>';
+  h+='<div style="font-size:10px;color:#666;margin-bottom:4px">Shop All &middot; Our Story &middot; Gifting &middot; Contact</div>';
+  h+='<div style="font-size:10px;color:#666;margin-bottom:4px">Instagram &middot; Facebook &middot; YouTube &middot; Pinterest</div>';
+  h+='<div style="font-size:9px;color:#555">Unsubscribe &middot; Privacy Policy &middot; '+(mktLabels[mkt]||mkt)+' store: '+base+'</div>';
+  h+='</div>';
+
+  // ── CONTENT AUDIT SUMMARY ──
+  h+='<div style="padding:16px 20px;background:#f0ebe0;border-top:2px solid #ede5d8">';
+  h+='<div style="font-size:9px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#AB8743;margin-bottom:10px">CONTENT AUDIT</div>';
+  var checks=[];
+  checks.push({ok:!!hl, label:'Headline', val:(typeof hl==='object'?hl[0]:hl)||'MISSING'});
+  checks.push({ok:!!sc, label:'Subcopy', val:sc.substring(0,60)||'MISSING'});
+  checks.push({ok:!!ann, label:'Announcement bar', val:ann.substring(0,60)||'MISSING'});
+  checks.push({ok:prods.length>0, label:'Products', val:prods.length+' selected'});
+  checks.push({ok:!!(ot||oc), label:'Offer', val:(ot||'No offer')+(oc?' (code: '+oc+')':'')});
+  checks.push({ok:!!cta, label:'Primary CTA', val:cta||'MISSING'});
+  checks.push({ok:feats.length>=3, label:'Benefit strip', val:feats.length+' items'});
+  checks.push({ok:true, label:'Market', val:(mktLabels[mkt]||mkt)+' ('+base+')'});
+  checks.push({ok:true, label:'Variant', val:variant+' — '+(variant==='A'?'Editorial Hero':'Narrative Story')});
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
+  checks.forEach(function(c){
+    h+='<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:#fff;border-radius:6px;border:1px solid #ede5d8">';
+    h+='<span style="font-size:12px">'+(c.ok?'✅':'⚠️')+'</span>';
+    h+='<div><div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.06em;text-transform:uppercase">'+c.label+'</div>';
+    h+='<div style="font-size:11px;color:#1a1a1a;line-height:1.3">'+c.val+'</div></div>';
+    h+='</div>';
+  });
+  h+='</div>';
+  h+='</div>';
+
+  container.innerHTML=h;
+}
+
 function openExternalTool(name,url,subtitle){
   // Copy prompt to clipboard first
   var promptText=S.lastImagePrompt||(document.getElementById('promptMono')?document.getElementById('promptMono').textContent:'');
@@ -3946,7 +4211,9 @@ function selectCanvasCell(mkt,v){
   // 4. Upload tab — update the "Use this image" button context (no DOM change needed; state already synced)
   // 5. Re-render the filter panel itself so the active cell highlights correctly
   renderCanvasFilterPanel();
-  showCopyToast('Showing: '+mkt+' · Variant '+v+' (applies to canvas, prompt and upload tabs)');
+  // 6. Content preview — refresh with new market/variant combo
+  renderContentPreview();
+  showCopyToast('Showing: '+mkt+' · Variant '+v+' (applies to all preview tabs)');
 }
 
 // ── Step 4: AUTO-GENERATED IMAGES via Pollinations FLUX ────────────────────

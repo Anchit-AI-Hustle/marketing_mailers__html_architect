@@ -43,20 +43,20 @@
   "rewrites": [
     {
       "source": "/",
-      "destination": "/vahdam_mailer_architect_v23.html"
+      "destination": "/vahdam_mailer_architect_v34.html"
     },
     {
       "source": "/studio",
-      "destination": "/vahdam_mailer_architect_v23.html"
+      "destination": "/vahdam_mailer_architect_v34.html"
     },
     {
       "source": "/app",
-      "destination": "/vahdam_mailer_architect_v23.html"
+      "destination": "/vahdam_mailer_architect_v34.html"
     }
   ],
   "headers": [
     {
-      "source": "/vahdam_mailer_architect_v23.html",
+      "source": "/vahdam_mailer_architect_v34.html",
       "headers": [
         {
           "key": "Cache-Control",
