@@ -1772,16 +1772,8 @@ function _doAutoUpdateChips(text){
   }
   // ── Market detection (only if user hasn't manually picked) ──
   if(!S._mktManualSet && t.length>10){
-    var mktKeys=[];
-    if(/\b(usa|u\.s\.a|united states|america|americans|us market|us customers|in the us|north america)\b/.test(t)) mktKeys.push('US');
-    if(/\b(uk|u\.k|united kingdom|britain|british|england|english|in the uk|brits)\b/.test(t)) mktKeys.push('UK');
-    if(/\b(india|indian|in india|indians|delhi|mumbai|bengaluru|bangalore)\b/.test(t)) mktKeys.push('IN');
-    if(/\b(europe|european|eu market|germany|france|spain|italy|netherlands)\b/.test(t)) mktKeys.push('EU');
-    if(/\b(australia|australian|aussie|in australia)\b/.test(t)) mktKeys.push('AU');
-    if(/\b(middle east|uae|saudi|dubai|abu dhabi|gulf|gcc)\b/.test(t)) mktKeys.push('ME');
-    if(/\b(global|worldwide|international|all markets|every market)\b/.test(t)) mktKeys.push('Global');
+    var mktKeys=_detectMarketsFromPrompt(text||'');
     if(mktKeys.length){
-      // Apply: turn on detected markets, turn off others
       document.querySelectorAll('.mkt-chip').forEach(function(b){
         var m=b.getAttribute('data-mkt');
         b.classList.toggle('on',mktKeys.indexOf(m)>=0);
@@ -1790,6 +1782,31 @@ function _doAutoUpdateChips(text){
       S.market=mktKeys[0];
     }
   }
+}
+// Pure market detector — used by chip auto-update and by go2() to validate.
+// Returns an ordered, de-duped array of market codes inferred from the brief.
+function _detectMarketsFromPrompt(text){
+  var t=(text||'').toLowerCase();
+  var raw=String(text||'');
+  var keys=[];
+  function add(k){ if(keys.indexOf(k)<0) keys.push(k); }
+  // ── Currency symbols & ISO codes — strongest single-token signal ──
+  if(raw.indexOf('£')>=0 || /\bgbp\b/.test(t)) add('UK');
+  if(raw.indexOf('₹')>=0 || /\binr\b|\brs\.?\b|\brupees?\b/.test(t)) add('IN');
+  if(raw.indexOf('€')>=0 || /\beur\b|\beuros?\b/.test(t)) add('EU');
+  if(/\baud\b|\ba\$/.test(t)) add('AU');
+  if(/\baed\b|\bsar\b|\bdh\b|\bdhs\b/.test(t)) add('ME');
+  // ── Region / country / city keywords ──
+  if(/\b(usa|u\.s\.a|united states|america|americans|us market|us customers|in the us|north america|new york|los angeles|chicago|austin|seattle|boston)\b/.test(t)) add('US');
+  if(/\b(uk|u\.k|united kingdom|britain|british|england|english|brits?|london|manchester|edinburgh|bath|bristol|oxford)\b/.test(t)) add('UK');
+  if(/\b(india|indian|in india|indians|delhi|mumbai|bengaluru|bangalore|kolkata|chennai|pune|hyderabad)\b/.test(t)) add('IN');
+  if(/\b(europe|european|eu market|in europe|germany|german|france|french|spain|spanish|italy|italian|netherlands|dutch|paris|berlin|amsterdam|vienna|milan|stockholm)\b/.test(t)) add('EU');
+  if(/\b(australia|australian|aussies?|in australia|sydney|melbourne|brisbane|perth|adelaide)\b/.test(t)) add('AU');
+  if(/\b(middle east|gulf|gcc|uae|emirates|saudi|saudi arabia|dubai|abu dhabi|riyadh|doha|kuwait|jeddah|qatar|bahrain|oman)\b/.test(t)) add('ME');
+  if(/\b(global|worldwide|international|all markets|every market|across markets)\b/.test(t)) add('Global');
+  // ── Currency-only fallbacks: $ alone implies US unless UK/EU/AU already detected ──
+  if(!keys.length && raw.indexOf('$')>=0) add('US');
+  return keys;
 }
 // ── Market chip toggle ──────────────────────────────────────────────────────
 function toggleMarket(m,el){
@@ -1837,6 +1854,9 @@ function clearAndCreate(){
   var ta=document.getElementById('promptIn');
   if(ta){ta.value='';ta.style.minHeight='120px';}
   _updateSmartAIBtn(false);
+  // Re-enable auto-detection for the fresh brief
+  S._typeManualSet=false;
+  S._mktManualSet=false;
   smartAIBrief();
 }
 
@@ -2363,20 +2383,34 @@ function go2(){
   S.markets=selected;
   S.market=S.markets[0];
   S.activeMarket=S.markets[0];
-  S.type=document.getElementById('typeIn').value;
+  // Resolve type: explicit chip wins, else fresh prompt-based detection.
+  var explicitType=document.getElementById('typeIn').value;
+  S.type=explicitType||detectType(p);
   // ── fresh slate: clear any products from a previous campaign ──
   S.manualProds=[];S.finalProds=[];_activeCatFilter='all';
   document.querySelectorAll('.cfbtn').forEach(function(b){b.classList.remove('on');});
-  var allBtn=document.querySelector('#catFilter .cfbtn[onclick*="\'all\'"]');if(allBtn)allBtn.classList.add('on');
-  // ─────────────────────────────────────────────────────────────
-  showOnly(2);renderCatalog('all');updateSelInfo();
+  showOnly(2);
   injectCtxBanners();
-  // Auto-filter catalog using prompt signals first, then campaign type fallback
-  var smartTab=getBestCatalogTab(S.prompt,S.type);
-  if(smartTab!=='all'){
-    var cfBtn=document.querySelector('#catFilter .cfbtn[onclick*="\''+smartTab+'\'"]');
-    if(cfBtn)cfBtn.click();
-  }
+  // ── Default behavior: auto-pick the best matching products from the prompt
+  // so the user lands on Step 2 with a ready selection. They can keep, edit,
+  // or clear it — but they never see an empty selection on first load.
+  try{ _autoPickDefaultStep2(); }catch(_){ renderCatalog('all'); updateSelInfo(); }
+}
+// Quiet auto-pick used as the Step 2 default. Mirrors activateAutoPick() but
+// without the toast and without touching S._typeManualSet flags.
+function _autoPickDefaultStep2(){
+  var prompt=S.prompt||'';
+  var type=S.type||detectType(prompt);
+  var picks=autoPickProducts(prompt,type)||[];
+  S.finalProds=picks.slice();
+  S.manualProds=picks.slice();
+  // Switch catalog tab so the picks are visible as selected
+  var smartTab=getBestCatalogTab(prompt,type);
+  var tabBtn=smartTab&&smartTab!=='all'
+    ? document.querySelector('#catFilter .cfbtn[onclick*="\''+smartTab+'\'"]')
+    : document.querySelector('#catFilter .cfbtn[onclick*="\'all\'"]');
+  if(tabBtn) tabBtn.click(); else renderCatalog('all');
+  updateSelInfo();
 }
 function go3(){
   var manCount=S.manualProds?S.manualProds.length:0;
@@ -2446,18 +2480,32 @@ function hasWord(p,...kws){
     return new RegExp('(^|[^a-z0-9])'+lk.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?=[^a-z0-9]|$)','i').test(l);
   });
 }
+// Pure type detector — always classifies from the prompt text. Callers that
+// want the user's explicit pick to win should use `S.type||detectType(p)`.
+// The function used to short-circuit on cached `S.type` which broke live
+// re-detection as the brief was edited; manual override is now tracked via
+// `S._typeManualSet` (see selectType / _doAutoUpdateChips).
 function detectType(p){
-  if(window.S&&S.type)return S.type;
   const l=(p||'').toLowerCase();
-  // Order: most specific signals first; gifting occasions take priority over seasonal
-  if(hasWord(l,'gift','gifting','corporate','hamper','mother','mothers','father','fathers','diwali','christmas','valentine','wedding','eid','raksha','anniversary'))return 'Gift';
-  if(has(l,'sale','off','discount','deal','promo','code'))return 'Sale';
-  if(has(l,'launch','introducing','first time','new arrival','just landed','new collection'))return 'Launch';
-  if(has(l,'sampler','discovery','try','explore','variety pack'))return 'Discovery';
-  if(has(l,'bestseller','popular','loved','top seller','most loved'))return 'Bestseller';
-  if(has(l,'routine','daily','ritual','habit','morning','everyday'))return 'Routine';
-  if(has(l,'heritage','origin','provenance','story','journey','farm to cup','single origin'))return 'Story';
-  if(has(l,'summer','winter','spring','autumn','fall','monsoon','seasonal','season'))return 'Seasonal';
+  if(!l) return 'Bestseller';
+  // ── Order matters — most specific signals first ──
+  // 1) GIFT first: gifting occasions trump seasonal & sale (e.g. "Mother's Day 20% off")
+  if(hasWord(l,'gift','gifting','gifts','corporate','hamper','hampers','present','presents','mother','mothers',"mother's",'father','fathers',"father's",'diwali','christmas','valentine',"valentine's",'wedding','eid','raksha','rakshabandhan','anniversary','birthday'))return 'Gift';
+  // 2) SALE: explicit discount language (must include % patterns and offer codes)
+  if(/\b\d{1,2}\s*%\s*(off|discount)\b/.test(l)) return 'Sale';
+  if(has(l,'sale','% off','flat off','clearance','deal','promo','promo code','discount code','coupon','bogo','buy one get','use code','code:'))return 'Sale';
+  // 3) LAUNCH: new product / first-time / drop language
+  if(has(l,'launch','launching','introducing','introduce','debut','unveil','just dropped','new arrival','new arrivals','first time','first-time','just landed','new collection','new release','meet the new','new flavour','new flavor','new blend'))return 'Launch';
+  // 4) DISCOVERY: sampler / variety / try-something
+  if(has(l,'sampler','samplers','discovery','assorted','variety pack','variety','try our','explore our','curated picks','tasting set'))return 'Discovery';
+  // 5) ROUTINE: ritual / habit (must come before Story so 'morning ritual' wins)
+  if(has(l,'routine','daily','ritual','rituals','habit','morning ritual','evening ritual','wake up','wind down','everyday','every day','five minutes','your morning','daily cup'))return 'Routine';
+  // 6) STORY / heritage
+  if(has(l,'heritage','origin','provenance','our story','the story','journey','farm to cup','farm-to-cup','single origin','single-origin','founder','behind the brand','meet the maker','craftsmanship'))return 'Story';
+  // 7) SEASONAL: time-of-year / festival climate
+  if(has(l,'summer','winter','spring','autumn','fall','monsoon','seasonal','season','holiday season','festive'))return 'Seasonal';
+  // 8) BESTSELLER: social-proof / most-loved (last because terms like 'popular' often co-occur)
+  if(has(l,'bestseller','best seller','best-sellers','bestsellers','popular','top seller','most loved','customer favourite','customer favorite','fan favourite','top rated','top-rated','5-star'))return 'Bestseller';
   return 'Bestseller';
 }
 // ── Prompt-aware catalog tab picker — used by go2 + activateAutoPick ───────────
