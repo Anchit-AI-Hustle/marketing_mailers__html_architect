@@ -27,7 +27,7 @@ const IMAGE_PROMPT_PREAMBLE = `Photoreal product lifestyle photograph for VAHDAM
 Scene:
 `;
 
-const DESIGN_PROMPT_PREAMBLE = `High-fidelity flat graphic design mockup of a complete marketing email for VAHDAM India premium tea brand. This is a DESIGN LAYOUT showing the full email as it would appear in an inbox — NOT a photograph. Polished marketing creative, magazine-quality email design. Deep forest-green (#0f2a1c) header, ivory/cream (#fdf6e8) body background, warm gold (#d4873a) CTA buttons and accents. Elegant serif typography for headlines, clean sans-serif for body text. Professional email marketing aesthetic.
+const DESIGN_PROMPT_PREAMBLE = `High-fidelity flat graphic design mockup of a complete marketing email for VAHDAM India premium tea brand. This is a DESIGN LAYOUT showing the full email as it would appear in an inbox — NOT a photograph. Polished marketing creative, magazine-quality email design. Deep forest-green (#004A2B) header, ivory/cream (#FBF5EA) body background, warm gold (#AB8743) CTA buttons and accents. Elegant serif typography for headlines, clean sans-serif for body text. Professional email marketing aesthetic.
 
 Design:
 `;

@@ -42,7 +42,7 @@ MASTER MARKETING PRINCIPLES — NON-NEGOTIABLE
 
 ② PRICE ALWAYS VISIBLE — Every product shows: current price + strikethrough compare-at + % OFF badge. If no price in plan → derive from product data. Never omit price.
 
-③ EXPLICIT ADD TO CART — Every product card has a full-width "🛒 ADD TO CART" button (dark green #0f2a1c, display:block). Never rely on clicking the product image.
+③ EXPLICIT ADD TO CART — Every product card has a full-width "🛒 ADD TO CART" button (dark green #004A2B, display:block). Never rely on clicking the product image.
 
 ④ SHORT AND HIGH-IMPACT — MAX 7 SECTIONS. Every section earns its place. No filler, no padding-only sections.
 
@@ -71,7 +71,7 @@ KNOWN FAILURE MODES — FIX THESE BEFORE GENERATING:
 
 ④ VARIANT B = VARIANT A — Same amber button, same cream background, same product-first structure.
    FIX FOR VARIANT B:
-   - First 2–3 sections: dark background (#0f2a1c) with cream text (#fdf6e8) — mandatory
+   - First 2–3 sections: dark background (#004A2B) with cream text (#FBF5EA) — mandatory
    - No product in sections 1–2. Narrative/lifestyle/mood opens the email
    - Ghost-button CTA only: border:2px solid [matching text color]; background:transparent
    - Single editorial product with large image, not a product grid
@@ -85,16 +85,16 @@ KNOWN FAILURE MODES — FIX THESE BEFORE GENERATING:
 
 ⑦ HIDDEN DISCOUNT — Offer/discount not visible in first 500px. Buyer has to scroll to find the price.
    FIX: Inside the hero section (BEFORE the CTA button), include a prominent offer badge as a dark block:
-   <div style="display:inline-block;background:#0f2a1c;color:#fdf6e8;font-family:DM Sans,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:10px 18px;margin-bottom:14px;line-height:1.5">UP TO [X%] OFF<br><span style="font-size:9px;font-weight:400;color:#d4873a;letter-spacing:0.04em">ON SELECTED [PRODUCT CATEGORY]</span></div>
+   <div style="display:inline-block;background:#004A2B;color:#FBF5EA;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:10px 18px;margin-bottom:14px;line-height:1.5">UP TO [X%] OFF<br><span style="font-size:9px;font-weight:400;color:#AB8743;letter-spacing:0.04em">ON SELECTED [PRODUCT CATEGORY]</span></div>
 
 ⑧ WEAK ADD TO CART — Small inline "Add to Cart" link blends into product card. No urgency signals on products.
    FIX: Product cards MUST use a FULL-WIDTH dark green button spanning the entire card width:
-   <a href="..." style="display:block;background:#0f2a1c;color:#fdf6e8;font-family:DM Sans,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;text-decoration:none;padding:11px 16px;text-align:center">🛒 ADD TO CART</a>
+   <a href="..." style="display:block;background:#004A2B;color:#FBF5EA;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;text-decoration:none;padding:11px 16px;text-align:center">🛒 ADD TO CART</a>
    AND add "🔥 [N] units sold in the last 24 hours" (N=25-90) above the price for social proof urgency.
 
 ⑨ MISSING GIFTING TAGLINE — CTA button has no emotional reinforcement for gifting campaigns.
    FIX: For any gift/Mother's Day/holiday campaign, add this line BELOW the hero CTA button:
-   <div style="font-family:DM Sans,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#d4873a;margin-top:10px">MAKE HER SMILE, GIFT RIGHT!</div>
+   <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#AB8743;margin-top:10px">MAKE HER SMILE, GIFT RIGHT!</div>
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 HTML STRUCTURE RULES
@@ -112,9 +112,9 @@ Failure to do this = dark sections appear white in Outlook (breaks Variant B ent
 
 RULE: Every <td> with a CSS background value MUST also have the matching bgcolor attribute.
 Examples:
-  <td style="background:#0f2a1c" bgcolor="#0f2a1c">        ← dark section
-  <td style="background:#fdf6e8" bgcolor="#fdf6e8">        ← cream section
-  <td style="background:#d4873a" bgcolor="#d4873a">        ← amber announcement bar
+  <td style="background:#004A2B" bgcolor="#004A2B">        ← dark section
+  <td style="background:#FBF5EA" bgcolor="#FBF5EA">        ← cream section
+  <td style="background:#AB8743" bgcolor="#AB8743">        ← amber announcement bar
   <td style="background:#f5efe0" bgcolor="#f5efe0">        ← trust badge bar
   <td style="background:#ffffff" bgcolor="#ffffff">        ← white section
 
@@ -127,7 +127,7 @@ Apply bgcolor to EVERY <td> that has a background color — no exceptions.
 <style>
   /* Outlook reset */
   table{border-collapse:collapse!important}
-  a{color:#d4873a}
+  a{color:#AB8743}
   @media only screen and (max-width:600px){
     .email-container{width:100%!important;max-width:100%!important}
     .col2,.col3{display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;float:none!important}
@@ -147,24 +147,24 @@ Apply bgcolor to EVERY <td> that has a background color — no exceptions.
 ━━ SECTION LIBRARY — EXACT HTML FOR EACH LAYOUT TYPE ━━
 
 ── ANNOUNCEMENT BAR (always add this before VAHDAM header) ──
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#d4873a" bgcolor="#d4873a">
-  <tr><td style="text-align:center;padding:9px 16px" bgcolor="#d4873a">
-    <span style="font-family:DM Sans,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#ffffff">[OFFER LINE — e.g. FREE SHIPPING ON ORDERS $49+ &nbsp;·&nbsp; USE CODE: VAHDAM15]</span>
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#AB8743" bgcolor="#AB8743">
+  <tr><td style="text-align:center;padding:9px 16px" bgcolor="#AB8743">
+    <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#ffffff">[OFFER LINE — e.g. FREE SHIPPING ON ORDERS $49+ &nbsp;·&nbsp; USE CODE: VAHDAM15]</span>
   </td></tr>
 </table>
 
 ── VAHDAM HEADER ──
-<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#0f2a1c;max-width:600px;margin:0 auto" bgcolor="#0f2a1c">
+<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#004A2B;max-width:600px;margin:0 auto" bgcolor="#004A2B">
   <tr>
-    <td width="200" style="padding:10px 16px 10px 24px;vertical-align:middle;background:#0f2a1c" bgcolor="#0f2a1c">
-      <span style="font-family:DM Sans,Arial,sans-serif;font-size:10px;color:rgba(253,246,232,0.5);letter-spacing:0.08em">EST. 2015 · NEW DELHI, INDIA</span>
+    <td width="200" style="padding:10px 16px 10px 24px;vertical-align:middle;background:#004A2B" bgcolor="#004A2B">
+      <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:rgba(253,246,232,0.5);letter-spacing:0.08em">EST. 2015 · NEW DELHI, INDIA</span>
     </td>
-    <td style="text-align:center;padding:14px 16px;vertical-align:middle;background:#0f2a1c" bgcolor="#0f2a1c">
-      <div style="font-family:Cormorant Garamond,Georgia,serif;font-size:28px;color:#fdf6e8;letter-spacing:0.18em;font-weight:400;line-height:1">VAHDAM<span style="font-size:14px;vertical-align:super;letter-spacing:0">®</span></div>
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:8.5px;color:#d4873a;letter-spacing:0.22em;text-transform:uppercase;margin-top:4px">PREMIUM INDIAN TEAS · DIRECT FROM SOURCE</div>
+    <td style="text-align:center;padding:14px 16px;vertical-align:middle;background:#004A2B" bgcolor="#004A2B">
+      <div style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:28px;color:#FBF5EA;letter-spacing:0.18em;font-weight:400;line-height:1">VAHDAM<span style="font-size:14px;vertical-align:super;letter-spacing:0">®</span></div>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:8.5px;color:#AB8743;letter-spacing:0.22em;text-transform:uppercase;margin-top:4px">PREMIUM INDIAN TEAS · DIRECT FROM SOURCE</div>
     </td>
-    <td width="200" style="text-align:right;padding:10px 24px 10px 16px;vertical-align:middle;background:#0f2a1c" bgcolor="#0f2a1c">
-      <a href="https://www.vahdamteas.com/collections/all" style="font-family:DM Sans,Arial,sans-serif;font-size:10px;color:#d4873a;text-decoration:none;letter-spacing:0.06em">SHOP ALL →</a>
+    <td width="200" style="text-align:right;padding:10px 24px 10px 16px;vertical-align:middle;background:#004A2B" bgcolor="#004A2B">
+      <a href="https://www.vahdamteas.com/collections/all" style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#AB8743;text-decoration:none;letter-spacing:0.06em">SHOP ALL →</a>
     </td>
   </tr>
 </table>
@@ -173,7 +173,7 @@ Apply bgcolor to EVERY <td> that has a background color — no exceptions.
 <table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#f5efe0;max-width:600px;margin:0 auto" bgcolor="#f5efe0">
   <tr>
     <td style="text-align:center;padding:10px 16px;border-top:1px solid #e8dcc8;border-bottom:1px solid #e8dcc8;background:#f5efe0" bgcolor="#f5efe0">
-      <span style="font-family:DM Sans,Arial,sans-serif;font-size:10px;color:#4a7a5a;letter-spacing:0.08em">
+      <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#4a7a5a;letter-spacing:0.08em">
         🌿 100% PURE INDIAN TEA &nbsp;·&nbsp; ✦ ETHICALLY SOURCED &nbsp;·&nbsp; 🌱 DIRECT FROM FARMS &nbsp;·&nbsp; ★ 4.8/5 · 50K+ REVIEWS
       </span>
     </td>
@@ -181,44 +181,44 @@ Apply bgcolor to EVERY <td> that has a background color — no exceptions.
 </table>
 
 ── SPLIT-HERO (image 55% left, copy 45% right — Variant A default) ──
-<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#fdf6e8;max-width:600px;margin:0 auto" bgcolor="#fdf6e8">
+<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#FBF5EA;max-width:600px;margin:0 auto" bgcolor="#FBF5EA">
   <tr>
     <!--[if mso]><td width="330" valign="top"><![endif]-->
-    <td class="col2 hero-img" width="330" valign="top" style="vertical-align:top;padding:0;background:#fdf6e8" bgcolor="#fdf6e8">
+    <td class="col2 hero-img" width="330" valign="top" style="vertical-align:top;padding:0;background:#FBF5EA" bgcolor="#FBF5EA">
       <img src="IMAGE_HERO_URL" width="330" height="auto" class="hero-img" style="display:block;border:0;width:330px;max-width:330px" alt="[PRODUCT NAME] — VAHDAM India">
     </td>
     <!--[if mso]></td><td width="270" valign="middle"><![endif]-->
-    <td class="col2 mobile-pad" width="270" valign="middle" style="vertical-align:middle;padding:28px 24px 28px 20px;background:#fdf6e8" bgcolor="#fdf6e8">
-      <span class="mobile-text" style="font-family:DM Sans,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#d4873a;display:block;margin-bottom:8px">[EYEBROW]</span>
-      <h1 class="mobile-h1" style="font-family:Cormorant Garamond,Georgia,serif;font-size:30px;line-height:1.15;color:#0f2a1c;font-weight:700;margin:0 0 12px 0">[HEADLINE — use verbatim from plan]</h1>
+    <td class="col2 mobile-pad" width="270" valign="middle" style="vertical-align:middle;padding:28px 24px 28px 20px;background:#FBF5EA" bgcolor="#FBF5EA">
+      <span class="mobile-text" style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#AB8743;display:block;margin-bottom:8px">[EYEBROW]</span>
+      <h1 class="mobile-h1" style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:30px;line-height:1.15;color:#004A2B;font-weight:700;margin:0 0 12px 0">[HEADLINE — use verbatim from plan]</h1>
       <!-- BENEFIT BULLETS — always include 2-3 short benefit lines derived from product -->
-      <ul style="font-family:DM Sans,Arial,sans-serif;font-size:13px;line-height:1.7;color:#3d5a40;margin:0 0 14px 0;padding:0 0 0 16px">
+      <ul style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:13px;line-height:1.7;color:#3d5a40;margin:0 0 14px 0;padding:0 0 0 16px">
         <li>[BENEFIT 1 — specific product attribute or harvest detail]</li>
         <li>[BENEFIT 2 — origin, estate name, or quality certification]</li>
         <li>[BENEFIT 3 — use occasion or daily ritual context]</li>
       </ul>
-      <p class="mobile-text" style="font-family:DM Sans,Arial,sans-serif;font-size:13px;line-height:1.65;color:#4a5568;margin:0 0 14px 0">[SUBCOPY — full sentence from plan. For gifting: end with "She'll enjoy it every day and remember you."]</p>
+      <p class="mobile-text" style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:13px;line-height:1.65;color:#4a5568;margin:0 0 14px 0">[SUBCOPY — full sentence from plan. For gifting: end with "She'll enjoy it every day and remember you."]</p>
       <!-- OFFER BADGE — visible in first scroll, before CTA — MANDATORY for discount campaigns -->
-      <div style="display:inline-block;background:#0f2a1c;color:#fdf6e8;font-family:DM Sans,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:10px 18px;margin-bottom:14px;line-height:1.5">UP TO [X%] OFF<br><span style="font-size:9px;font-weight:400;color:#d4873a;letter-spacing:0.04em">ON SELECTED [PRODUCT CATEGORY e.g. GIFTS]</span></div>
+      <div style="display:inline-block;background:#004A2B;color:#FBF5EA;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:10px 18px;margin-bottom:14px;line-height:1.5">UP TO [X%] OFF<br><span style="font-size:9px;font-weight:400;color:#AB8743;letter-spacing:0.04em">ON SELECTED [PRODUCT CATEGORY e.g. GIFTS]</span></div>
       <br>
-      <a href="https://vahdam.com/products/[HANDLE]" style="display:inline-block;background:#d4873a;color:#ffffff;font-family:DM Sans,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;padding:13px 28px">[CTA e.g. SHOP GIFTS]</a>
+      <a href="https://vahdam.com/products/[HANDLE]" style="display:inline-block;background:#AB8743;color:#ffffff;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;padding:13px 28px">[CTA e.g. SHOP GIFTS]</a>
       <!-- GIFTING TAGLINE — for gift/Mother's Day/holiday campaigns -->
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#d4873a;margin-top:10px">MAKE HER SMILE, GIFT RIGHT!</div>
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:10px;color:#8a9a8a;margin-top:8px">🚚 Free shipping on orders $49+</div>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#AB8743;margin-top:10px">MAKE HER SMILE, GIFT RIGHT!</div>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#8a9a8a;margin-top:8px">🚚 Free shipping on orders $49+</div>
     </td>
     <!--[if mso]></td><![endif]-->
   </tr>
 </table>
 
 ── FULL-BLEED HERO (image full width, copy below — Variant B default) ──
-<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto;background:#0f2a1c" bgcolor="#0f2a1c">
-  <tr><td style="padding:0;background:#0f2a1c" bgcolor="#0f2a1c">
+<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto;background:#004A2B" bgcolor="#004A2B">
+  <tr><td style="padding:0;background:#004A2B" bgcolor="#004A2B">
     <img src="IMAGE_HERO_URL" width="600" height="auto" style="display:block;border:0;width:100%;max-width:600px" alt="[CAMPAIGN MOOD] — VAHDAM India">
   </td></tr>
-  <tr><td class="mobile-pad" style="padding:40px 48px;background:#0f2a1c;text-align:center" bgcolor="#0f2a1c">
-    <span style="font-family:DM Sans,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#d4873a;display:block;margin-bottom:12px">[EYEBROW]</span>
-    <h1 class="mobile-h1" style="font-family:Cormorant Garamond,Georgia,serif;font-size:44px;line-height:1.1;color:#fdf6e8;font-weight:400;margin:0 0 18px 0;letter-spacing:-0.01em">[HEADLINE — use verbatim from plan]</h1>
-    <p class="mobile-text" style="font-family:DM Sans,Arial,sans-serif;font-size:15px;line-height:1.75;color:rgba(253,246,232,0.75);margin:0 0 24px 0;max-width:460px;margin-left:auto;margin-right:auto">[SUBCOPY — full sentence from plan]</p>
+  <tr><td class="mobile-pad" style="padding:40px 48px;background:#004A2B;text-align:center" bgcolor="#004A2B">
+    <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#AB8743;display:block;margin-bottom:12px">[EYEBROW]</span>
+    <h1 class="mobile-h1" style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:44px;line-height:1.1;color:#FBF5EA;font-weight:400;margin:0 0 18px 0;letter-spacing:-0.01em">[HEADLINE — use verbatim from plan]</h1>
+    <p class="mobile-text" style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:15px;line-height:1.75;color:rgba(253,246,232,0.75);margin:0 0 24px 0;max-width:460px;margin-left:auto;margin-right:auto">[SUBCOPY — full sentence from plan]</p>
   </td></tr>
 </table>
 
@@ -244,48 +244,48 @@ Apply bgcolor to EVERY <td> that has a background color — no exceptions.
 </table>
 
 ── PRODUCT CARD (use inside grid cells — replace ALL bracketed placeholders with real content) ──
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fdf6e8;border:1px solid #e5ddd0" bgcolor="#fdf6e8">
-  <tr><td style="padding:0;background:#fdf6e8" bgcolor="#fdf6e8">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FBF5EA;border:1px solid #e5ddd0" bgcolor="#FBF5EA">
+  <tr><td style="padding:0;background:#FBF5EA" bgcolor="#FBF5EA">
     <img src="IMAGE_PRODUCT_URL" width="100%" height="auto" style="display:block;border:0;max-width:100%" alt="[FULL PRODUCT NAME] — VAHDAM India Premium Tea">
   </td></tr>
-  <tr><td style="padding:12px 12px 4px;text-align:left;background:#fdf6e8" bgcolor="#fdf6e8">
-    <div style="font-family:DM Sans,Arial,sans-serif;font-size:11px;color:#d4873a;margin-bottom:3px">⭐⭐⭐⭐⭐ <span style="color:#888;font-size:10px">([REVIEW_COUNT — realistic number e.g. 70] reviews)</span></div>
-    <div style="font-family:Cormorant Garamond,Georgia,serif;font-size:15px;color:#0f2a1c;font-weight:600;line-height:1.3;margin-bottom:4px">[FULL PRODUCT NAME — no truncation]</div>
+  <tr><td style="padding:12px 12px 4px;text-align:left;background:#FBF5EA" bgcolor="#FBF5EA">
+    <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;color:#AB8743;margin-bottom:3px">⭐⭐⭐⭐⭐ <span style="color:#888;font-size:10px">([REVIEW_COUNT — realistic number e.g. 70] reviews)</span></div>
+    <div style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:15px;color:#004A2B;font-weight:600;line-height:1.3;margin-bottom:4px">[FULL PRODUCT NAME — no truncation]</div>
     <!-- URGENCY LINE — social proof, use realistic N between 25-90 -->
-    <div style="font-family:DM Sans,Arial,sans-serif;font-size:10px;color:#cc4400;font-weight:600;margin-bottom:7px">🔥 [N] units sold in the last 24 hours</div>
-    <div style="font-family:DM Sans,Arial,sans-serif;font-size:14px;font-weight:700;color:#0f2a1c;margin-bottom:4px">
+    <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#cc4400;font-weight:600;margin-bottom:7px">🔥 [N] units sold in the last 24 hours</div>
+    <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:14px;font-weight:700;color:#004A2B;margin-bottom:4px">
       $[PRICE] <span style="font-size:10px;color:#aaa;text-decoration:line-through;font-weight:400">$[ORIG_PRICE]</span>
       &nbsp;<span style="font-size:9px;font-weight:800;color:#2a7a3a">[X%] OFF</span>
     </div>
   </td></tr>
   <!-- FULL-WIDTH ADD TO CART — spans entire card width, dark green background -->
-  <tr><td style="padding:8px 12px 12px;background:#fdf6e8" bgcolor="#fdf6e8">
-    <a href="https://vahdam.com/products/[HANDLE]" style="display:block;background:#0f2a1c;color:#fdf6e8;font-family:DM Sans,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;text-decoration:none;padding:11px 0;text-align:center">🛒 ADD TO CART</a>
+  <tr><td style="padding:8px 12px 12px;background:#FBF5EA" bgcolor="#FBF5EA">
+    <a href="https://vahdam.com/products/[HANDLE]" style="display:block;background:#004A2B;color:#FBF5EA;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;text-decoration:none;padding:11px 0;text-align:center">🛒 ADD TO CART</a>
   </td></tr>
 </table>
 
 ── BENEFIT STRIP / ICON ROW ──
-<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#0f2a1c;max-width:600px;margin:0 auto" bgcolor="#0f2a1c">
+<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#004A2B;max-width:600px;margin:0 auto" bgcolor="#004A2B">
   <tr>
-    <td width="150" style="padding:16px 8px;text-align:center;vertical-align:top;background:#0f2a1c" bgcolor="#0f2a1c">
+    <td width="150" style="padding:16px 8px;text-align:center;vertical-align:top;background:#004A2B" bgcolor="#004A2B">
       <div style="font-size:20px;margin-bottom:5px">🌿</div>
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:10px;font-weight:700;color:#d4873a;letter-spacing:0.1em;text-transform:uppercase">FARM DIRECT</div>
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.65);margin-top:3px">Source to cup</div>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;color:#AB8743;letter-spacing:0.1em;text-transform:uppercase">FARM DIRECT</div>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.65);margin-top:3px">Source to cup</div>
     </td>
-    <td width="150" style="padding:16px 8px;text-align:center;vertical-align:top;background:#0f2a1c" bgcolor="#0f2a1c">
+    <td width="150" style="padding:16px 8px;text-align:center;vertical-align:top;background:#004A2B" bgcolor="#004A2B">
       <div style="font-size:20px;margin-bottom:5px">♻️</div>
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:10px;font-weight:700;color:#d4873a;letter-spacing:0.1em;text-transform:uppercase">B-CORP CERTIFIED</div>
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.65);margin-top:3px">Ethical sourcing</div>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;color:#AB8743;letter-spacing:0.1em;text-transform:uppercase">B-CORP CERTIFIED</div>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.65);margin-top:3px">Ethical sourcing</div>
     </td>
-    <td width="150" style="padding:16px 8px;text-align:center;vertical-align:top;background:#0f2a1c" bgcolor="#0f2a1c">
+    <td width="150" style="padding:16px 8px;text-align:center;vertical-align:top;background:#004A2B" bgcolor="#004A2B">
       <div style="font-size:20px;margin-bottom:5px">⭐</div>
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:10px;font-weight:700;color:#d4873a;letter-spacing:0.1em;text-transform:uppercase">4.8/5 RATING</div>
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.65);margin-top:3px">50,000+ reviews</div>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;color:#AB8743;letter-spacing:0.1em;text-transform:uppercase">4.8/5 RATING</div>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.65);margin-top:3px">50,000+ reviews</div>
     </td>
-    <td width="150" style="padding:16px 8px;text-align:center;vertical-align:top;background:#0f2a1c" bgcolor="#0f2a1c">
+    <td width="150" style="padding:16px 8px;text-align:center;vertical-align:top;background:#004A2B" bgcolor="#004A2B">
       <div style="font-size:20px;margin-bottom:5px">🚚</div>
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:10px;font-weight:700;color:#d4873a;letter-spacing:0.1em;text-transform:uppercase">FREE SHIPPING</div>
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.65);margin-top:3px">Orders $49+</div>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;color:#AB8743;letter-spacing:0.1em;text-transform:uppercase">FREE SHIPPING</div>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.65);margin-top:3px">Orders $49+</div>
     </td>
   </tr>
 </table>
@@ -293,108 +293,108 @@ Apply bgcolor to EVERY <td> that has a background color — no exceptions.
 ── SOCIAL PROOF STRIP ──
 <table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#f5efe0;border-top:1px solid #e8dcc8;border-bottom:1px solid #e8dcc8;max-width:600px;margin:0 auto" bgcolor="#f5efe0">
   <tr><td style="padding:14px 24px;text-align:center;background:#f5efe0" bgcolor="#f5efe0">
-    <span style="font-family:DM Sans,Arial,sans-serif;font-size:11px;color:#0f2a1c;font-weight:700">⭐⭐⭐⭐⭐</span>
-    <span style="font-family:DM Sans,Arial,sans-serif;font-size:11px;color:#4a5568;margin-left:8px">Rated 4.8/5 by 50,000+ tea lovers · 100% Natural · Ships Worldwide</span>
+    <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;color:#004A2B;font-weight:700">⭐⭐⭐⭐⭐</span>
+    <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;color:#4a5568;margin-left:8px">Rated 4.8/5 by 50,000+ tea lovers · 100% Natural · Ships Worldwide</span>
   </td></tr>
 </table>
 
 ── TESTIMONIAL (2-col layout) ──
-<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#fdf6e8;max-width:600px;margin:0 auto" bgcolor="#fdf6e8">
+<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#FBF5EA;max-width:600px;margin:0 auto" bgcolor="#FBF5EA">
   <tr>
-    <td class="col2" width="290" style="padding:20px 10px 20px 24px;vertical-align:top;background:#fdf6e8" bgcolor="#fdf6e8">
-      <div style="font-family:Cormorant Garamond,Georgia,serif;font-size:17px;font-style:italic;color:#0f2a1c;line-height:1.6;border-left:3px solid #d4873a;padding-left:14px;margin-bottom:10px">"[REAL REVIEW TEXT — specific and authentic, 1-2 sentences]"</div>
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:10.5px;color:#888;letter-spacing:0.06em">— [FIRST NAME], [CITY, STATE]</div>
+    <td class="col2" width="290" style="padding:20px 10px 20px 24px;vertical-align:top;background:#FBF5EA" bgcolor="#FBF5EA">
+      <div style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:17px;font-style:italic;color:#004A2B;line-height:1.6;border-left:3px solid #AB8743;padding-left:14px;margin-bottom:10px">"[REAL REVIEW TEXT — specific and authentic, 1-2 sentences]"</div>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10.5px;color:#888;letter-spacing:0.06em">— [FIRST NAME], [CITY, STATE]</div>
     </td>
-    <td class="col2" width="290" style="padding:20px 24px 20px 10px;vertical-align:top;background:#fdf6e8" bgcolor="#fdf6e8">
-      <div style="font-family:Cormorant Garamond,Georgia,serif;font-size:17px;font-style:italic;color:#0f2a1c;line-height:1.6;border-left:3px solid #d4873a;padding-left:14px;margin-bottom:10px">"[REAL REVIEW TEXT — specific and authentic, 1-2 sentences]"</div>
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:10.5px;color:#888;letter-spacing:0.06em">— [FIRST NAME], [CITY, STATE]</div>
+    <td class="col2" width="290" style="padding:20px 24px 20px 10px;vertical-align:top;background:#FBF5EA" bgcolor="#FBF5EA">
+      <div style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:17px;font-style:italic;color:#004A2B;line-height:1.6;border-left:3px solid #AB8743;padding-left:14px;margin-bottom:10px">"[REAL REVIEW TEXT — specific and authentic, 1-2 sentences]"</div>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10.5px;color:#888;letter-spacing:0.06em">— [FIRST NAME], [CITY, STATE]</div>
     </td>
   </tr>
 </table>
 
 ── OFFER BANNER (Variant A — prominent) ──
-<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#0f2a1c;max-width:600px;margin:0 auto" bgcolor="#0f2a1c">
-  <tr><td class="mobile-pad" style="text-align:center;padding:20px 32px;background:#0f2a1c" bgcolor="#0f2a1c">
-    <div style="font-family:DM Sans,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(212,135,58,0.8);margin-bottom:6px">[OFFER EYEBROW e.g. LIMITED BATCH · THIS SEASON ONLY]</div>
-    <div style="font-family:Cormorant Garamond,Georgia,serif;font-size:26px;color:#fdf6e8;font-weight:600;margin-bottom:6px">[OFFER HEADLINE e.g. Save 20% on Your First Order]</div>
-    <div style="font-family:DM Sans,Arial,sans-serif;font-size:12px;color:rgba(253,246,232,0.7);margin-bottom:14px">[OFFER DETAIL — code: VAHDAM20 · min order $49 · ends [DATE]]</div>
-    <a href="https://vahdam.com/collections/all" style="display:inline-block;background:#d4873a;color:#ffffff;font-family:DM Sans,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;padding:13px 36px">[CTA TEXT e.g. SHOP NOW]</a>
+<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#004A2B;max-width:600px;margin:0 auto" bgcolor="#004A2B">
+  <tr><td class="mobile-pad" style="text-align:center;padding:20px 32px;background:#004A2B" bgcolor="#004A2B">
+    <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(212,135,58,0.8);margin-bottom:6px">[OFFER EYEBROW e.g. LIMITED BATCH · THIS SEASON ONLY]</div>
+    <div style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:26px;color:#FBF5EA;font-weight:600;margin-bottom:6px">[OFFER HEADLINE e.g. Save 20% on Your First Order]</div>
+    <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;color:rgba(253,246,232,0.7);margin-bottom:14px">[OFFER DETAIL — code: VAHDAM20 · min order $49 · ends [DATE]]</div>
+    <a href="https://vahdam.com/collections/all" style="display:inline-block;background:#AB8743;color:#ffffff;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;padding:13px 36px">[CTA TEXT e.g. SHOP NOW]</a>
   </td></tr>
 </table>
 
 ── SUBTLE OFFER ROW (Variant B — inline, understated) ──
-<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#0f2a1c;border-top:1px solid rgba(212,135,58,0.25);max-width:600px;margin:0 auto" bgcolor="#0f2a1c">
-  <tr><td style="padding:14px 32px;text-align:center;background:#0f2a1c" bgcolor="#0f2a1c">
-    <span style="font-family:DM Sans,Arial,sans-serif;font-size:11.5px;color:rgba(253,246,232,0.75)">
+<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#004A2B;border-top:1px solid rgba(212,135,58,0.25);max-width:600px;margin:0 auto" bgcolor="#004A2B">
+  <tr><td style="padding:14px 32px;text-align:center;background:#004A2B" bgcolor="#004A2B">
+    <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11.5px;color:rgba(253,246,232,0.75)">
       [OFFER TEXT — e.g. 'Complimentary shipping on orders above $49. Use code VAHDAM at checkout.']
     </span>
   </td></tr>
 </table>
 
 ── PRIMARY CTA SECTION (Variant A — amber button, prominent) ──
-<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#fdf6e8;max-width:600px;margin:0 auto" bgcolor="#fdf6e8">
-  <tr><td class="mobile-pad" style="text-align:center;padding:28px 40px;background:#fdf6e8" bgcolor="#fdf6e8">
-    <a href="https://vahdam.com/collections/all" style="display:inline-block;background:#d4873a;color:#ffffff;font-family:DM Sans,Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;padding:16px 52px">[CTA TEXT e.g. SHOP THE COLLECTION]</a>
-    <div style="font-family:DM Sans,Arial,sans-serif;font-size:10.5px;color:#888;margin-top:10px">Free shipping on $49+ · Easy returns · 100% natural</div>
+<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#FBF5EA;max-width:600px;margin:0 auto" bgcolor="#FBF5EA">
+  <tr><td class="mobile-pad" style="text-align:center;padding:28px 40px;background:#FBF5EA" bgcolor="#FBF5EA">
+    <a href="https://vahdam.com/collections/all" style="display:inline-block;background:#AB8743;color:#ffffff;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;padding:16px 52px">[CTA TEXT e.g. SHOP THE COLLECTION]</a>
+    <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10.5px;color:#888;margin-top:10px">Free shipping on $49+ · Easy returns · 100% natural</div>
   </td></tr>
 </table>
 
 ── GHOST CTA SECTION (Variant B — understated, on dark background) ──
-<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#0f2a1c;max-width:600px;margin:0 auto" bgcolor="#0f2a1c">
-  <tr><td style="text-align:center;padding:40px 48px;background:#0f2a1c" bgcolor="#0f2a1c">
-    <a href="https://vahdam.com/collections/all" style="display:inline-block;border:1.5px solid rgba(253,246,232,0.7);background:transparent;color:#fdf6e8;font-family:DM Sans,Arial,sans-serif;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;padding:14px 44px">[CTA TEXT e.g. DISCOVER THE COLLECTION]</a>
-    <div style="font-family:DM Sans,Arial,sans-serif;font-size:10px;color:rgba(253,246,232,0.4);margin-top:12px;letter-spacing:0.06em">[SUBTEXT e.g. Complimentary shipping on orders $49+]</div>
+<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#004A2B;max-width:600px;margin:0 auto" bgcolor="#004A2B">
+  <tr><td style="text-align:center;padding:40px 48px;background:#004A2B" bgcolor="#004A2B">
+    <a href="https://vahdam.com/collections/all" style="display:inline-block;border:1.5px solid rgba(253,246,232,0.7);background:transparent;color:#FBF5EA;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;padding:14px 44px">[CTA TEXT e.g. DISCOVER THE COLLECTION]</a>
+    <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:rgba(253,246,232,0.4);margin-top:12px;letter-spacing:0.06em">[SUBTEXT e.g. Complimentary shipping on orders $49+]</div>
   </td></tr>
 </table>
 
 ── EDITORIAL PRODUCT FEATURE (Variant B — large single product reveal, section 3+) ──
-<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#fdf6e8;max-width:600px;margin:0 auto" bgcolor="#fdf6e8">
-  <tr><td style="padding:0;background:#fdf6e8" bgcolor="#fdf6e8">
+<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#FBF5EA;max-width:600px;margin:0 auto" bgcolor="#FBF5EA">
+  <tr><td style="padding:0;background:#FBF5EA" bgcolor="#FBF5EA">
     <img src="IMAGE_PRODUCT_URL" width="600" height="auto" style="display:block;border:0;max-width:100%" alt="[FULL PRODUCT NAME] — VAHDAM India Premium Tea">
   </td></tr>
-  <tr><td class="mobile-pad" style="padding:32px 48px;text-align:center;background:#fdf6e8" bgcolor="#fdf6e8">
-    <span style="font-family:DM Sans,Arial,sans-serif;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#d4873a;display:block;margin-bottom:10px">[CATEGORY · ESTATE NAME · ORIGIN REGION]</span>
-    <h2 class="mobile-h2" style="font-family:Cormorant Garamond,Georgia,serif;font-size:34px;color:#0f2a1c;font-weight:600;line-height:1.2;margin:0 0 14px 0">[FULL PRODUCT NAME — from plan]</h2>
-    <p class="mobile-text" style="font-family:DM Sans,Arial,sans-serif;font-size:14px;line-height:1.75;color:#4a5568;margin:0 0 18px 0">[PRODUCT DESCRIPTION — 2 evocative sentences. Use origin, harvest, sensory detail. Never truncate.]</p>
-    <div style="font-family:DM Sans,Arial,sans-serif;font-size:10px;color:#888;margin-bottom:18px">⭐ 4.8/5 &nbsp;·&nbsp; 50,000+ reviews &nbsp;·&nbsp; Single-Estate &nbsp;·&nbsp; Hand-Picked</div>
-    <div style="font-family:DM Sans,Arial,sans-serif;font-size:16px;font-weight:700;color:#0f2a1c;margin-bottom:18px">$[PRICE] <span style="font-size:12px;color:#aaa;text-decoration:line-through;font-weight:400">$[COMPARE]</span></div>
-    <a href="https://vahdam.com/products/[HANDLE]" style="display:inline-block;border:2px solid #0f2a1c;background:transparent;color:#0f2a1c;font-family:DM Sans,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;padding:13px 40px">[CTA e.g. EXPLORE THIS TEA]</a>
+  <tr><td class="mobile-pad" style="padding:32px 48px;text-align:center;background:#FBF5EA" bgcolor="#FBF5EA">
+    <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#AB8743;display:block;margin-bottom:10px">[CATEGORY · ESTATE NAME · ORIGIN REGION]</span>
+    <h2 class="mobile-h2" style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:34px;color:#004A2B;font-weight:600;line-height:1.2;margin:0 0 14px 0">[FULL PRODUCT NAME — from plan]</h2>
+    <p class="mobile-text" style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:14px;line-height:1.75;color:#4a5568;margin:0 0 18px 0">[PRODUCT DESCRIPTION — 2 evocative sentences. Use origin, harvest, sensory detail. Never truncate.]</p>
+    <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#888;margin-bottom:18px">⭐ 4.8/5 &nbsp;·&nbsp; 50,000+ reviews &nbsp;·&nbsp; Single-Estate &nbsp;·&nbsp; Hand-Picked</div>
+    <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:16px;font-weight:700;color:#004A2B;margin-bottom:18px">$[PRICE] <span style="font-size:12px;color:#aaa;text-decoration:line-through;font-weight:400">$[COMPARE]</span></div>
+    <a href="https://vahdam.com/products/[HANDLE]" style="display:inline-block;border:2px solid #004A2B;background:transparent;color:#004A2B;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;padding:13px 40px">[CTA e.g. EXPLORE THIS TEA]</a>
   </td></tr>
 </table>
 
 ── ORIGIN / PROVENANCE SECTION (Variant B narrative — image left, story right) ──
-<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto" bgcolor="#0f2a1c">
+<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto" bgcolor="#004A2B">
   <tr>
     <td class="col2" width="300" style="padding:0;vertical-align:top">
       <img src="IMAGE_LIFESTYLE_URL" width="300" height="auto" style="display:block;border:0;width:300px;max-width:100%" alt="[ESTATE NAME] tea garden — VAHDAM India">
     </td>
-    <td class="col2 mobile-pad" width="300" valign="middle" style="vertical-align:middle;padding:32px 28px;background:#0f2a1c" bgcolor="#0f2a1c">
-      <span style="font-family:DM Sans,Arial,sans-serif;font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:#d4873a;display:block;margin-bottom:10px">[REGION · ALTITUDE ft. · HARVEST SEASON]</span>
-      <h3 class="mobile-h2" style="font-family:Cormorant Garamond,Georgia,serif;font-size:26px;color:#fdf6e8;font-weight:400;line-height:1.25;margin:0 0 14px 0">[SECTION HEADLINE — poetic, place-anchored]</h3>
-      <p class="mobile-text" style="font-family:DM Sans,Arial,sans-serif;font-size:13px;line-height:1.75;color:rgba(253,246,232,0.72);margin:0 0 16px 0">[ORIGIN STORY — 2-3 evocative sentences about harvest, altitude, the farmers, the landscape. Specific, not generic.]</p>
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:10px;color:rgba(212,135,58,0.7);letter-spacing:0.08em">✦ Single-Estate &nbsp; ✦ Hand-Picked &nbsp; ✦ First-Flush</div>
+    <td class="col2 mobile-pad" width="300" valign="middle" style="vertical-align:middle;padding:32px 28px;background:#004A2B" bgcolor="#004A2B">
+      <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:#AB8743;display:block;margin-bottom:10px">[REGION · ALTITUDE ft. · HARVEST SEASON]</span>
+      <h3 class="mobile-h2" style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:26px;color:#FBF5EA;font-weight:400;line-height:1.25;margin:0 0 14px 0">[SECTION HEADLINE — poetic, place-anchored]</h3>
+      <p class="mobile-text" style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:13px;line-height:1.75;color:rgba(253,246,232,0.72);margin:0 0 16px 0">[ORIGIN STORY — 2-3 evocative sentences about harvest, altitude, the farmers, the landscape. Specific, not generic.]</p>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:rgba(212,135,58,0.7);letter-spacing:0.08em">✦ Single-Estate &nbsp; ✦ Hand-Picked &nbsp; ✦ First-Flush</div>
     </td>
   </tr>
 </table>
 
 ── VAHDAM FOOTER (always last — include on every email) ──
-<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#0f2a1c;max-width:600px;margin:0 auto" bgcolor="#0f2a1c">
+<table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#004A2B;max-width:600px;margin:0 auto" bgcolor="#004A2B">
   <tr>
-    <td style="padding:28px 32px 12px;text-align:center;background:#0f2a1c" bgcolor="#0f2a1c">
-      <div style="font-family:Cormorant Garamond,Georgia,serif;font-size:22px;color:#fdf6e8;letter-spacing:0.14em;margin-bottom:8px">VAHDAM<span style="font-size:11px;vertical-align:super;letter-spacing:0">®</span> India</div>
-      <div style="font-family:DM Sans,Arial,sans-serif;font-size:10px;color:#7a9a7a;line-height:2;margin-bottom:14px">Single-Estate Heritage Teas &nbsp;·&nbsp; B-Corp Certified &nbsp;·&nbsp; Hand-Picked &nbsp;·&nbsp; Free Shipping $49+</div>
+    <td style="padding:28px 32px 12px;text-align:center;background:#004A2B" bgcolor="#004A2B">
+      <div style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:22px;color:#FBF5EA;letter-spacing:0.14em;margin-bottom:8px">VAHDAM<span style="font-size:11px;vertical-align:super;letter-spacing:0">®</span> India</div>
+      <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#7a9a7a;line-height:2;margin-bottom:14px">Single-Estate Heritage Teas &nbsp;·&nbsp; B-Corp Certified &nbsp;·&nbsp; Hand-Picked &nbsp;·&nbsp; Free Shipping $49+</div>
       <div style="margin-bottom:14px">
-        <a href="https://vahdam.com/collections/all" style="color:#d4873a;text-decoration:none;font-family:DM Sans,Arial,sans-serif;font-size:11px;margin:0 10px">Shop All Teas</a>
-        <a href="https://vahdam.com/pages/our-story" style="color:#d4873a;text-decoration:none;font-family:DM Sans,Arial,sans-serif;font-size:11px;margin:0 10px">Our Story</a>
-        <a href="https://vahdam.com/collections/bestsellers" style="color:#d4873a;text-decoration:none;font-family:DM Sans,Arial,sans-serif;font-size:11px;margin:0 10px">Bestsellers</a>
-        <a href="https://vahdam.com/collections/gift-sets" style="color:#d4873a;text-decoration:none;font-family:DM Sans,Arial,sans-serif;font-size:11px;margin:0 10px">Gift Sets</a>
+        <a href="https://vahdam.com/collections/all" style="color:#AB8743;text-decoration:none;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;margin:0 10px">Shop All Teas</a>
+        <a href="https://vahdam.com/pages/our-story" style="color:#AB8743;text-decoration:none;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;margin:0 10px">Our Story</a>
+        <a href="https://vahdam.com/collections/bestsellers" style="color:#AB8743;text-decoration:none;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;margin:0 10px">Bestsellers</a>
+        <a href="https://vahdam.com/collections/gift-sets" style="color:#AB8743;text-decoration:none;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;margin:0 10px">Gift Sets</a>
       </div>
       <div style="border-top:1px solid rgba(253,246,232,0.12);padding-top:12px;margin-top:4px">
-        <a href="{{UNSUBSCRIBE_URL}}" style="font-family:DM Sans,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.35);text-decoration:underline;margin:0 8px">Unsubscribe</a>
-        <span style="font-family:DM Sans,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.25)">|</span>
-        <a href="https://vahdam.com/pages/privacy-policy" style="font-family:DM Sans,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.35);text-decoration:underline;margin:0 8px">Privacy Policy</a>
-        <span style="font-family:DM Sans,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.25)">·</span>
-        <span style="font-family:DM Sans,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.25);margin-left:8px">© VAHDAM India 2026. All rights reserved.</span>
+        <a href="{{UNSUBSCRIBE_URL}}" style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.35);text-decoration:underline;margin:0 8px">Unsubscribe</a>
+        <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.25)">|</span>
+        <a href="https://vahdam.com/pages/privacy-policy" style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.35);text-decoration:underline;margin:0 8px">Privacy Policy</a>
+        <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.25)">·</span>
+        <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.25);margin-left:8px">© VAHDAM India 2026. All rights reserved.</span>
       </div>
     </td>
   </tr>
@@ -428,7 +428,7 @@ PROVEN D2C EMAIL MARKETING PATTERNS — APPLY THESE:
 
 12. OFFER CONTINUITY: Show the discount at two points — (a) as a badge inside the hero section visible without scrolling, AND (b) as a "% OFF" label on each product card. Never surface the offer only once in the email.
 
-13. FULL-WIDTH ADD TO CART: Product card CTAs must span the FULL card width using display:block. Use dark green background (#0f2a1c). Text: "🛒 ADD TO CART" all-caps. Never use a small inline button — it gets missed on mobile.
+13. FULL-WIDTH ADD TO CART: Product card CTAs must span the FULL card width using display:block. Use dark green background (#004A2B). Text: "🛒 ADD TO CART" all-caps. Never use a small inline button — it gets missed on mobile.
 
 14. GIFTING CAMPAIGN TAGLINE: For any campaign involving gifts, Mother's Day, birthdays, or celebrating her: add "MAKE HER SMILE, GIFT RIGHT!" as a small uppercase line directly below the hero CTA button. This emotional hook lifts gifting click-through.
 
@@ -454,7 +454,7 @@ PRODUCT SECTION must include per card:
 - Product name (full, not truncated)
 - "🔥 [N] units sold in the last 24 hours" urgency line (N between 25-90)
 - Price with strikethrough compare-at AND "[X%] OFF" badge in green
-- FULL-WIDTH "🛒 ADD TO CART" button spanning entire card (display:block, dark green bg #0f2a1c)
+- FULL-WIDTH "🛒 ADD TO CART" button spanning entire card (display:block, dark green bg #004A2B)
 
 SOCIAL PROOF must include:
 - Actual review text (2 reviews, quoted)
@@ -483,8 +483,8 @@ Before outputting, verify:
 □ Responsive <style> block with Outlook reset present in <head>
 □ EVERY <td> with background-color CSS also has matching bgcolor="" attribute
 □ Preheader <div> present immediately after <body> tag
-□ Variant B: dark opening sections (#0f2a1c bg), ghost CTA, no product grid, 44px+ headlines
-□ Variant A: cream background (#fdf6e8 bg), amber CTA (#d4873a), product in section 1, benefit bullets
+□ Variant B: dark opening sections (#004A2B bg), ghost CTA, no product grid, 44px+ headlines
+□ Variant A: cream background (#FBF5EA bg), amber CTA (#AB8743), product in section 1, benefit bullets
 ━━ QA SELF-CHECK — CONFIRM ALL BEFORE OUTPUTTING ━━
 ✔ Offer visible above the fold (announcement bar + hero badge)
 ✔ CTA button present in hero section (above fold)
@@ -629,9 +629,9 @@ module.exports = async function handler(req, res) {
 
   // Extract color scheme from variant plan for explicit injection
   const colorScheme = layoutPlan.color_scheme || {};
-  const bgColor     = colorScheme.background || (variant === 'B' ? '#0f2a1c' : '#fdf6e8');
-  const primColor   = colorScheme.primary    || (variant === 'B' ? '#fdf6e8' : '#0f2a1c');
-  const accentColor = colorScheme.accent     || '#d4873a';
+  const bgColor     = colorScheme.background || (variant === 'B' ? '#004A2B' : '#FBF5EA');
+  const primColor   = colorScheme.primary    || (variant === 'B' ? '#FBF5EA' : '#004A2B');
+  const accentColor = colorScheme.accent     || '#AB8743';
 
   const userMessage = `━━ BUILD VARIANT ${variant} HTML EMAIL ━━
 
@@ -647,7 +647,7 @@ COLOR SCHEME FOR THIS VARIANT:
   Background: ${bgColor} (use this for the opening sections — MANDATORY)
   Primary text: ${primColor}
   Accent: ${accentColor}
-  ${variant === 'B' ? '→ DARK BACKGROUND: sections 1-2 must use background:'+bgColor+' with color:'+primColor+' text. This is the primary visual differentiator from Variant A.' : '→ LIGHT BACKGROUND: use #fdf6e8 for section backgrounds throughout.'}
+  ${variant === 'B' ? '→ DARK BACKGROUND: sections 1-2 must use background:'+bgColor+' with color:'+primColor+' text. This is the primary visual differentiator from Variant A.' : '→ LIGHT BACKGROUND: use #FBF5EA for section backgrounds throughout.'}
 
 ${regen > 0 ? `REGENERATE #${regen}: Vary padding values, section backgrounds, headline emphasis — keep same structure.` : ''}
 
@@ -700,7 +700,7 @@ PRODUCT CARD REQUIREMENT: For each product, show:
 Flow: ${layoutPlan.flow || ''}
 Spacing: ${layoutPlan.spacing || 'max 28px between content sections — NO excessive whitespace'}
 Hero layout: ${layoutPlan.hero || ''}
-Color scheme: background=${((layoutPlan.color_scheme || {}).background) || '#fdf6e8'} primary=${((layoutPlan.color_scheme || {}).primary) || '#0f2a1c'} accent=${((layoutPlan.color_scheme || {}).accent) || '#d4873a'}
+Color scheme: background=${((layoutPlan.color_scheme || {}).background) || '#FBF5EA'} primary=${((layoutPlan.color_scheme || {}).primary) || '#004A2B'} accent=${((layoutPlan.color_scheme || {}).accent) || '#AB8743'}
 
 ━━ COPY FRAMEWORK ━━
 Tone: ${copyFramework.tone || ''}
@@ -726,8 +726,8 @@ EMAIL STRUCTURE ORDER — follow this exactly:
 1. <!DOCTYPE html> + <html lang="en"> + <head> with <meta charset="UTF-8">, <meta name="viewport">, <title>, responsive <style> block (includes Outlook reset + @media rules)
 2. <body style="margin:0;padding:0;background:#f5f0e8"> with outer 600px centering wrapper table
 3. PREHEADER — immediately after <body>: hidden div with preheader text (see template above)
-4. Announcement bar (amber #d4873a background, offer/shipping line — bgcolor="#d4873a" on td)
-5. VAHDAM Header (dark green #0f2a1c — bgcolor on all tds, 3-column: EST date · VAHDAM® · SHOP ALL)
+4. Announcement bar (amber #AB8743 background, offer/shipping line — bgcolor="#AB8743" on td)
+5. VAHDAM Header (dark green #004A2B — bgcolor on all tds, 3-column: EST date · VAHDAM® · SHOP ALL)
 6. Trust badges bar (light cream background, 4 trust signals: 🌿 Pure Indian Tea · ✦ Ethically Sourced · 🌱 Farm Direct · ★ 4.8/5)
 7. All sections from the plan IN ORDER — each content-complete, bgcolor on every colored td
 8. Social proof strip (⭐⭐⭐⭐⭐ rating + review count)
@@ -838,9 +838,9 @@ Output starts <!DOCTYPE html>, ends </html>. Nothing before or after.`;
     const subjectLines = plan.subject_lines || [(isB ? 'A tea worth slowing down for' : heroHeadline)];
     const preheader = plan.preheader || 'Premium single-estate teas, crafted for your ritual';
 
-    const bgColor = isB ? '#0f2a1c' : '#fdf6e8';
-    const textColor = isB ? '#fdf6e8' : '#0f2a1c';
-    const accentColor = '#d4873a';
+    const bgColor = isB ? '#004A2B' : '#FBF5EA';
+    const textColor = isB ? '#FBF5EA' : '#004A2B';
+    const accentColor = '#AB8743';
 
     const html = `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -882,10 +882,10 @@ body{margin:0;padding:0;width:100%!important;-webkit-font-smoothing:antialiased}
 
 <!-- HEADER -->
 <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
-<tr><td style="background:#0f2a1c;padding:16px 24px;text-align:center;font-family:Georgia,serif;font-size:12px;color:#a89f91;letter-spacing:2px" bgcolor="#0f2a1c">
+<tr><td style="background:#004A2B;padding:16px 24px;text-align:center;font-family:Georgia,serif;font-size:12px;color:#a89f91;letter-spacing:2px" bgcolor="#004A2B">
 <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
 <td style="text-align:left;font-family:Arial,sans-serif;font-size:11px;color:#a89f91;letter-spacing:1px" class="mobile-hide">EST. 2015</td>
-<td style="text-align:center;font-family:Georgia,serif;font-size:22px;color:#fdf6e8;letter-spacing:3px;font-weight:bold">VAHDAM&reg;</td>
+<td style="text-align:center;font-family:Georgia,serif;font-size:22px;color:#FBF5EA;letter-spacing:3px;font-weight:bold">VAHDAM&reg;</td>
 <td style="text-align:right;font-family:Arial,sans-serif;font-size:11px;color:${accentColor};letter-spacing:1px" class="mobile-hide"><a href="${heuristicShopUrl}" style="color:${accentColor};text-decoration:none">SHOP ALL &rarr;</a></td>
 </tr></table>
 </td></tr>
@@ -893,7 +893,7 @@ body{margin:0;padding:0;width:100%!important;-webkit-font-smoothing:antialiased}
 
 <!-- TRUST BADGES -->
 <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
-<tr><td style="background:#fdf6e8;padding:10px 16px;text-align:center;font-family:Arial,sans-serif;font-size:11px;color:#6b6255;letter-spacing:0.3px" bgcolor="#fdf6e8">
+<tr><td style="background:#FBF5EA;padding:10px 16px;text-align:center;font-family:Arial,sans-serif;font-size:11px;color:#6b6255;letter-spacing:0.3px" bgcolor="#FBF5EA">
 &#127807; Pure Indian Tea &nbsp;&bull;&nbsp; ✦ Ethically Sourced &nbsp;&bull;&nbsp; &#127793; Farm Direct &nbsp;&bull;&nbsp; ★ 4.8/5
 </td></tr>
 </table>
@@ -906,11 +906,11 @@ ${isB ? `
 <div style="position:relative;background:${bgColor}">
 <img src="IMAGE_HERO_URL" alt="${heroHeadline}" width="600" class="hero-img" style="width:600px;height:auto;display:block">
 </div>
-<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#0f2a1c;padding:48px 40px;text-align:center" bgcolor="#0f2a1c">
+<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#004A2B;padding:48px 40px;text-align:center" bgcolor="#004A2B">
 <p style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:12px;color:${accentColor};letter-spacing:2px;text-transform:uppercase">${(heroSection.copy || {}).eyebrow || 'A STORY IN EVERY STEEP'}</p>
-<h1 style="margin:0 0 16px;font-family:Georgia,serif;font-size:32px;color:#fdf6e8;line-height:1.2;font-weight:normal">${heroHeadline}</h1>
+<h1 style="margin:0 0 16px;font-family:Georgia,serif;font-size:32px;color:#FBF5EA;line-height:1.2;font-weight:normal">${heroHeadline}</h1>
 <p style="margin:0 0 28px;font-family:Arial,sans-serif;font-size:15px;color:#c9bfb0;line-height:1.6;max-width:440px;margin-left:auto;margin-right:auto">${heroSubcopy}</p>
-<a href="${heuristicHeroUrl}" style="display:inline-block;padding:14px 36px;font-family:Arial,sans-serif;font-size:13px;color:#fdf6e8;border:1px solid #fdf6e8;text-decoration:none;letter-spacing:1px">${heroCta}</a>
+<a href="${heuristicHeroUrl}" style="display:inline-block;padding:14px 36px;font-family:Arial,sans-serif;font-size:13px;color:#FBF5EA;border:1px solid #FBF5EA;text-decoration:none;letter-spacing:1px">${heroCta}</a>
 </td></tr></table>
 ` : `
 <!-- VARIANT A: Split hero -->
@@ -920,7 +920,7 @@ ${isB ? `
 </td>
 <td class="col2" width="300" style="vertical-align:middle;background:${bgColor};padding:32px 28px" bgcolor="${bgColor}">
 <p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:12px;color:${accentColor};letter-spacing:2px;text-transform:uppercase">${(heroSection.copy || {}).eyebrow || 'NEW ARRIVAL'}</p>
-<h1 style="margin:0 0 14px;font-family:Georgia,serif;font-size:28px;color:#0f2a1c;line-height:1.2">${heroHeadline}</h1>
+<h1 style="margin:0 0 14px;font-family:Georgia,serif;font-size:28px;color:#004A2B;line-height:1.2">${heroHeadline}</h1>
 <p style="margin:0 0 24px;font-family:Arial,sans-serif;font-size:14px;color:#4a4540;line-height:1.6">${heroSubcopy}</p>
 <a href="${heuristicHeroUrl}" style="display:inline-block;padding:14px 32px;background:${accentColor};font-family:Arial,sans-serif;font-size:13px;color:#ffffff;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${heroCta}</a>
 </td>
@@ -943,18 +943,18 @@ ${isB ? `
 
 <!-- PRODUCT SECTION -->
 <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
-<tr><td style="background:${isB ? '#0f2a1c' : '#ffffff'};padding:36px 24px;text-align:center" bgcolor="${isB ? '#0f2a1c' : '#ffffff'}">
+<tr><td style="background:${isB ? '#004A2B' : '#ffffff'};padding:36px 24px;text-align:center" bgcolor="${isB ? '#004A2B' : '#ffffff'}">
 ${isB ? `<p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:12px;color:${accentColor};letter-spacing:2px;text-transform:uppercase">THE COLLECTION</p>` : ''}
 <h2 style="margin:0 0 12px;font-family:Georgia,serif;font-size:24px;color:${textColor};line-height:1.3">${productName}</h2>
 <img src="IMAGE_PRODUCT_URL" alt="${productName}" width="${isB ? 400 : 260}" style="width:${isB ? 400 : 260}px;height:auto;display:block;margin:16px auto;border-radius:4px">
 <p style="margin:12px auto 20px;font-family:Arial,sans-serif;font-size:14px;color:${isB ? '#c9bfb0' : '#4a4540'};line-height:1.6;max-width:420px">${productCopy}</p>
-<a href="${heuristicHeroUrl}" style="display:inline-block;padding:14px 32px;${isB ? 'border:1px solid #fdf6e8;color:#fdf6e8' : 'background:' + accentColor + ';color:#ffffff'};font-family:Arial,sans-serif;font-size:13px;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${productCta}</a>
+<a href="${heuristicHeroUrl}" style="display:inline-block;padding:14px 32px;${isB ? 'border:1px solid #FBF5EA;color:#FBF5EA' : 'background:' + accentColor + ';color:#ffffff'};font-family:Arial,sans-serif;font-size:13px;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${productCta}</a>
 </td></tr>
 </table>
 
 <!-- SOCIAL PROOF -->
 <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
-<tr><td style="background:${isB ? '#0a1f13' : '#fdf6e8'};padding:32px 36px;text-align:center" bgcolor="${isB ? '#0a1f13' : '#fdf6e8'}">
+<tr><td style="background:${isB ? '#0a1f13' : '#FBF5EA'};padding:32px 36px;text-align:center" bgcolor="${isB ? '#0a1f13' : '#FBF5EA'}">
 <p style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:14px;color:${accentColor}">★★★★★</p>
 <p style="margin:0 0 8px;font-family:Georgia,serif;font-size:16px;color:${textColor};font-style:italic;line-height:1.5">${proofCopy}</p>
 <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;color:${isB ? '#8a8175' : '#8a8175'};letter-spacing:1px">15,000+ 5-STAR REVIEWS</p>
@@ -963,7 +963,7 @@ ${isB ? `<p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:12px;co
 
 <!-- LIFESTYLE IMAGE -->
 <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
-<tr><td style="background:${isB ? '#0f2a1c' : '#ffffff'};padding:0" bgcolor="${isB ? '#0f2a1c' : '#ffffff'}">
+<tr><td style="background:${isB ? '#004A2B' : '#ffffff'};padding:0" bgcolor="${isB ? '#004A2B' : '#ffffff'}">
 <img src="IMAGE_LIFESTYLE_URL" alt="Tea lifestyle" width="600" style="width:600px;height:auto;display:block">
 </td></tr>
 </table>
@@ -973,7 +973,7 @@ ${isB ? `<p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:12px;co
 <tr><td style="background:${accentColor};padding:24px 28px;text-align:center" bgcolor="${accentColor}">
 <h3 style="margin:0 0 8px;font-family:Georgia,serif;font-size:20px;color:#ffffff">${offerHeadline}</h3>
 <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:13px;color:#fff5eb">${offerSubcopy}</p>
-<a href="${heuristicShopUrl}" style="display:inline-block;padding:12px 28px;background:#0f2a1c;font-family:Arial,sans-serif;font-size:13px;color:#fdf6e8;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${(offerSection.copy || {}).cta || 'Shop the Collection'}</a>
+<a href="${heuristicShopUrl}" style="display:inline-block;padding:12px 28px;background:#004A2B;font-family:Arial,sans-serif;font-size:13px;color:#FBF5EA;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${(offerSection.copy || {}).cta || 'Shop the Collection'}</a>
 </td></tr>
 </table>
 
@@ -981,14 +981,14 @@ ${isB ? `<p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:12px;co
 <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
 <tr><td style="background:${bgColor};padding:36px 28px;text-align:center" bgcolor="${bgColor}">
 <h3 style="margin:0 0 16px;font-family:Georgia,serif;font-size:22px;color:${textColor}">${(ctaSection.copy || {}).headline || (isB ? 'Begin Your Ritual' : 'Shop VAHDAM Today')}</h3>
-<a href="${heuristicShopUrl}" style="display:inline-block;padding:16px 40px;${isB ? 'border:1px solid #fdf6e8;color:#fdf6e8' : 'background:' + accentColor + ';color:#ffffff'};font-family:Arial,sans-serif;font-size:14px;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${finalCta}</a>
+<a href="${heuristicShopUrl}" style="display:inline-block;padding:16px 40px;${isB ? 'border:1px solid #FBF5EA;color:#FBF5EA' : 'background:' + accentColor + ';color:#ffffff'};font-family:Arial,sans-serif;font-size:14px;text-decoration:none;letter-spacing:0.5px;border-radius:2px">${finalCta}</a>
 </td></tr>
 </table>
 
 <!-- FOOTER -->
 <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto">
-<tr><td style="background:#0f2a1c;padding:28px 24px;text-align:center" bgcolor="#0f2a1c">
-<p style="margin:0 0 12px;font-family:Georgia,serif;font-size:18px;color:#fdf6e8;letter-spacing:2px">VAHDAM&reg;</p>
+<tr><td style="background:#004A2B;padding:28px 24px;text-align:center" bgcolor="#004A2B">
+<p style="margin:0 0 12px;font-family:Georgia,serif;font-size:18px;color:#FBF5EA;letter-spacing:2px">VAHDAM&reg;</p>
 <p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:12px;color:#8a8175">
 <a href="${heuristicStoreBase}/collections/all" style="color:${accentColor};text-decoration:none">Shop All</a> &nbsp;&bull;&nbsp;
 <a href="${heuristicStoreBase}/pages/our-story" style="color:${accentColor};text-decoration:none">Our Story</a> &nbsp;&bull;&nbsp;

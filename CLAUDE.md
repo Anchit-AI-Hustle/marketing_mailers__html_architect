@@ -37,9 +37,12 @@ Gemini native (gemini-2.5-flash-image → gemini-3.1-flash-image-preview → gem
 - PDP pattern: `{base}/products/{handle}` — handle from catalog JSON `h` field
 - Collection pattern: `{base}/collections/{slug}` — mapped via `heroMap` in `collectionUrl()`
 
-## Brand Constants
-- **Palette**: forest green `#0f2a1c` / `#004A2B`, amber gold `#d4873a` / `#AB8743`, cream `#fdf6e8` / `#FBF5EA`
-- **Typography**: Cormorant Garamond (serif headings) + DM Sans (body)
+## Brand Constants (Style Guide is the source of truth — `Brand style guide.pdf`)
+- **Palette (ONLY these four)**: `#004A2B` forest green · `#AB8743` gold · `#171717` near-black · `#FBF5EA` cream
+- **Typography (STRICT — page 3 of style guide explicitly forbids any other font for emailers)**:
+  - Primary (headings/subheadings/titles): **LAO MN** Regular & Bold — fallback `'Lao MN','Cormorant Garamond',Georgia,serif`
+  - Secondary (body/paragraphs): **Proxima Nova** full family — fallback `'Proxima Nova','Helvetica Neue',Arial,sans-serif`
+- ⚠️ Do NOT introduce off-palette tints (`#0f2a1c`, `#d4873a`, `#fdf6e8`, `#1a3a28`, `#1a1a1a`, `#faf8f4`) or Cormorant/DM Sans as the *primary* family — they were drift, now removed.
 - **BANNED phrases**: wellness journey, transform, liquid gold, game-changer, LIMITED TIME (caps), hurry, don't miss out, last chance, while supplies last
 - **PREFERRED**: ritual, restore, balance, origin, single-estate, hand-picked, steep, heritage, crafted
 - **VAHDAM packaging**: deep forest-green, warm cream, terracotta, or pink/magenta depending on SKU — gold botanical label

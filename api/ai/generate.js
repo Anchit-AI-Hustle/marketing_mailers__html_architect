@@ -37,7 +37,7 @@ const SYSTEM_PROMPT_CREATE_BRIEF = `You are the Creative Director at VAHDAM Indi
 
 BRAND IDENTITY:
 - VAHDAM India. Single-estate teas, wellness blends, gift sets. B-Corp. Garden-fresh within 72 hours of harvest.
-- Palette: forest green #004A2B / amber gold #AB8743 / parchment cream #FBF5EA / near-black #1a1a1a
+- Palette: forest green #004A2B / amber gold #AB8743 / parchment cream #FBF5EA / near-black #171717
 - Typography: Lao MN (headings), Proxima Nova (body/buttons)
 - Voice: calm-confident-premium. PREFERRED: ritual, restore, balance, origin, single-estate, steep, heritage, crafted
 - BANNED: wellness journey, transform, liquid gold, game-changer, LIMITED TIME (caps), hurry, don't miss out
@@ -105,7 +105,7 @@ const SYSTEM_PROMPT_SUGGESTED_PROMPTS = `You are a Creative Director + Director 
 
 VAHDAM BRAND:
 - Ultra-premium Indian heritage tea. Single-estate sourcing. Ethical, B-Corp certified.
-- Palette: forest green #0f2a1c / amber #d4873a / cream #fdf6e8
+- Palette: forest green #004A2B / amber #AB8743 / cream #FBF5EA
 - Tone: calm-confident-premium. Ritual not regimen. Story over price.
 - BANNED: wellness journey, transform, liquid gold, game-changer, LIMITED TIME (caps), hurry, dont miss out
 - PREFERRED: ritual, restore, balance, origin, single-estate, hand-picked, steep, heritage, crafted
@@ -241,7 +241,7 @@ FINAL OUTPUT JSON SCHEMA
 - NEVER ignore Step 8 validation
 
 VAHDAM BRAND:
-Palette: #0f2a1c / #d4873a / #fdf6e8. Cormorant Garamond serif / DM Sans body.
+Palette (ONLY these 4 hex): #004A2B / #AB8743 / #171717 / #FBF5EA. Fonts (STRICT): LAO MN for headings (fallback 'Lao MN','Cormorant Garamond',Georgia,serif), Proxima Nova for body (fallback 'Proxima Nova','Helvetica Neue',Arial,sans-serif). NO other fonts or colors.
 BANNED: wellness journey, transform, liquid gold, game-changer, LIMITED TIME caps, hurry, don't miss out.
 PREFERRED: ritual, restore, balance, origin, single-estate, hand-picked, steep, heritage, crafted.
 

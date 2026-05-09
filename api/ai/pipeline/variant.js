@@ -38,7 +38,7 @@ VARIANT A EXECUTION RULES (non-negotiable):
 - Benefits: 3-column icon strip with short benefit captions
 - Products: 2-column or 3-column product cards with name, price, CTA
 - Offer: prominent horizontal banner with discount code / free shipping threshold
-- CTA: single prominent button — amber background #d4873a, centered, max 4 words
+- CTA: single prominent button — amber background #AB8743, centered, max 4 words
 - Section count: 5-7 (what the campaign needs — never pad with filler)
 
 ━━ MANDATORY SECTION STRUCTURE (follow this for Variant A — max 7 sections) ━━
@@ -63,7 +63,7 @@ sections[] MUST be in this order:
 - MAX 2-3 products. HARD LIMIT.
 - Each card: name + price ($X.XX) + compare-at ($XX.XX strikethrough) + [X%] OFF badge
 - Urgency: "🔥 [N] units sold in the last 24 hours" (N: 25–90, vary per product)
-- ADD TO CART button: full-width, dark green #0f2a1c, every card — mandatory
+- ADD TO CART button: full-width, dark green #004A2B, every card — mandatory
 - Section heading: "Gifting Favorites" (with ✦) for gifting, "Bestsellers" for other types
 
 COPY REGISTER FOR A:
@@ -90,7 +90,7 @@ SCHEMA:
     "proof_section": "testimonial layout",
     "offer_section": "banner layout",
     "cta_section": "button spec",
-    "color_scheme": { "background": "#fdf6e8", "primary": "#0f2a1c", "accent": "#d4873a", "text": "#1a1a1a" },
+    "color_scheme": { "background": "#FBF5EA", "primary": "#004A2B", "accent": "#AB8743", "text": "#171717" },
     "spacing": "e.g. 48px between sections, 24px internal padding",
     "flow": "structured-conversion"
   },
@@ -158,7 +158,7 @@ A = cream backgrounds · product in section 1 · split-hero · 3-col product gri
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 VARIANT B EXECUTION RULES (ALL MUST BE TRUE — verify before outputting):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-□ COLOR SCHEME INVERTED: First 2–3 sections MUST have dark background (#0f2a1c or #0a1f13) with cream text (#fdf6e8 or #e8dcc8). A uses cream throughout — B must open DARK.
+□ COLOR SCHEME INVERTED: First 2–3 sections MUST have dark background (#004A2B or #0a1f13) with cream text (#FBF5EA or #e8dcc8). A uses cream throughout — B must open DARK.
 □ NO product in the first 2 sections — narrative, lifestyle or mood section opens the email
 □ Narrative context or lifestyle moment comes BEFORE product reveal (product appears section 3+ only)
 □ Copy register: sensory, poetic, evocative — reader FEELS the world before they SEE the product
@@ -167,7 +167,7 @@ VARIANT B EXECUTION RULES (ALL MUST BE TRUE — verify before outputting):
 □ Products: single featured product with large editorial image — NOT a product grid (A uses grid)
 □ Proof: origin story / provenance section (estate, harvest, altitude, year) — NOT star-rating testimonials (A uses those)
 □ Offer: subtle inline text mention — NOT a prominent horizontal banner (A uses banner)
-□ CTA: ghost-button (border: 2px solid #fdf6e8, transparent bg on dark sections) OR text-link — NOT amber filled button (A uses amber)
+□ CTA: ghost-button (border: 2px solid #FBF5EA, transparent bg on dark sections) OR text-link — NOT amber filled button (A uses amber)
 □ Section padding: minimum 64px top and bottom throughout — generous editorial whitespace
 □ Headline font: 44px+ for editorial scale (A uses ~32px conversion headlines)
 □ Section count: MAX 7 (narrative needs room but must stay tight — no filler)
@@ -192,15 +192,15 @@ REGENERATION RULES (regenerate_counter > 0 — MANDATORY CHANGES FROM PRIOR RUN)
 
 COLOR SCHEME FOR B layout_plan:
 {
-  "background": "#0f2a1c",
-  "primary": "#fdf6e8",
-  "accent": "#d4873a",
+  "background": "#004A2B",
+  "primary": "#FBF5EA",
+  "accent": "#AB8743",
   "text": "#e8dcc8",
   "section_note": "Dark forest green opening sections; can transition to cream for product reveal section"
 }
 
 DIVERGENCE CHECK (verify all before outputting):
-□ First 2 sections use dark (#0f2a1c) background — NOT cream like A
+□ First 2 sections use dark (#004A2B) background — NOT cream like A
 □ Hero is full-bleed or stacked — NOT split like A
 □ Product appears in section 3 or later — NOT section 1 like A
 □ Copy is poetic/sensory — NOT benefit-direct like A
@@ -347,8 +347,8 @@ Implement Variant ${variant} now. Follow the locked structure exactly. Generate 
         offer_section: 'Full-width amber banner with code and terms',
         cta_section: isB ? 'Ghost-button text-link style CTA' : 'Prominent amber filled button, centered',
         color_scheme: isB
-          ? { background: '#0f2a1c', primary: '#fdf6e8', accent: '#d4873a', text: '#e8dcc8' }
-          : { background: '#fdf6e8', primary: '#0f2a1c', accent: '#d4873a', text: '#1a1a1a' },
+          ? { background: '#004A2B', primary: '#FBF5EA', accent: '#AB8743', text: '#e8dcc8' }
+          : { background: '#FBF5EA', primary: '#004A2B', accent: '#AB8743', text: '#171717' },
         spacing: '48px between sections, 24px internal padding',
         flow: isB ? 'editorial-narrative' : 'structured-conversion'
       },
@@ -421,7 +421,7 @@ Implement Variant ${variant} now. Follow the locked structure exactly. Generate 
             subcopy: 'Use code HERITAGE at checkout. Limited time.',
             cta: 'Shop the Collection'
           },
-          layout: 'Full-width amber (#d4873a) banner, centered text, CTA button below',
+          layout: 'Full-width amber (#AB8743) banner, centered text, CTA button below',
           image_slot: 'none',
           ux_intent: 'Urgency + value — final conversion push'
         },
