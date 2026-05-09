@@ -368,14 +368,18 @@ module.exports = async function handler(req, res) {
     // and convert. No bullet points. Plain text only.
     systemPrompt = `You are the Head of Growth at VAHDAM India, a $100M premium D2C Indian heritage tea brand. Given a campaign brief, market, and campaign type, write a precise Target User Segment description that the creative team will use to anchor copy, imagery, and CTAs.
 WRITE 60–120 WORDS, plain text only (no bullets, no headers, no markdown). Cover, in this order:
-1. WHO they are — age band, income/AOV bracket, role/lifestyle, key tea behaviour (daily drinker / gifter / discoverer / lapsed).
-2. WHERE they live — anchor 1–2 specific cities/regions in the target market.
+1. WHO they are — age band (e.g. "30–55"), income/AOV bracket, role/lifestyle, key tea behaviour (daily drinker / gifter / discoverer / lapsed).
+2. WHERE they are — name the COUNTRY of the target market only (e.g. "in the US", "in the UK", "in India"). DO NOT name specific cities, states, regions, neighbourhoods, or zip codes — the segment travels nation-wide and must read naturally to a customer in any city of that country.
 3. WHAT they value — provenance, ritual, gift-giving, convenience, savings — pick 1–2 that align with the brief.
 4. WHY they will convert on THIS specific brief — name the conversion trigger explicitly (offer ends Sunday / new harvest just dropped / under $50 gift / 3-month subscription saves 15%).
 5. ANTI-SEGMENT — one sentence on who NOT to target (so the creative team avoids generic copy).
-The segment must be SPECIFIC enough that another marketer reading it could write a different mailer for a different segment. Avoid platitudes ("tea lovers"). Reference the actual brief language.
+HARD RULES:
+- COUNTRY ONLY for geography. No city names, no regions ("the Midwest", "the South-East"), no neighbourhoods, no zip codes, no stadium-stat numbers ("12.4M households").
+- Avoid demographic stats and percentages — describe behaviour and intent in plain English instead.
+- Avoid platitudes ("tea lovers", "wellness enthusiasts"). Reference the actual brief language.
+- Specificity comes from BEHAVIOUR ("buys premium grocery weekly", "gifts 3-4 times a year") and TRIGGER ("the 15% off code", "the new harvest"), not from city/stat name-dropping.
 Return ONLY the segment text. No preamble, no quotes around it, no JSON.`;
-    userMessage = `MARKET: ${market}\nCAMPAIGN TYPE: ${theme || 'Bestseller'}\nCAMPAIGN BRIEF:\n${(campaign_brief || '').substring(0, 1200)}\n${body.seed_segment ? 'SEED (refine, do not discard): ' + String(body.seed_segment).substring(0, 400) + '\n' : ''}\nWrite the Target User Segment now.`;
+    userMessage = `MARKET: ${market}\nCAMPAIGN TYPE: ${theme || 'Bestseller'}\nCAMPAIGN BRIEF:\n${(campaign_brief || '').substring(0, 1200)}\n${body.seed_segment ? 'SEED (refine, do not discard): ' + String(body.seed_segment).substring(0, 400) + '\n' : ''}\nWrite the Target User Segment now. Country-level geography only.`;
   } else {
     // create_brief mode (default)
     // Market context — informs audience psychology and visual direction
@@ -409,21 +413,53 @@ Return ONLY the segment text. No preamble, no quotes around it, no JSON.`;
         }).join('\n')
       : null;
 
+    // Variation knobs — different "angle" for each regen so consecutive
+    // clicks give the user a genuinely different brief, not a paraphrase.
+    const ANGLES = [
+      'lead with the OFFER — discount %, urgency, code',
+      'lead with the HERO PRODUCT — what makes this specific tin special',
+      'lead with the AUDIENCE MOMENT — the daily ritual the buyer is craving',
+      'lead with the ORIGIN STORY — where the leaves come from',
+      'lead with the SOCIAL PROOF — what tens of thousands of customers already know',
+      'lead with the SEASONAL HOOK — why right now, this week',
+      'lead with the PROBLEM-SOLUTION — what the buyer is silently trying to fix'
+    ];
+    const angle = ANGLES[(Number(regenerate_counter)||0) % ANGLES.length];
+    const creativitySeed = body.creativity_seed || (Math.random().toString(36).slice(2,10));
+    const userAudience = (body.target_audience || '').toString().substring(0,400);
     userMessage = [
       `CAMPAIGN TYPE: ${theme || 'General Campaign'}`,
       `MARKET: ${market} — ${audienceCtx}`,
       `SEED IDEA FROM USER: ${campaign_brief || '(none provided — derive a strong, specific campaign concept from the campaign type and market above)'}`,
-      productsBlock ? `PRODUCTS AVAILABLE (use exact names and prices):\n${productsBlock}` : `PRODUCTS: (none selected — infer 2-3 best-fit VAHDAM products for this market + campaign type, with realistic prices around $12-$49)`,
+      userAudience ? `TARGET AUDIENCE (already set by user — the brief MUST speak to this segment):\n${userAudience}` : '',
+      productsBlock
+        ? `PRODUCTS FROM THE LIVE VAHDAM CATALOG (use EXACT names and prices verbatim — do NOT invent SKUs or prices):\n${productsBlock}`
+        : `PRODUCTS: (none provided — infer 2-3 best-fit VAHDAM products for this market + campaign type, with realistic prices in the market currency)`,
+      ``,
+      `THIS GENERATION'S CREATIVE ANGLE: ${angle}.`,
+      `CREATIVITY SEED: ${creativitySeed} — use this to deliberately diverge from any previous brief you've drafted for VAHDAM. Different headline phrasing, different hero pick when sensible, different subject-line angles, different opening sentence.`,
+      `REGENERATION #${regenerate_counter || 0}: each regeneration must read as a FRESH brief, not a paraphrase of the last one.`,
+      ``,
+      `HARD RULES:`,
+      `1. Use ONLY the catalog products listed above. Reference them by EXACT name and EXACT price. Do not invent product names, do not invent or round prices, do not promote SKUs that are not in the list.`,
+      `2. The hero product MUST be one of the products listed.`,
+      `3. Geography in copy is COUNTRY-LEVEL only — say "the US" or "the UK" or "India". Do NOT name specific cities, states, regions, neighbourhoods, or zip codes. The brief travels nation-wide.`,
+      `4. No demographic stats or percentages of the population. Describe BEHAVIOUR and INTENT in plain English.`,
+      `5. Currency in copy must match the market: $ for US/Global, £ for UK, ₹ for India, € for EU, A$ for AU, AED for ME. Never mix currencies.`,
+      `6. Honor the existing TARGET AUDIENCE block above (if present) — write the brief to land with THAT segment.`,
       ``,
       `Write the brief as flowing prose — no section headers, no numbered lists, no labeled fields.`,
-      `Weave in all 12 elements naturally: campaign name, goal, hook with discount %, hero product, supporting products, audience insight, 3 subject lines, announcement bar text, two headline variants, two image directions (50 words each with surface/light/camera detail), CTA, and tone.`,
-      `Lead with the offer/discount hook, then health+freshness benefit, then origin story.`,
+      `Weave in all 12 elements naturally: campaign name, goal, hook (per the angle above), hero product (real catalog name), supporting products (real catalog names), audience insight (country-level), 3 subject lines, announcement bar text, two headline variants, two image directions (50 words each with surface/light/camera detail), CTA, and tone.`,
       `Every sentence must be specific to THIS campaign — generic output is rejected.`
-    ].join('\n');
+    ].filter(Boolean).join('\n');
   }
 
   // ── Provider-specific call ──
-  const temperature = 0.7 + Math.min(0.3, regenerate_counter * 0.1);
+  // Higher base temperature for create_brief + a per-regen bump so consecutive
+  // briefs explore different copy territory (different hooks, different headline
+  // phrasing). Caps at 1.1 to stay coherent.
+  const baseTemp = mode === 'create_brief' ? 0.85 : 0.7;
+  const temperature = Math.min(1.1, baseTemp + Math.min(0.25, (regenerate_counter || 0) * 0.08));
   // create_brief: 4000 tokens for 450-600 word detailed production brief with full structure
   const max_tokens = mode === 'mailer_full' ? 7000 : (mode === 'concepts' ? 4500 : (mode === 'suggested_prompts' ? 3000 : 4000));
 

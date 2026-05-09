@@ -169,6 +169,50 @@ test.describe('Mailer Studio — responsive smoke', () => {
     }
   });
 
+  test('Market detector ignores "Indian" (brand-of-origin) and respects $ prices', async ({ page }) => {
+    // Real bug from a real brief: "VAHDAM tea customers... single-estate teas...
+    // $29.99... $34.99... 14% off... REVIVE15... $49... Indian spices... Turbulence Tea"
+    // → must select US, NEVER IN. "Indian" describes the PRODUCT, not the market.
+    const cases = [
+      {
+        label: 'US-priced brief mentioning Indian-origin products',
+        brief: 'VAHDAM tea customers at AOV of $55+. 15% discount on best-selling teas. Hero: $29.99 Turbulence Tea (compare_at $34.99). Promo code REVIVE15. Free shipping on orders over $49. Showcase Indian spices, single-estate Indian teas, Indian heritage of every blend.',
+        expectIncludes: ['US'],
+        expectExcludes: ['IN', 'UK', 'EU'],
+      },
+      {
+        label: 'UK brief in £',
+        brief: 'Sale for UK customers. £24.99 chai. Free shipping over £35. London-based audience.',
+        expectIncludes: ['UK'],
+        expectExcludes: ['IN', 'US'],
+      },
+      {
+        label: 'India brief explicitly targeting India market',
+        brief: 'In the Indian market, ₹699 chai. Free shipping over ₹999 in Mumbai and Delhi.',
+        expectIncludes: ['IN'],
+        expectExcludes: ['US', 'UK'],
+      },
+      {
+        label: 'A passing mention of London does NOT add UK to a US brief',
+        brief: '20% off bestsellers for the US market. $29.99 chai. (One reviewer is from London.)',
+        expectIncludes: ['US'],
+        expectExcludes: ['UK', 'IN'],
+      },
+    ];
+    for (const c of cases) {
+      const result = await page.evaluate((brief) => {
+        return window._detectMarketsFromPrompt && window._detectMarketsFromPrompt(brief);
+      }, c.brief);
+      expect(result, `${c.label}: detector returned nothing`).toBeTruthy();
+      for (const m of c.expectIncludes) {
+        expect(result, `${c.label}: missing ${m}`).toContain(m);
+      }
+      for (const m of c.expectExcludes) {
+        expect(result, `${c.label}: should NOT include ${m}`).not.toContain(m);
+      }
+    }
+  });
+
   test('Variant A and Variant B differ structurally', async ({ page }) => {
     await page.fill('#promptIn', 'Bestselling premium chai for daily ritual lovers');
     await page.evaluate(() => window.go2 && window.go2());

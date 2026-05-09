@@ -1811,27 +1811,73 @@ function _doAutoUpdateChips(text){
 }
 // Pure market detector — used by chip auto-update and by go2() to validate.
 // Returns an ordered, de-duped array of market codes inferred from the brief.
+//
+// CRITICAL: VAHDAM is an Indian-origin brand. Briefs CONSTANTLY mention
+// "Indian teas", "Indian spices", "Indian estates" — these describe the
+// PRODUCT, not the target MARKET. The detector must distinguish between
+// product-of-origin language and target-market language.
 function _detectMarketsFromPrompt(text){
-  var t=(text||'').toLowerCase();
   var raw=String(text||'');
-  var keys=[];
-  function add(k){ if(keys.indexOf(k)<0) keys.push(k); }
-  // ── Currency symbols & ISO codes — strongest single-token signal ──
-  if(raw.indexOf('£')>=0 || /\bgbp\b/.test(t)) add('UK');
-  if(raw.indexOf('₹')>=0 || /\binr\b|\brs\.?\b|\brupees?\b/.test(t)) add('IN');
-  if(raw.indexOf('€')>=0 || /\beur\b|\beuros?\b/.test(t)) add('EU');
-  if(/\baud\b|\ba\$/.test(t)) add('AU');
-  if(/\baed\b|\bsar\b|\bdh\b|\bdhs\b/.test(t)) add('ME');
-  // ── Region / country / city keywords ──
-  if(/\b(usa|u\.s\.a|united states|america|americans|us market|us customers|in the us|north america|new york|los angeles|chicago|austin|seattle|boston)\b/.test(t)) add('US');
-  if(/\b(uk|u\.k|united kingdom|britain|british|england|english|brits?|london|manchester|edinburgh|bath|bristol|oxford)\b/.test(t)) add('UK');
-  if(/\b(india|indian|in india|indians|delhi|mumbai|bengaluru|bangalore|kolkata|chennai|pune|hyderabad)\b/.test(t)) add('IN');
-  if(/\b(europe|european|eu market|in europe|germany|german|france|french|spain|spanish|italy|italian|netherlands|dutch|paris|berlin|amsterdam|vienna|milan|stockholm)\b/.test(t)) add('EU');
-  if(/\b(australia|australian|aussies?|in australia|sydney|melbourne|brisbane|perth|adelaide)\b/.test(t)) add('AU');
-  if(/\b(middle east|gulf|gcc|uae|emirates|saudi|saudi arabia|dubai|abu dhabi|riyadh|doha|kuwait|jeddah|qatar|bahrain|oman)\b/.test(t)) add('ME');
-  if(/\b(global|worldwide|international|all markets|every market|across markets)\b/.test(t)) add('Global');
-  // ── Currency-only fallbacks: $ alone implies US unless UK/EU/AU already detected ──
-  if(!keys.length && raw.indexOf('$')>=0) add('US');
+  var t=raw.toLowerCase();
+  // Score-based detection — each market accumulates evidence; the highest
+  // wins. A weak signal alone (e.g. one mention of "indian spices") never
+  // outranks a strong signal (multiple $ prices, "US market", "in NYC").
+  var score={US:0,UK:0,IN:0,EU:0,AU:0,ME:0,Global:0};
+  function bump(k,n){ score[k]=(score[k]||0)+n; }
+  function count(re){ var m=raw.match(re); return m?m.length:0; }
+  function countLower(re){ var m=t.match(re); return m?m.length:0; }
+
+  // ── STRONG signals (worth 5 each) — explicit market intent ──
+  if(/\b(us market|u\.s\. market|in the us|in the usa|to us customers|for us customers|us audience|american market|american customers|american audience|north american market)\b/.test(t)) bump('US',5);
+  if(/\b(uk market|u\.k\. market|in the uk|to uk customers|for uk customers|british market|british audience|english market)\b/.test(t)) bump('UK',5);
+  if(/\b(in india|to india|indian market|indian audience|indian customers|domestic indian|in the indian market|for indian|target india|india market)\b/.test(t)) bump('IN',5);
+  if(/\b(european market|eu market|in europe|to european|european customers|european audience)\b/.test(t)) bump('EU',5);
+  if(/\b(australian market|in australia|to australia|aussie market|australian customers)\b/.test(t)) bump('AU',5);
+  if(/\b(middle east market|in the middle east|to the gcc|gcc market|gulf market|uae market|saudi market)\b/.test(t)) bump('ME',5);
+  if(/\b(global market|worldwide audience|international market|all markets|every market|across markets|global launch)\b/.test(t)) bump('Global',5);
+
+  // ── MEDIUM signals (worth 3 each) — currency tokens (each match counts) ──
+  // Multiple $ price tokens are a STRONG implicit market cue.
+  bump('US', 3 * count(/\$\d/g));        // every $XX or $X is a US-pricing token
+  bump('UK', 3 * count(/£\d/g));
+  bump('IN', 3 * count(/₹\d/g));
+  bump('EU', 3 * count(/€\d/g));
+  bump('AU', 3 * countLower(/\baud\b|\ba\$/g));
+  bump('ME', 3 * countLower(/\baed\b|\bdh\d/g));
+  // ISO currency codes (medium signal)
+  if(/\busd\b/.test(t))   bump('US',3);
+  if(/\bgbp\b/.test(t))   bump('UK',3);
+  if(/\binr\b|\brupees?\b|\brs\.\s*\d/.test(t)) bump('IN',3);
+  if(/\beur\b|\beuros?\b/.test(t)) bump('EU',3);
+
+  // ── WEAK signals (worth 2 each) — city mentions ──
+  if(/\b(new york|los angeles|chicago|austin|seattle|boston|san francisco|miami|nyc|l\.a\.)\b/.test(t)) bump('US',2);
+  if(/\b(london|manchester|edinburgh|bath|bristol|oxford|brighton|leeds)\b/.test(t)) bump('UK',2);
+  if(/\b(delhi|mumbai|bengaluru|bangalore|kolkata|chennai|pune|hyderabad|gurgaon|noida)\b/.test(t)) bump('IN',2);
+  if(/\b(paris|berlin|amsterdam|vienna|milan|stockholm|munich|barcelona|madrid)\b/.test(t)) bump('EU',2);
+  if(/\b(sydney|melbourne|brisbane|perth|adelaide)\b/.test(t)) bump('AU',2);
+  if(/\b(dubai|abu dhabi|riyadh|doha|kuwait|jeddah)\b/.test(t)) bump('ME',2);
+
+  // ── WEAK signals (worth 1 each) — generic country/region words ──
+  // INTENTIONALLY does NOT include "indian" or "india" — those describe the
+  // PRODUCT in this brand's briefs ("Indian spices", "Indian heritage tea")
+  // and would falsely promote IN as the target market.
+  if(/\b(usa|u\.s\.a|united states|americans|north america)\b/.test(t)) bump('US',1);
+  if(/\b(u\.k|united kingdom|britain|british|england|english|brits?)\b/.test(t)) bump('UK',1);
+  if(/\b(europe|european|germany|german|france|french|spain|spanish|italy|italian|netherlands|dutch)\b/.test(t)) bump('EU',1);
+  if(/\b(australia|australian|aussies?)\b/.test(t)) bump('AU',1);
+  if(/\b(middle east|gulf|gcc|uae|emirates|saudi arabia|qatar|bahrain|oman)\b/.test(t)) bump('ME',1);
+  if(/\b(global|worldwide|international)\b/.test(t)) bump('Global',1);
+  // "America" alone (without "Latin America"): single point.
+  if(/\bamerica\b/.test(t) && !/\blatin america\b/.test(t)) bump('US',1);
+
+  // ── Pick winners: only markets with score >= 3 (i.e., need at least one
+  // medium signal OR multiple weak ones). This stops a single off-hand
+  // mention of "London" in a US brief from accidentally adding UK.
+  var THRESHOLD=3;
+  var keys=Object.keys(score).filter(function(k){return score[k]>=THRESHOLD;});
+  // Order by descending score (primary market first)
+  keys.sort(function(a,b){return score[b]-score[a];});
   return keys;
 }
 // ── Market chip toggle ──────────────────────────────────────────────────────
@@ -1959,6 +2005,22 @@ function _focusFeedbackForRegen(){
 }
 
 function clearAndCreate(){
+  // If a mailer was already generated this session, the only safe way to
+  // truly reset (iframe srcdoc, dashboard panels, sticky-step state, button
+  // toggles) is a full page reload. We stash an "auto-create-after-reload"
+  // flag so the brief generator fires automatically on the fresh page,
+  // matching the previous in-place behavior.
+  var hasGeneratedMailer = !!(window.S && (
+    (S.finalHTML && String(S.finalHTML).length > 0) ||
+    (S.marketMailers && Object.keys(S.marketMailers).length > 0)
+  ));
+  if(hasGeneratedMailer){
+    try{ sessionStorage.setItem('vhd_auto_create_brief','1'); }catch(_){}
+    try{ sessionStorage.removeItem('vhd_just_reloaded'); }catch(_){}
+    window.location.reload();
+    return;
+  }
+  // Soft reset path — fresh page, no prior generation.
   var ta=document.getElementById('promptIn');
   if(ta){ta.value='';ta.style.minHeight='120px';}
   var aud=document.getElementById('audienceIn'); if(aud){aud.value='';}
@@ -2012,7 +2074,8 @@ async function generateAudienceWithAI(e){
   }
 }
 function _heuristicAudience(brief,type,mkt){
-  var mktLabel={US:'urban US (NYC, LA, Austin, Chicago)',UK:'urban UK (London, Manchester, Edinburgh)',IN:'metro India (Mumbai, Delhi, Bangalore)',EU:'Western Europe (Paris, Berlin, Amsterdam)',AU:'urban Australia (Sydney, Melbourne)',ME:'GCC affluent (Dubai, Riyadh, Doha)',Global:'global English-speaking metros'}[mkt]||'urban metros';
+  // Country-level only — no city / region name-dropping.
+  var mktLabel={US:'in the US',UK:'in the UK',IN:'in India',EU:'in Europe',AU:'in Australia',ME:'in the Middle East',Global:'global English-speaking buyers'}[mkt]||('in '+mkt);
   var typeAngle={
     Sale:'Price-aware regular buyers and lapsed customers in the 60-180 day window who already know the brand. Trigger: discount + scarcity. They convert when value is concrete.',
     Launch:'Early-adopter loyalists and tea-curious experimenters who follow the brand and try new SKUs. Trigger: novelty + craft credentials.',
@@ -2043,7 +2106,21 @@ async function createPromptWithAI(){
   var prods=[];
   if(window.S&&S.finalProds&&S.finalProds.length) prods=S.finalProds.slice(0,6).map(_mapProd);
   else if(window.S&&S.manualProds&&S.manualProds.length) prods=S.manualProds.slice(0,6).map(_mapProd);
-  else if(window.CAT&&CAT.length) prods=CAT.slice(0,10).map(_mapProd);
+  else if(window.CAT&&CAT.length){
+    // No products selected yet — auto-pick the BEST matches for the seed brief
+    // and campaign type so the LLM sees the actual catalog SKUs that fit the
+    // campaign (real names, real prices, real handles), not the first 10
+    // alphabetical products which would skew copy toward the wrong category.
+    try{
+      var picked=(typeof autoPickProducts==='function')
+        ? autoPickProducts(seed||'', type||(typeof detectType==='function'?detectType(seed||''):''))
+        : null;
+      if(picked && picked.length) prods=picked.slice(0,6).map(_mapProd);
+      else prods=CAT.slice(0,10).map(_mapProd);
+    }catch(_){
+      prods=CAT.slice(0,10).map(_mapProd);
+    }
+  }
 
   var btn=document.getElementById('smartAIBtn');
   var _isEnhance=!!seed;
@@ -2097,10 +2174,30 @@ async function createPromptWithAI(){
   function _clearBriefTimers(){_bpTimers.forEach(function(t){clearTimeout(t);});_bpTimers=[];}
 
   async function _doCreate(){
+    // Track regeneration count + fresh seed so each click yields a genuinely
+    // different brief (different angle, different headline, different
+    // featured product). Without this, the LLM kept returning near-identical
+    // copy on consecutive clicks.
+    if(typeof window._briefGenCount!=='number') window._briefGenCount=0;
+    window._briefGenCount++;
+    var creativitySeed = Math.random().toString(36).slice(2,10) + '-' + Date.now();
+    // Surface user-selected fields so the brief targets THIS market/type/audience
+    // (so the brief reflects what the user already chose below the textarea).
+    var userAudience=(window.S&&S.audience)||'';
     var res=await fetch('/api/ai/generate',{
       method:'POST',cache:'no-store',
       headers:_getApiHeaders(),
-      body:JSON.stringify({mode:'create_brief',market:primaryMkt,theme:type,campaign_brief:seed,selected_products:prods})
+      body:JSON.stringify({
+        mode:'create_brief',
+        market:primaryMkt,
+        markets:(window.S&&S.markets)||[primaryMkt],
+        theme:type,
+        campaign_brief:seed,
+        selected_products:prods,
+        regenerate_counter: window._briefGenCount,
+        creativity_seed: creativitySeed,
+        target_audience: userAudience
+      })
     });
     if(!res.ok){
       var errBody=await res.json().catch(function(){return {};});
@@ -8046,7 +8143,10 @@ function saveMailerToDashboard(){
     prompt_full:S.prompt||'',
     active_prompt:S.activePrompt||S.prompt||'',
     campaign_type:S.type||detectType(S.prompt||''),
-    audience:(S.audience||'').substring(0,2000),
+    // NOTE: `audience` is persisted inside `strategy_full.audience` (JSONB
+    // already in the schema). Adding it as a top-level column here triggered
+    // a Supabase "could not find audience column" error since the table
+    // wasn't migrated. The strategy_full JSONB carries it without a schema change.
     primary_market:primaryMkt,
     markets:S.markets||['US'],
     // ── GOALS (products) ──
@@ -8800,6 +8900,18 @@ function previewDashboardSideBySide(logIdx,mkt){
 
 document.addEventListener('DOMContentLoaded',function(){
   initAuth();
+  // Auto-trigger brief generation if the user clicked "New Brief" on a
+  // generated mailer (the click did a hard reload + set this flag).
+  try{
+    if(sessionStorage.getItem('vhd_auto_create_brief')==='1'){
+      sessionStorage.removeItem('vhd_auto_create_brief');
+      sessionStorage.removeItem('vhd_just_reloaded');
+      // Give auth + KB load a head start, then fire the generator
+      setTimeout(function(){
+        try{ if(typeof smartAIBrief==='function') smartAIBrief(); }catch(_){}
+      }, 600);
+    }
+  }catch(_){}
   // Run smoke tests if explicitly requested via #tests in URL or localStorage
   try{
     var testsOn=(typeof location!=='undefined' && location.hash && location.hash.indexOf('tests')>=0) || (typeof localStorage!=='undefined' && localStorage.getItem('vhd_tests')==='1');
