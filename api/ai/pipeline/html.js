@@ -201,7 +201,7 @@ Apply bgcolor to EVERY <td> that has a background color — no exceptions.
       <!-- OFFER BADGE — visible in first scroll, before CTA — MANDATORY for discount campaigns -->
       <div style="display:inline-block;background:#004A2B;color:#FBF5EA;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:10px 18px;margin-bottom:14px;line-height:1.5">UP TO [X%] OFF<br><span style="font-size:9px;font-weight:400;color:#AB8743;letter-spacing:0.04em">ON SELECTED [PRODUCT CATEGORY e.g. GIFTS]</span></div>
       <br>
-      <a href="https://vahdam.com/products/[HANDLE]" style="display:inline-block;background:#AB8743;color:#ffffff;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;padding:13px 28px">[CTA e.g. SHOP GIFTS]</a>
+      <a href="{{STORE_BASE}}/products/[HANDLE]" style="display:inline-block;background:#AB8743;color:#ffffff;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;padding:13px 28px">[CTA e.g. SHOP GIFTS]</a>
       <!-- GIFTING TAGLINE — for gift/Mother's Day/holiday campaigns -->
       <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#AB8743;margin-top:10px">MAKE HER SMILE, GIFT RIGHT!</div>
       <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#8a9a8a;margin-top:8px">🚚 Free shipping on orders $49+</div>
@@ -260,7 +260,7 @@ Apply bgcolor to EVERY <td> that has a background color — no exceptions.
   </td></tr>
   <!-- FULL-WIDTH ADD TO CART — spans entire card width, dark green background -->
   <tr><td style="padding:8px 12px 12px;background:#FBF5EA" bgcolor="#FBF5EA">
-    <a href="https://vahdam.com/products/[HANDLE]" style="display:block;background:#004A2B;color:#FBF5EA;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;text-decoration:none;padding:11px 0;text-align:center">🛒 ADD TO CART</a>
+    <a href="{{STORE_BASE}}/products/[HANDLE]" style="display:block;background:#004A2B;color:#FBF5EA;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;text-decoration:none;padding:11px 0;text-align:center">🛒 ADD TO CART</a>
   </td></tr>
 </table>
 
@@ -318,7 +318,7 @@ Apply bgcolor to EVERY <td> that has a background color — no exceptions.
     <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(212,135,58,0.8);margin-bottom:6px">[OFFER EYEBROW e.g. LIMITED BATCH · THIS SEASON ONLY]</div>
     <div style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:26px;color:#FBF5EA;font-weight:600;margin-bottom:6px">[OFFER HEADLINE e.g. Save 20% on Your First Order]</div>
     <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;color:rgba(253,246,232,0.7);margin-bottom:14px">[OFFER DETAIL — code: VAHDAM20 · min order $49 · ends [DATE]]</div>
-    <a href="https://vahdam.com/collections/all" style="display:inline-block;background:#AB8743;color:#ffffff;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;padding:13px 36px">[CTA TEXT e.g. SHOP NOW]</a>
+    <a href="{{STORE_BASE}}/collections/all" style="display:inline-block;background:#AB8743;color:#ffffff;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;padding:13px 36px">[CTA TEXT e.g. SHOP NOW]</a>
   </td></tr>
 </table>
 
@@ -334,7 +334,7 @@ Apply bgcolor to EVERY <td> that has a background color — no exceptions.
 ── PRIMARY CTA SECTION (Variant A — amber button, prominent) ──
 <table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#FBF5EA;max-width:600px;margin:0 auto" bgcolor="#FBF5EA">
   <tr><td class="mobile-pad" style="text-align:center;padding:28px 40px;background:#FBF5EA" bgcolor="#FBF5EA">
-    <a href="https://vahdam.com/collections/all" style="display:inline-block;background:#AB8743;color:#ffffff;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;padding:16px 52px">[CTA TEXT e.g. SHOP THE COLLECTION]</a>
+    <a href="{{STORE_BASE}}/collections/all" style="display:inline-block;background:#AB8743;color:#ffffff;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;padding:16px 52px">[CTA TEXT e.g. SHOP THE COLLECTION]</a>
     <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10.5px;color:#888;margin-top:10px">Free shipping on $49+ · Easy returns · 100% natural</div>
   </td></tr>
 </table>
@@ -342,7 +342,7 @@ Apply bgcolor to EVERY <td> that has a background color — no exceptions.
 ── GHOST CTA SECTION (Variant B — understated, on dark background) ──
 <table width="600" class="email-container" cellpadding="0" cellspacing="0" border="0" style="background:#004A2B;max-width:600px;margin:0 auto" bgcolor="#004A2B">
   <tr><td style="text-align:center;padding:40px 48px;background:#004A2B" bgcolor="#004A2B">
-    <a href="https://vahdam.com/collections/all" style="display:inline-block;border:1.5px solid rgba(253,246,232,0.7);background:transparent;color:#FBF5EA;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;padding:14px 44px">[CTA TEXT e.g. DISCOVER THE COLLECTION]</a>
+    <a href="{{STORE_BASE}}/collections/all" style="display:inline-block;border:1.5px solid rgba(253,246,232,0.7);background:transparent;color:#FBF5EA;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;padding:14px 44px">[CTA TEXT e.g. DISCOVER THE COLLECTION]</a>
     <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:rgba(253,246,232,0.4);margin-top:12px;letter-spacing:0.06em">[SUBTEXT e.g. Complimentary shipping on orders $49+]</div>
   </td></tr>
 </table>
@@ -358,7 +358,7 @@ Apply bgcolor to EVERY <td> that has a background color — no exceptions.
     <p class="mobile-text" style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:14px;line-height:1.75;color:#4a5568;margin:0 0 18px 0">[PRODUCT DESCRIPTION — 2 evocative sentences. Use origin, harvest, sensory detail. Never truncate.]</p>
     <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#888;margin-bottom:18px">⭐ 4.8/5 &nbsp;·&nbsp; 50,000+ reviews &nbsp;·&nbsp; Single-Estate &nbsp;·&nbsp; Hand-Picked</div>
     <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:16px;font-weight:700;color:#004A2B;margin-bottom:18px">$[PRICE] <span style="font-size:12px;color:#aaa;text-decoration:line-through;font-weight:400">$[COMPARE]</span></div>
-    <a href="https://vahdam.com/products/[HANDLE]" style="display:inline-block;border:2px solid #004A2B;background:transparent;color:#004A2B;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;padding:13px 40px">[CTA e.g. EXPLORE THIS TEA]</a>
+    <a href="{{STORE_BASE}}/products/[HANDLE]" style="display:inline-block;border:2px solid #004A2B;background:transparent;color:#004A2B;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;padding:13px 40px">[CTA e.g. EXPLORE THIS TEA]</a>
   </td></tr>
 </table>
 
@@ -384,15 +384,15 @@ Apply bgcolor to EVERY <td> that has a background color — no exceptions.
       <div style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:22px;color:#FBF5EA;letter-spacing:0.14em;margin-bottom:8px">VAHDAM<span style="font-size:11px;vertical-align:super;letter-spacing:0">®</span> India</div>
       <div style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:10px;color:#7a9a7a;line-height:2;margin-bottom:14px">Single-Estate Heritage Teas &nbsp;·&nbsp; B-Corp Certified &nbsp;·&nbsp; Hand-Picked &nbsp;·&nbsp; Free Shipping $49+</div>
       <div style="margin-bottom:14px">
-        <a href="https://vahdam.com/collections/all" style="color:#AB8743;text-decoration:none;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;margin:0 10px">Shop All Teas</a>
-        <a href="https://vahdam.com/pages/our-story" style="color:#AB8743;text-decoration:none;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;margin:0 10px">Our Story</a>
-        <a href="https://vahdam.com/collections/bestsellers" style="color:#AB8743;text-decoration:none;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;margin:0 10px">Bestsellers</a>
-        <a href="https://vahdam.com/collections/gift-sets" style="color:#AB8743;text-decoration:none;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;margin:0 10px">Gift Sets</a>
+        <a href="{{STORE_BASE}}/collections/all" style="color:#AB8743;text-decoration:none;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;margin:0 10px">Shop All Teas</a>
+        <a href="{{STORE_BASE}}/pages/our-story" style="color:#AB8743;text-decoration:none;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;margin:0 10px">Our Story</a>
+        <a href="{{STORE_BASE}}/collections/bestsellers" style="color:#AB8743;text-decoration:none;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;margin:0 10px">Bestsellers</a>
+        <a href="{{STORE_BASE}}/collections/gift-sets" style="color:#AB8743;text-decoration:none;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:11px;margin:0 10px">Gift Sets</a>
       </div>
       <div style="border-top:1px solid rgba(253,246,232,0.12);padding-top:12px;margin-top:4px">
         <a href="{{UNSUBSCRIBE_URL}}" style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.35);text-decoration:underline;margin:0 8px">Unsubscribe</a>
         <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.25)">|</span>
-        <a href="https://vahdam.com/pages/privacy-policy" style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.35);text-decoration:underline;margin:0 8px">Privacy Policy</a>
+        <a href="{{STORE_BASE}}/pages/privacy-policy" style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.35);text-decoration:underline;margin:0 8px">Privacy Policy</a>
         <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.25)">·</span>
         <span style="font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;font-size:9.5px;color:rgba(253,246,232,0.25);margin-left:8px">© VAHDAM India 2026. All rights reserved.</span>
       </div>
@@ -755,6 +755,25 @@ Output starts <!DOCTYPE html>, ends </html>. Nothing before or after.`;
 
     // Strip any markdown fences the LLM may have accidentally emitted
     html = html.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+
+    // ── URL SAFETY POST-PROCESS ────────────────────────────────────────────
+    // The system prompt uses {{STORE_BASE}} as the canonical placeholder.
+    // Substitute it (and any stray non-store domains) with the correct
+    // market base so every link in the final mailer redirects correctly.
+    const _MARKET_BASE = {
+      US: 'https://www.vahdamteas.com',
+      UK: 'https://uk.vahdamteas.com',
+      IN: 'https://www.vahdamindia.com',
+      Global: 'https://www.vahdamteas.com',
+      ME: 'https://www.vahdamteas.com',
+      AU: 'https://au.vahdamteas.com',
+      EU: 'https://eu.vahdamteas.com'
+    };
+    const _resolvedBase = _MARKET_BASE[market] || _MARKET_BASE.US;
+    // 1) Substitute the template placeholder
+    html = html.split('{{STORE_BASE}}').join(_resolvedBase);
+    // 2) Defensive: if the LLM hard-coded a bad domain, rewrite to the market base
+    html = html.replace(/https?:\/\/(?:www\.)?vahdam\.com(?!\/cdn)/g, _resolvedBase);
 
     // Validation: must be actual HTML, not a refusal or truncated output
     if (!html || html.length < 600) {

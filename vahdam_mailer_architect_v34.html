@@ -585,7 +585,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
       </label>
       <textarea id="promptIn"
         style="min-height:120px;font-size:13px;line-height:1.7"
-        oninput="(function(el){var c=document.getElementById('promptCharCount');if(c)c.textContent=el.value.length+' chars';_updateSmartAIBtn(el.value.trim().length>0);})(this)"
+        oninput="(function(el){var c=document.getElementById('promptCharCount');if(c)c.textContent=el.value.length+' chars';_updateSmartAIBtn(el.value.trim().length>0);_autoUpdateChipsFromPrompt(el.value);})(this)"
         placeholder="e.g. 20% off all turmeric &amp; ginger teas with code DETOX20. Focus on gut health, daily wellness ritual, natural ingredients. Free shipping on orders over $49. Warm, inspiring tone."></textarea>
       <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap" id="smartAIRow">
         <!-- Primary CTA — adapts: Create (empty) or Enhance (has content) -->
@@ -706,15 +706,16 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
     <button class="cfbtn" onclick="filterCat('summer',this)">Summer</button>
   </div>
   <div class="cat-grid" id="catGrid"></div>
-  <!-- Selected Products Strip -->
-  <div id="selectedProdsStrip" style="display:none;margin:14px 0;background:#f8f6f2;border:1px solid #ede5d8;border-radius:10px;padding:12px 14px">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <span style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#004A2B">Selected Products</span>
-      <span id="selProdCount" style="font-size:10px;color:#888"></span>
+  <!-- Selected Products Strip — prominent horizontal row -->
+  <div id="selectedProdsStrip" style="display:none;margin:18px 0;background:linear-gradient(180deg,#FBF5EA 0%,#fff 100%);border:1.5px solid #AB8743;border-radius:12px;padding:16px 18px;box-shadow:0 2px 12px rgba(0,74,43,0.08)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#004A2B;color:#FBF5EA;font-size:12px;font-weight:700">&#10003;</span>
+      <span style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:15px;font-weight:700;letter-spacing:0.04em;color:#004A2B">Selected Products</span>
+      <span id="selProdCount" style="font-size:12px;color:#AB8743;font-weight:700;background:rgba(171,135,67,0.1);padding:2px 10px;border-radius:12px"></span>
       <span style="flex:1"></span>
-      <button onclick="clearSel()" style="font-size:10px;padding:3px 10px;background:transparent;border:1px solid #ccc;border-radius:5px;cursor:pointer;color:#888;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif">Clear All</button>
+      <button onclick="clearSel()" style="font-size:11px;font-weight:700;padding:6px 14px;background:transparent;border:1.5px solid #c0392b;border-radius:6px;cursor:pointer;color:#c0392b;font-family:'Proxima Nova','Helvetica Neue',Arial,sans-serif;letter-spacing:0.04em">Clear All</button>
     </div>
-    <div id="selProdsGrid" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px"></div>
+    <div id="selProdsGrid" style="display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin"></div>
   </div>
   <div class="btn-row">
     <button class="btn btn-outline btn-sm" onclick="goBack(1)">&larr; Back</button>
@@ -731,6 +732,15 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   <div class="stages" id="stagesList"></div>
 </div>
 <div id="p4" class="panel" style="display:none">
+  <!-- Step 4 sticky navigation bar -->
+  <div style="position:sticky;top:0;z-index:50;background:linear-gradient(180deg,#fff 0%,#fff 75%,rgba(255,255,255,0.92) 100%);border-bottom:1.5px solid #ede5d8;padding:12px 18px;margin:-18px -18px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;backdrop-filter:blur(6px)">
+    <button class="btn btn-outline btn-sm" onclick="goBack(2)" style="white-space:nowrap">&larr; Back to Products</button>
+    <button class="btn btn-outline btn-sm" onclick="goBack(1)" style="white-space:nowrap">&larr; Brief</button>
+    <span style="flex:1"></span>
+    <span style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:13px;font-weight:700;color:#004A2B;letter-spacing:0.04em">Step 4 — Review &amp; Refine</span>
+    <span style="flex:1"></span>
+    <button class="btn btn-primary btn-sm" onclick="showOnly(5)" style="white-space:nowrap">Final Output &rarr;</button>
+  </div>
   <div class="plbl">Step 4 — Review &amp; Refine</div>
   <!-- Campaign context injected by runGeneration() -->
   <div id="p4CampaignCtx" style="display:none;background:linear-gradient(90deg,#004A2B,#004A2B);border-radius:10px;padding:12px 16px;margin-bottom:16px;align-items:flex-start;gap:12px;flex-wrap:wrap"></div>
@@ -935,6 +945,16 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 </div><!-- /p4 -->
 <div id="analyzeStatus"></div>
 <div id="p5" style="display:none">
+  <!-- Step 5 sticky navigation bar — clear back / forward / restart options -->
+  <div style="position:sticky;top:0;z-index:50;background:linear-gradient(180deg,#fff 0%,#fff 75%,rgba(255,255,255,0.92) 100%);border-bottom:1.5px solid #ede5d8;padding:12px 18px;margin:-18px -18px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;backdrop-filter:blur(6px)">
+    <button class="btn btn-outline btn-sm" onclick="goBack(4)" style="white-space:nowrap">&larr; Back to Refine</button>
+    <button class="btn btn-outline btn-sm" onclick="goBack(2)" style="white-space:nowrap">&larr; Products</button>
+    <button class="btn btn-outline btn-sm" onclick="goBack(1)" style="white-space:nowrap">&larr; Brief</button>
+    <span style="flex:1"></span>
+    <span style="font-family:'Lao MN','Cormorant Garamond',Georgia,serif;font-size:13px;font-weight:700;color:#004A2B;letter-spacing:0.04em">Step 5 — Final Output</span>
+    <span style="flex:1"></span>
+    <button class="btn btn-ghost btn-sm" onclick="if(confirm('Start a new campaign? Current work will be cleared.'))clearAndCreate()" style="white-space:nowrap;color:#c0392b">&#8635; Start New</button>
+  </div>
   <div class="panel">
     <div class="plbl" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       Campaign Output Report
@@ -1695,7 +1715,7 @@ function updateSelInfo(){
           priceHtml='<div style="font-size:11px;font-weight:700;color:#004A2B">'+curr+p.price+'</div>';
         }
       }
-      return '<div style="flex:0 0 120px;background:#fff;border:1px solid #ede5d8;border-radius:8px;overflow:hidden;position:relative;cursor:pointer" onclick="toggleProd('+CAT.indexOf(p)+')">'+(p.i?'<img src="'+p.i+'" alt="" style="width:120px;height:90px;object-fit:cover;display:block" loading="lazy" onerror="this.style.display=\'none\'">':'<div style="width:120px;height:90px;background:#e8f0e8"></div>')+'<div style="padding:6px 8px"><div style="font-size:10px;font-weight:600;color:#171717;line-height:1.3;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.n.split(',')[0]+'</div>'+priceHtml+(p.subtitle?'<div style="font-size:8px;color:#888;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.subtitle+'</div>':'')+'</div><div style="position:absolute;top:4px;right:4px;width:18px;height:18px;background:rgba(192,57,43,0.85);border-radius:50%;color:#fff;font-size:11px;line-height:18px;text-align:center;cursor:pointer" title="Remove">&times;</div></div>';
+      return '<div style="flex:0 0 170px;background:#fff;border:1.5px solid #ede5d8;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;transition:transform .15s,box-shadow .15s" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 6px 16px rgba(0,74,43,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\';this.style.boxShadow=\'none\'" onclick="toggleProd('+CAT.indexOf(p)+')">'+(p.i?'<img src="'+p.i+'" alt="" style="width:170px;height:130px;object-fit:cover;display:block" loading="lazy" onerror="this.style.display=\'none\'">':'<div style="width:170px;height:130px;background:#FBF5EA"></div>')+'<div style="padding:10px 12px"><div style="font-family:\'Lao MN\',\'Cormorant Garamond\',Georgia,serif;font-size:12.5px;font-weight:700;color:#004A2B;line-height:1.3;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.n.split(',')[0]+'</div>'+priceHtml+(p.subtitle?'<div style="font-size:9.5px;color:#888;line-height:1.3;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.subtitle+'</div>':'')+'</div><div style="position:absolute;top:6px;right:6px;width:22px;height:22px;background:#c0392b;border-radius:50%;color:#fff;font-size:13px;line-height:22px;text-align:center;cursor:pointer;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.15)" title="Remove">&times;</div></div>';
     }).join('');
   }
 }
@@ -1720,10 +1740,56 @@ function clearSel(){S.manualProds=[];renderCatalog('all');updateSelInfo();}
 // ── Campaign type chip selector ─────────────────────────────────────────────
 function selectType(val,btn){
   S.type=val;
+  S._typeManualSet=true; // user took control — stop auto-detection from overriding
   var sel=document.getElementById('typeIn');
   if(sel)sel.value=val;
   document.querySelectorAll('.type-chip').forEach(function(b){b.classList.remove('on');});
   if(btn)btn.classList.add('on');
+}
+// ── Auto-update market & type chips from brief text ─────────────────────────
+// Called on every keystroke in #promptIn (debounced). Updates the chips only if
+// the user hasn't already manually picked. Once they tap a chip, S._typeManualSet /
+// S._mktManualSet stay true and we stop overriding their choice.
+var _autoUpdateChipsTimer=null;
+function _autoUpdateChipsFromPrompt(text){
+  clearTimeout(_autoUpdateChipsTimer);
+  _autoUpdateChipsTimer=setTimeout(function(){_doAutoUpdateChips(text||'');},300);
+}
+function _doAutoUpdateChips(text){
+  var t=(text||'').toLowerCase();
+  // ── Type detection (only if user hasn't manually picked) ──
+  if(!S._typeManualSet){
+    var detected=detectType(text||'');
+    if(detected){
+      var typeBtn=document.querySelector('.type-chip[data-type="'+detected+'"]');
+      if(typeBtn){
+        document.querySelectorAll('.type-chip').forEach(function(b){b.classList.remove('on');});
+        typeBtn.classList.add('on');
+        S.type=detected;
+        var sel=document.getElementById('typeIn'); if(sel)sel.value=detected;
+      }
+    }
+  }
+  // ── Market detection (only if user hasn't manually picked) ──
+  if(!S._mktManualSet && t.length>10){
+    var mktKeys=[];
+    if(/\b(usa|u\.s\.a|united states|america|americans|us market|us customers|in the us|north america)\b/.test(t)) mktKeys.push('US');
+    if(/\b(uk|u\.k|united kingdom|britain|british|england|english|in the uk|brits)\b/.test(t)) mktKeys.push('UK');
+    if(/\b(india|indian|in india|indians|delhi|mumbai|bengaluru|bangalore)\b/.test(t)) mktKeys.push('IN');
+    if(/\b(europe|european|eu market|germany|france|spain|italy|netherlands)\b/.test(t)) mktKeys.push('EU');
+    if(/\b(australia|australian|aussie|in australia)\b/.test(t)) mktKeys.push('AU');
+    if(/\b(middle east|uae|saudi|dubai|abu dhabi|gulf|gcc)\b/.test(t)) mktKeys.push('ME');
+    if(/\b(global|worldwide|international|all markets|every market)\b/.test(t)) mktKeys.push('Global');
+    if(mktKeys.length){
+      // Apply: turn on detected markets, turn off others
+      document.querySelectorAll('.mkt-chip').forEach(function(b){
+        var m=b.getAttribute('data-mkt');
+        b.classList.toggle('on',mktKeys.indexOf(m)>=0);
+      });
+      S.markets=mktKeys.slice();
+      S.market=mktKeys[0];
+    }
+  }
 }
 // ── Market chip toggle ──────────────────────────────────────────────────────
 function toggleMarket(m,el){
@@ -1734,8 +1800,9 @@ function toggleMarket(m,el){
   } else {
     S.markets.push(m);el.classList.add('on');
   }
+  S.market=S.markets[0]||'US';
+  S._mktManualSet=true; // user took control — stop auto-detection from overriding
   var ct=S.markets.length;
-  var lbl=document.querySelector('[for="mktChips"]');
   showCopyToast(ct===1?'1 market selected':ct+' markets selected — one mailer per market will be generated');
 }
 
@@ -1894,6 +1961,8 @@ async function createPromptWithAI(){
     if(!result) throw lastErr||new Error('No result from AI');
     _clearBriefTimers();_bpDone(true);
     if(ta){ta.value=result.text;ta.style.minHeight='260px';ta.scrollTop=0;ta.focus();ta.setSelectionRange(0,0);}
+    // Auto-detect market & type from the freshly generated brief
+    try{_doAutoUpdateChips(result.text||'');}catch(_){}
     if(typeof statusPill==='function')statusPill('ok',(_isEnhance?'Brief enhanced':'Brief created')+' — review and click Generate','Director-grade brief · '+result.model+' ('+result.provider+')');
     else showCopyToast(_isEnhance?'Brief enhanced':'Brief created');
   }catch(e){
@@ -5475,15 +5544,32 @@ const _ARCH_INK='#171717';
 const _ARCH_CREAM='#FBF5EA';
 
 // Map (campaignType, variant) → primary archetype.
+// CONTRACT: A = conversion-led execution, B = narrative-led execution.
+// They MUST differ in archetype family so the user gets two genuinely
+// different mailers to choose between.
 const _ARCH_MAP={
-  Sale:       {A:'product-grid-conversion',  B:'limited-drop-countdown'},
-  Launch:     {A:'single-product-spotlight', B:'hero-led-editorial'},
-  Bestseller: {A:'hero-led-editorial',       B:'editorial-trend-roundup'},
+  Sale:       {A:'product-grid-conversion',  B:'hero-led-editorial'},
+  Launch:     {A:'single-product-spotlight', B:'storytelling-narrative'},
+  Bestseller: {A:'product-grid-conversion',  B:'hero-led-editorial'},
   Story:      {A:'founder-note',             B:'storytelling-narrative'},
   Routine:    {A:'ritual-journey',           B:'subscription-anchor'},
   Gift:       {A:'gift-bundle-showcase',     B:'storytelling-narrative'},
-  Discovery:  {A:'editorial-trend-roundup',  B:'comparison-discovery'},
-  Seasonal:   {A:'hero-led-editorial',       B:'gift-bundle-showcase'}
+  Discovery:  {A:'comparison-discovery',     B:'editorial-trend-roundup'},
+  Seasonal:   {A:'product-grid-conversion',  B:'storytelling-narrative'}
+};
+// Conversion vs narrative families — used to enforce A/B structural divergence
+const _ARCH_FAMILY={
+  'product-grid-conversion':'conversion',
+  'single-product-spotlight':'conversion',
+  'limited-drop-countdown':'conversion',
+  'comparison-discovery':'conversion',
+  'gift-bundle-showcase':'conversion',
+  'subscription-anchor':'conversion',
+  'ritual-journey':'conversion',
+  'hero-led-editorial':'narrative',
+  'storytelling-narrative':'narrative',
+  'founder-note':'narrative',
+  'editorial-trend-roundup':'narrative'
 };
 
 // Per-archetype section flow — each archetype emits a unique sequence.
@@ -5503,18 +5589,94 @@ const _ARCH_FLOW={
 
 function _arch_pickArchetype(st,variant){
   var p=((st.activePrompt||st.rawPrompt||'')+'').toLowerCase();
-  // Prompt-keyword overrides take precedence so generations differ per brief.
-  if(/countdown|ends in|hours left|today only|while.{0,8}last|last.{0,8}chance/.test(p)) return 'limited-drop-countdown';
-  if(/founder|behind the brand|our story|the people behind/.test(p))                    return 'founder-note';
-  if(/subscri|every month|loyalty|monthly box/.test(p))                                  return 'subscription-anchor';
-  if(/compar|\bvs\.?\s|which.{0,12}choose|side by side/.test(p))                         return 'comparison-discovery';
-  if(/ritual|morning|evening|five minutes|steeping|brew along/.test(p) && st.type!=='Sale') return 'ritual-journey';
-  if(/(spotlight|debut|just dropped|unveil|launch)/.test(p) && variant==='A')             return 'single-product-spotlight';
-  if(/(gift|hamper|present|her birthday|him for)/.test(p))                                return variant==='A'?'gift-bundle-showcase':'storytelling-narrative';
-  if(/(trend|roundup|edit|curated picks|this season)/.test(p))                            return 'editorial-trend-roundup';
+  // Variant family the caller is asking for: A=conversion, B=narrative.
+  var wantFamily=variant==='B'?'narrative':'conversion';
+  // Prompt-keyword overrides — but resolve per family so A/B always diverge.
+  function pick(byFamily,fallback){
+    var c=byFamily[wantFamily];
+    if(c && _ARCH_FAMILY[c]===wantFamily) return c;
+    return fallback||(_ARCH_MAP[st.type]||_ARCH_MAP.Bestseller)[variant]||'hero-led-editorial';
+  }
+  if(/countdown|ends in|hours left|today only|while.{0,8}last|last.{0,8}chance/.test(p))
+    return pick({conversion:'limited-drop-countdown', narrative:'storytelling-narrative'});
+  if(/founder|behind the brand|our story|the people behind/.test(p))
+    return pick({conversion:'single-product-spotlight', narrative:'founder-note'});
+  if(/subscri|every month|loyalty|monthly box/.test(p))
+    return pick({conversion:'subscription-anchor', narrative:'ritual-journey'});
+  if(/compar|\bvs\.?\s|which.{0,12}choose|side by side/.test(p))
+    return pick({conversion:'comparison-discovery', narrative:'editorial-trend-roundup'});
+  if(/ritual|morning|evening|five minutes|steeping|brew along/.test(p) && st.type!=='Sale')
+    return pick({conversion:'ritual-journey', narrative:'storytelling-narrative'});
+  if(/(spotlight|debut|just dropped|unveil|launch)/.test(p))
+    return pick({conversion:'single-product-spotlight', narrative:'storytelling-narrative'});
+  if(/(gift|hamper|present|her birthday|him for)/.test(p))
+    return pick({conversion:'gift-bundle-showcase', narrative:'storytelling-narrative'});
+  if(/(trend|roundup|edit|curated picks|this season)/.test(p))
+    return pick({conversion:'product-grid-conversion', narrative:'editorial-trend-roundup'});
   // Default by type+variant
   var byType=_ARCH_MAP[st.type]||_ARCH_MAP.Bestseller;
-  return byType[variant]||'hero-led-editorial';
+  var chosen=byType[variant]||(variant==='B'?'storytelling-narrative':'product-grid-conversion');
+  // Final safety: if family doesn't match what we wanted, swap to a same-family default.
+  if(_ARCH_FAMILY[chosen]!==wantFamily){
+    chosen=variant==='B'?'storytelling-narrative':'product-grid-conversion';
+  }
+  return chosen;
+}
+
+// ── Per-variant strategy override ──────────────────────────────────────────
+// Returns a SHALLOW-CLONED strategy with copy/CTA/testimonial-style swapped
+// for the chosen variant so A and B render with genuinely different
+// language and emphasis — not just different layouts.
+function _arch_buildVariantStrategy(st,variant){
+  var s=Object.assign({},st);
+  s.offer=Object.assign({},st.offer||{});
+  s.headline=(st.headline||['','']).slice();
+  // Re-order products: A leads with bestseller (highest discount or first),
+  // B leads with the most "story-able" product (gift sets / single-estate /
+  // anything with a richer subtitle). Keeps the catalog identical.
+  var prods=(st.products||[]).slice();
+  if(variant==='B' && prods.length>1){
+    var storyIdx=-1;
+    for(var i=0;i<prods.length;i++){
+      var n=((prods[i].n||'')+'').toLowerCase();
+      if(/gift|sampler|reserve|estate|first flush|darjeeling|heritage|signature|private/.test(n)){storyIdx=i;break;}
+    }
+    if(storyIdx>0){var lead=prods.splice(storyIdx,1)[0]; prods.unshift(lead);}
+  }
+  s.products=prods;
+  s.hero=prods[0]||st.hero;
+  // Variant CTA wording — A is transactional, B is invitational.
+  var transactionalCTAs={Sale:'CLAIM THE OFFER',Launch:'SHOP THE LAUNCH',Bestseller:'SHOP BESTSELLERS',Gift:'SHOP GIFTS',Discovery:'TRY THE SAMPLER',Routine:'BUILD YOUR ROUTINE',Story:'SHOP THE STORY',Seasonal:'SHOP THE SEASON'};
+  var invitationalCTAs={Sale:'EXPLORE THE EDIT',Launch:'MEET THE NEW ARRIVAL',Bestseller:'EXPLORE OUR FAVOURITES',Gift:'CURATE THE GIFT',Discovery:'BEGIN YOUR DISCOVERY',Routine:'BEGIN THE RITUAL',Story:'READ THE STORY',Seasonal:'STEP INTO THE SEASON'};
+  s.cta=variant==='B'
+    ? (invitationalCTAs[st.type]||'BEGIN THE RITUAL')
+    : (transactionalCTAs[st.type]||st.cta||'SHOP NOW');
+  // Variant headline emphasis — A: offer-forward / urgent; B: emotional / sensory.
+  if(s.headline[0]){
+    if(variant==='A' && st.offer && st.offer.text){
+      // Lift offer text into the eyebrow; keep headline as-is
+      s._heroEyebrow=st.offer.text;
+    } else if(variant==='B'){
+      s._heroEyebrow='— A note from the source —';
+    }
+  }
+  // Variant offer treatment: A keeps the offer prominent; B downplays it
+  // (smaller, only in offer banner — no eyebrow / no badge in hero).
+  if(variant==='B' && s.offer){
+    s._suppressOfferInHero=true;
+  }
+  // Variant testimonial pool — A uses social-proof one-liner, B uses pull-quote.
+  s._testimonialMode=variant==='B'?'pullquote':'shortrating';
+  // Variant subCopy framing
+  if(variant==='B' && s.subCopy){
+    // Add a slow, sensory frame to B's sub-copy so it reads differently from A
+    var prefix='There is a moment when the right cup does more than warm your hands. ';
+    if(!/there is a moment/i.test(s.subCopy||'')) s.subCopy=prefix+s.subCopy;
+  }
+  // Variant section title — A is conversion-focused, B is editorial.
+  if(variant==='A') s.productSectionTitle=(st.productSectionTitle||'OUR PICKS');
+  else              s.productSectionTitle='THE QUIET FAVOURITES';
+  return s;
 }
 
 // ── Shared atoms ────────────────────────────────────────────────────────────
@@ -5543,7 +5705,10 @@ function _sec_logo(s,c){
   '</td></tr>';
 }
 function _sec_heroSplit(s,c){
-  var hero=s.products[0]||{}, hl=s.headline, sc=s.subCopy, ot=s.offer.text, oc=s.offer.code, cta=s.cta, collUrl=c.collUrl;
+  var hero=s.products[0]||{}, hl=s.headline, sc=s.subCopy, cta=s.cta, collUrl=c.collUrl;
+  // Variant B suppresses offer chips in the hero so it reads editorial, not transactional
+  var ot=s._suppressOfferInHero?'':(s.offer.text||'');
+  var oc=s._suppressOfferInHero?'':(s.offer.code||'');
   var heroImg=c.uploadedDesignImg||hero.i||'';
   return '<tr><td style="padding:0;border-left:1px solid '+_ARCH_BORDER+';border-right:1px solid '+_ARCH_BORDER+'">'+
     '<table width="600" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:'+_ARCH_CREAM+'"><tr>'+
@@ -5563,10 +5728,12 @@ function _sec_heroSplit(s,c){
 }
 function _sec_heroFull(s,c){
   var hero=s.products[0]||{}, hl=s.headline, sc=s.subCopy, cta=s.cta, collUrl=c.collUrl, heroImg=c.uploadedDesignImg||hero.i||'';
+  var eyebrow=s._heroEyebrow||(s.offer.text||'');
   return '<tr><td style="padding:0;line-height:0;font-size:0;border-left:1px solid '+_ARCH_BORDER+';border-right:1px solid '+_ARCH_BORDER+'">'+
     (heroImg?'<img src="'+heroImg+'" alt="'+(hero.n||'').replace(/"/g,'&quot;')+'" width="598" border="0" style="width:100%;max-width:598px;height:440px;object-fit:cover;display:block;border:0;outline:none;text-decoration:none">':'<div style="height:440px;background:'+_ARCH_GREEN+'"></div>')+
   '</td></tr>'+
   '<tr><td style="background:'+_ARCH_CREAM+';padding:36px 40px 28px;text-align:center;border-left:1px solid '+_ARCH_BORDER+';border-right:1px solid '+_ARCH_BORDER+'">'+
+    (eyebrow && !s._suppressOfferInHero?'<p style="font-family:'+_ARCH_FB+';font-size:9.5px;font-weight:800;letter-spacing:0.28em;text-transform:uppercase;color:'+_ARCH_GOLD+';margin:0 0 14px">'+eyebrow+'</p>':(s._heroEyebrow?'<p style="font-family:'+_ARCH_FB+';font-size:9.5px;font-weight:800;letter-spacing:0.28em;text-transform:uppercase;color:'+_ARCH_GOLD+';margin:0 0 14px;font-style:italic">'+s._heroEyebrow+'</p>':''))+
     '<p style="font-family:'+_ARCH_FH+';font-size:36px;font-weight:bold;color:'+_ARCH_GREEN+';margin:0 0 8px;line-height:1.06">'+hl[0]+'</p>'+
     (hl[1]?'<p style="font-family:'+_ARCH_FH+';font-size:30px;color:'+_ARCH_GOLD+';margin:0 0 14px;line-height:1.08;font-style:italic">'+hl[1]+'</p>':'')+
     '<div style="width:42px;height:2px;background:'+_ARCH_GOLD+';margin:14px auto 18px"></div>'+
@@ -5701,6 +5868,12 @@ function _sec_pullQuote(s,c){
   return '<tr><td style="background:'+_ARCH_GREEN+';padding:32px 40px;text-align:center"><p style="font-family:'+_ARCH_FH+';font-size:48px;color:'+_ARCH_GOLD+';margin:0;line-height:1">&ldquo;</p><p style="font-family:'+_ARCH_FH+';font-size:18px;color:'+_ARCH_CREAM+';margin:0 0 14px;line-height:1.55;font-style:italic;max-width:460px;display:inline-block">'+q+'</p><p style="font-family:'+_ARCH_FB+';font-size:10px;color:'+_ARCH_GOLD+';margin:0;letter-spacing:0.18em;text-transform:uppercase;font-weight:700">&ndash; '+_arch_reviewerName(c.mt,0)+'</p></td></tr>';
 }
 function _sec_testimonialStrip(s,c){
+  // Variant B → richer pull-quote style; Variant A → tight rating-style line
+  if(s._testimonialMode==='pullquote'){
+    var pq={Sale:'I keep coming back because no other tea makes my morning feel this good. And at this price, I stocked up without thinking twice.',Gift:'My sister opened the box and just paused. The tins, the scent — she said it was the most beautiful gift she had received in years.',Launch:'I tried it the morning it arrived and just sat there for five minutes. Sometimes a tea stops you in your tracks like that.',Story:'Every sip reminds me that the small things matter. The steam, the scent, the quiet five minutes before the day begins.',Routine:'That first quiet sip before the world wakes up. The warmth spreading through my hands. This is what my morning was missing.',Discovery:'A friend brought a tin to my house one weekend. I ordered my own that same night. Some things you just know immediately.',Bestseller:'I keep coming back because no other tea makes my morning feel this good.',Seasonal:'It made the whole season feel like home.'};
+    var pqq=pq[s.type]||'There is a moment every morning when I hold the warm cup and the world goes quiet. VAHDAM gave me that ritual.';
+    return '<tr><td style="background:'+_ARCH_GREEN+';padding:32px 40px;text-align:center"><p style="font-family:'+_ARCH_FH+';font-size:48px;color:'+_ARCH_GOLD+';margin:0;line-height:1">&ldquo;</p><p style="font-family:'+_ARCH_FH+';font-size:17px;color:'+_ARCH_CREAM+';margin:0 0 14px;line-height:1.55;font-style:italic;max-width:460px;display:inline-block">'+pqq+'</p><p style="font-family:'+_ARCH_FB+';font-size:10px;color:'+_ARCH_GOLD+';margin:0;letter-spacing:0.18em;text-transform:uppercase;font-weight:700">&ndash; '+_arch_reviewerName(c.mt,0)+'</p></td></tr>';
+  }
   var quotes={Sale:'Absolute steal — and it actually tastes premium.',Gift:'They opened it and just paused. Best gift in years.',Launch:'Stopped me in my tracks the first morning.',Story:'Every sip reminds me the small things matter.',Routine:'My quiet five minutes before the day begins.',Discovery:'I ordered my own that night.',Bestseller:'I keep coming back. There is no other.',Seasonal:'Made the season feel like home.'};
   var q=quotes[s.type]||'There is a moment when the right cup of tea does more than warm your hands.';
   return '<tr><td style="background:'+_ARCH_GREEN+';padding:20px 28px;text-align:center"><p style="font-family:'+_ARCH_FH+';font-size:32px;color:'+_ARCH_GOLD+';margin:0;line-height:1">&ldquo;</p><p style="font-family:'+_ARCH_FH+';font-size:13px;color:'+_ARCH_CREAM+';margin:0 0 8px;line-height:1.5;font-style:italic;max-width:420px;display:inline-block">'+q+'</p><p style="font-family:'+_ARCH_FB+';font-size:9px;color:'+_ARCH_GOLD+';margin:0;letter-spacing:0.14em;text-transform:uppercase;font-weight:700">&ndash; '+_arch_reviewerName(c.mt,0)+' &middot; &#9733;&#9733;&#9733;&#9733;&#9733;</p></td></tr>';
@@ -5879,7 +6052,9 @@ function _sec_savingsCallout(s,c){
 
 // ── Master orchestrator ─────────────────────────────────────────────────────
 function _arch_renderEmail(strategy,archetype,variant,uploadedDesignImg,mt){
-  var s=strategy, base=getBase(mt), collUrl=collectionUrl(s.activePrompt||s.rawPrompt,mt);
+  // Apply per-variant strategy override (different copy/CTA/order for A vs B)
+  var s=_arch_buildVariantStrategy(strategy,variant);
+  var base=getBase(mt), collUrl=collectionUrl(s.activePrompt||s.rawPrompt,mt);
   var c={base:base, collUrl:collUrl, mt:mt, prompt:s.activePrompt||s.rawPrompt||'', uploadedDesignImg:uploadedDesignImg||'', archetype:archetype, variant:variant};
   var flow=_ARCH_FLOW[archetype]||_ARCH_FLOW['hero-led-editorial'];
   var sectionsHtml='';
@@ -5902,23 +6077,23 @@ function _arch_renderEmail(strategy,archetype,variant,uploadedDesignImg,mt){
     '<table class="email-wrap" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;border-collapse:collapse;background:'+_ARCH_PAPER+'">\n'+
     sectionsHtml+
     '</table></td></tr></table>\n</body></html>';
+  // ── URL safety: any stray non-store domain that slipped through gets
+  // rewritten to the correct market base so every link redirects correctly.
+  try{
+    var resolvedBase=getBase(mt);
+    html=html.split('{{STORE_BASE}}').join(resolvedBase);
+    html=html.replace(/https?:\/\/(?:www\.)?vahdam\.com(?!\/cdn)/g,resolvedBase);
+  }catch(_){}
   return html;
 }
 
-// ── Variant B: archetype-driven ─────────────────────────────────────────────
+// ── Variant B: archetype-driven, narrative family ──────────────────────────
 function buildEmailVariantB(uploadedDesignImg,mktOverride){
   refreshStrategy();
   var st=S.strategy||buildCampaignStrategy();
   if(!st.products||!st.products.length) return '';
   var mt=mktOverride||st.market||'US';
-  var arch=_arch_pickArchetype(st,'B');
-  // Force structural divergence from variant A by picking the B-side archetype
-  // and (if it happens to coincide) bumping to a story-led alternative.
-  var archA=_arch_pickArchetype(st,'A');
-  if(arch===archA){
-    var fallback={'hero-led-editorial':'storytelling-narrative','product-grid-conversion':'limited-drop-countdown','single-product-spotlight':'storytelling-narrative','founder-note':'storytelling-narrative','ritual-journey':'subscription-anchor','gift-bundle-showcase':'storytelling-narrative','editorial-trend-roundup':'comparison-discovery','storytelling-narrative':'founder-note','limited-drop-countdown':'product-grid-conversion','comparison-discovery':'editorial-trend-roundup','subscription-anchor':'ritual-journey'};
-    arch=fallback[arch]||'storytelling-narrative';
-  }
+  var arch=_arch_pickArchetype(st,'B');  // _ARCH_FAMILY guarantees this is narrative-side
   return _arch_renderEmail(st,arch,'B',uploadedDesignImg,mt);
 }
 
