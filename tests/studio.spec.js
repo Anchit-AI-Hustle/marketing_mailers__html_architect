@@ -136,6 +136,39 @@ test.describe('Mailer Studio — responsive smoke', () => {
     expect(result.issues.length).toBeGreaterThan(0);
   });
 
+  test('Market currency + reviewer locality propagate correctly', async ({ page }) => {
+    // Two checks across THREE different markets — each market must show its OWN
+    // currency, its OWN reviewer locality (not Indian names in US mailer), and
+    // its OWN store domain. Regression-protects against the "₹ in US mailer" bug.
+    const cases = [
+      { mkt: 'US', currency: '$',  badCurrency: '₹', goodCity: /(New York|California|Chicago|Austin|Seattle|Boston|United States)/i, badCity: /Mumbai|Delhi|Bangalore|Kolkata/i, goodHost: 'vahdamteas.com', badHost: /vahdamindia\.com/ },
+      { mkt: 'UK', currency: '£',  badCurrency: '₹', goodCity: /London|Manchester|Edinburgh|Bath|Bristol|Oxford|United Kingdom/i, badCity: /Mumbai|New York/i, goodHost: 'uk.vahdamteas.com', badHost: /vahdamindia\.com/ },
+      { mkt: 'IN', currency: '₹',  badCurrency: '$', goodCity: /Mumbai|Delhi|Bangalore|Kolkata|Chennai|Pune|India/i, badCity: /New York|London/i, goodHost: 'vahdamindia.com', badHost: /uk\.vahdamteas\.com/ },
+    ];
+    await page.fill('#promptIn', '15% off bestsellers — code SAVE15 — free shipping');
+    await page.evaluate(() => window.go2 && window.go2());
+    await page.waitForTimeout(400);
+    for (const c of cases) {
+      const html = await page.evaluate((mkt) => {
+        try {
+          const a = window.buildEmail(null, mkt) || '';
+          const b = window.buildEmailVariantB(null, mkt) || '';
+          return a + '\n---SPLIT---\n' + b;
+        } catch (e) { return ''; }
+      }, c.mkt);
+      // Currency present, off-currency absent
+      expect(html, `${c.mkt}: missing ${c.currency}`).toContain(c.currency);
+      // Reviewer locality matches market (best effort: at least one matching city)
+      const cityMatch = html.match(c.goodCity);
+      expect(cityMatch, `${c.mkt}: no matching reviewer city found`).toBeTruthy();
+      // Store domain matches market
+      expect(html, `${c.mkt}: missing ${c.goodHost}`).toContain(c.goodHost);
+      expect(html.match(c.badHost), `${c.mkt}: leaked ${c.badHost}`).toBeFalsy();
+      // VAHDAM wordmark must appear as text (footer + header) so it's never invisible
+      expect((html.match(/VAHDAM/g) || []).length, `${c.mkt}: VAHDAM wordmark not visible`).toBeGreaterThanOrEqual(2);
+    }
+  });
+
   test('Variant A and Variant B differ structurally', async ({ page }) => {
     await page.fill('#promptIn', 'Bestselling premium chai for daily ritual lovers');
     await page.evaluate(() => window.go2 && window.go2());

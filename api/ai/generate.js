@@ -249,6 +249,18 @@ FINAL OUTPUT JSON SCHEMA
 
 VAHDAM BRAND:
 Palette (ONLY these 4 hex): #004A2B / #AB8743 / #171717 / #FBF5EA. Fonts (STRICT): LAO MN for headings (fallback 'Lao MN','Cormorant Garamond',Georgia,serif), Proxima Nova for body (fallback 'Proxima Nova','Helvetica Neue',Arial,sans-serif). NO other fonts or colors.
+
+GROWTH-LEADER OUTPUT CHECKLIST (every brief MUST include all 8):
+1. Subject lines: 3 options. Each must reference a NUMBER (% off, count, days left, price), a SPECIFIC product/category, or a NAMED occasion. No vague "Tea you'll love".
+2. Hero headline: TWO lines, max 6 words each. Line 1 = the offer or sensory hook. Line 2 = the emotional payoff. Must wrap legibly at 280px (avoid 7+ words per line).
+3. Sub-copy: 2-3 sentences (40-70 words) that name the hero PRODUCT, the BENEFIT to the reader's day, and the SPECIFIC offer/code if present. Sensory but never floral-only.
+4. Benefit bullets: EXACTLY 4 short lines (≤9 words each). Each bullet starts with a verb or concrete claim. Mix functional + emotional. e.g. "Soothes digestion · feels lighter by lunch", "Steady energy · no caffeine crash", "Single-estate · zero artificial fillers".
+5. Offer banner copy: an EXPLICIT discount line with the % AND the code AND the urgency mechanic ("Use REVIVE15 · 15% off · Ends Sunday"). If the campaign has no discount, state the value-prop concretely ("Free shipping over $49 · 30-day guarantee").
+6. Social proof line: a specific number ("Trusted by 50,000+ tea lovers", "4.8/5 across 12,400 reviews"), not generic "loved by many".
+7. Urgency strip: one specific scarcity or time-bound trigger relevant to the campaign type ("⚡ Ends Sunday · Stock running low", "🎁 Order by Tuesday for guaranteed delivery", "✨ First batch — limited supply").
+8. Variant divergence: every brief is rendered as TWO mailers (A=conversion, B=narrative). Hero headline + sub-copy must read well in BOTH a conversion-led grid layout AND a story-led editorial layout. Avoid copy that only works in one frame.
+
+ANTI-PATTERN: a brief that produces beautiful prose but no concrete reason-to-act is a failed brief. Every section must answer "why click NOW" with specifics.
 BANNED: wellness journey, transform, liquid gold, game-changer, LIMITED TIME caps, hurry, don't miss out.
 PREFERRED: ritual, restore, balance, origin, single-estate, hand-picked, steep, heritage, crafted.
 

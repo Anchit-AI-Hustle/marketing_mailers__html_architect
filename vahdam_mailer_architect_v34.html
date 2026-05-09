@@ -3939,32 +3939,62 @@ function getCanvasTheme(p){
   var offer=offerText(p);
   return {bg:'#FBF5EA',accent:'#004A2B',gold:'#AB8743',h:headline,sub:sub,offer:offer};
 }
+// ============================================================================
+// MAILER CREATIVE CANVAS — designed by a growth leader.
+// Every section earns its place: offer above the fold, benefit bullets that
+// answer "why should I buy this?", social proof for trust, urgency for action,
+// product grid for choice, and a BIG offer banner for closing.
+// Variant A = conversion-led editorial. Variant B = narrative storytelling.
+// Text WRAPS multi-line — no more truncated headlines or sub-copy.
+// ============================================================================
 async function drawLayout(canvas,prompt,market,prods,variant){
   variant=variant||S.canvasVariant||S.activeVariant||(S.strategy&&S.strategy.primaryVariant)||'A';
-  // Variant B uses a TALLER canvas (full-width hero + vertical product stack);
-  // Variant A keeps the standard editorial-hero proportions.
-  const W=560;
-  const PROD_COLS=variant==='B'?1:(Math.min(prods.length,4)||1);
-  const PROD_ROWS=Math.ceil(prods.length/PROD_COLS);
-  const PROD_CARD_H=variant==='B'?180:130; // taller rows for vertical stack
-  const HERO_H=variant==='B'?320:230;       // full-width image vs side-by-side
-  const H=32+80+HERO_H+36+30+28+(PROD_ROWS*PROD_CARD_H+60)+90+60;
-  canvas.width=W;canvas.height=H;
+  const W=600;
   const ctx=canvas.getContext('2d');
-  const ep=buildEffectivePrompt(prompt,prods); // product-enriched prompt for copy
+  const ep=buildEffectivePrompt(prompt,prods);
   const theme=getCanvasTheme(ep);
   const hero=prods[0]||{n:'VAHDAM Premium Tea',i:''};
   const hl=heroHeadline(ep);
   const sc=subCopy(ep);
-  const feats=featureStrip(ep);
-  const ot=offerText(prompt); // offer/code always from raw prompt
-  const oc=offerCode(prompt);
   const cta=ctaText(ep);
+  const ot=offerText(prompt);
+  const oc=offerCode(prompt);
+  const sig=extractPromptSignals(prompt);
+  const _t=S.type||detectType(prompt);
+  const audience=(S.audience||'').trim();
 
-  // Helpers
+  // ── Brand-strict palette ──
+  const GREEN='#004A2B', GOLD='#AB8743', INK='#171717', CREAM='#FBF5EA', PAPER='#ffffff';
+
+  // ── Drawing helpers ───────────────────────────────────────────────────────
   function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
   function fillRR(x,y,w,h,r,color){ctx.fillStyle=color;roundRect(x,y,w,h,r);ctx.fill();}
-  function truncate(str,max){return str.length>max?str.substring(0,max-1)+'…':str;}
+  function strokeRR(x,y,w,h,r,color,lineW){ctx.strokeStyle=color;ctx.lineWidth=lineW||1;roundRect(x,y,w,h,r);ctx.stroke();}
+  // Wrap text into multiple lines — returns the y position after last line.
+  function wrapText(text,x,y,maxWidth,lineHeight,maxLines){
+    if(!text) return y;
+    var words=String(text).split(' '),line='',lines=[],ml=maxLines||999;
+    for(var i=0;i<words.length;i++){
+      var test=line?line+' '+words[i]:words[i];
+      if(ctx.measureText(test).width>maxWidth && line){lines.push(line);line=words[i];}
+      else line=test;
+      if(lines.length>=ml-1 && i<words.length-1){
+        // Pack remaining words onto the last line; truncate only when truly needed
+        var tail=words.slice(i+1).join(' ');
+        var combined=line+' '+tail;
+        while(ctx.measureText(combined+'…').width>maxWidth && combined.length>20){
+          combined=combined.slice(0,-1);
+        }
+        if(ctx.measureText(combined).width>maxWidth) combined=combined+'…';
+        lines.push(combined); line=''; break;
+      }
+    }
+    if(line) lines.push(line);
+    for(var k=0;k<lines.length;k++){ ctx.fillText(lines[k],x,y+k*lineHeight); }
+    return y+lines.length*lineHeight;
+  }
+  // Center-aligned wrap — same as wrapText but uses textAlign that's already set.
+  // (Caller sets textAlign to 'center' and passes x as the centerline.)
   function drawImg(img,x,y,w,h){
     if(img&&img.complete&&img.naturalWidth>0){
       ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
@@ -3977,154 +4007,481 @@ async function drawLayout(canvas,prompt,market,prods,variant){
   }
 
 
-  // Outer background
-  ctx.fillStyle='#f0ebe0';ctx.fillRect(0,0,W,H);
-
-  // S1 — Announcement bar (NO market/region name)
-  const annTxt=annBarLine(prompt,market);
-  ctx.fillStyle=theme.accent;ctx.fillRect(0,0,W,32);
-  ctx.fillStyle='#FBF5EA';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText(truncate(annTxt,72),W/2,16);
-
-  // S2 — Brand header
-  let y=32;
-  ctx.fillStyle='#fff';ctx.fillRect(0,y,W,80);
-  ctx.fillStyle='#AB8743';ctx.font='8px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText('EST. 2015 · NEW DELHI, INDIA',W/2,y+16);
-  ctx.fillStyle=theme.accent;ctx.font='bold 26px Georgia';ctx.textAlign='center';
-  ctx.fillText('VAHDAM®',W/2,y+46);
-  ctx.fillStyle='#AB8743';ctx.font='7.5px Arial';
-  ctx.fillText('PREMIUM INDIAN TEAS · DIRECT FROM SOURCE',W/2,y+64);
-  // Trust bar
-  ctx.strokeStyle='#ede5d8';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,y+72);ctx.lineTo(W,y+72);ctx.stroke();
-  ['🌿 100% PURE INDIAN TEA','🤝 ETHICALLY SOURCED','🌿 DIRECT FROM FARMS'].forEach(function(t,i){
-    ctx.fillStyle='#888';ctx.font='7px Arial';ctx.textAlign='center';
-    if(i>0){ctx.strokeStyle='#ede5d8';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(i*(W/3),y+72);ctx.lineTo(i*(W/3),y+80);ctx.stroke();}
-    ctx.fillText(t,i*(W/3)+(W/6),y+77);
-  });
-
-  // S3 — Hero split
-  y+=80;
-  const heroH=HERO_H;
-  ctx.fillStyle='#FBF5EA';ctx.fillRect(0,y,W,heroH);
-  // Left: copy
-  const leftW=W/2-4;
-  if(ot){ctx.fillStyle='#AB8743';ctx.font='bold 8px Arial';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(ot.toUpperCase().substring(0,28),20,y+14);}
-  ctx.fillStyle=theme.accent;ctx.font='bold 22px Georgia';ctx.textAlign='left';ctx.textBaseline='top';
-  ctx.fillText(truncate(hl[0],18),20,y+30);
-  if(hl[1]){ctx.fillText(truncate(hl[1],18),20,y+57);}
-  // Sub copy — word wrap
-  ctx.fillStyle='#555';ctx.font='10px Arial';ctx.textBaseline='top';
-  var scWords=sc.split(' '),scLine='',scY=y+(hl[1]?88:60);
-  for(var wi=0;wi<scWords.length&&scY<y+heroH-40;wi++){
-    var test=scLine+(scLine?' ':'')+scWords[wi];
-    if(ctx.measureText(test).width>leftW-28&&scLine){ctx.fillText(scLine,20,scY);scLine=scWords[wi];scY+=14;}
-    else scLine=test;
+  // ── Marketing copy assembly ───────────────────────────────────────────────
+  // Benefits — derived from product category + prompt; every benefit answers
+  // "why does this matter to YOUR life?" — not generic feature claims.
+  function _benefitsFor(){
+    var l=(prompt||'').toLowerCase();
+    var heroN=((hero&&hero.n)||'').toLowerCase();
+    var pool=[];
+    if(/turmeric|ginger|detox|cleanse|wellness/.test(l+' '+heroN)) pool=['Soothes digestion · feels lighter by lunch','Anti-inflammatory · backed by 6,000 yrs of Ayurveda','Caffeine-free · steady energy without the crash','Single-estate sourcing · zero artificial fillers'];
+    else if(/chai|masala|cardamom|spice/.test(l+' '+heroN)) pool=['Hand-pounded spices · no instant powders','Stronger than Starbucks at half the price','Black tea + 7 spices · the original wake-up','Brews 50+ cups per tin · pennies per ritual'];
+    else if(/green|matcha|jasmine/.test(l+' '+heroN)) pool=['L-theanine + caffeine · calm focus, no jitters','Antioxidant-rich · supports daily wellness','Light, clean, alive · perfect afternoon lift','Hand-rolled leaves · whole-leaf flavour'];
+    else if(/sleep|chamomile|calm/.test(l+' '+heroN)) pool=['Caffeine-free · gentle wind-down','Chamomile + spearmint · clinical calming blend','Sip 30 mins before bed · sleep deeper','Naturally sweet · no added sugar'];
+    else if(/gift|set|sampler|hamper/.test(l+' '+heroN)) pool=['Hand-wrapped in cream + gold · ready to gift','Free personal note included · adds the heart','Curated by master blenders · always a hit','Ships in time · guaranteed for the occasion'];
+    else if(/darjeeling|first flush|estate|premium/.test(l+' '+heroN)) pool=['Single-estate · same garden, every leaf','Plucked at dawn · sealed within 48 hours','Champagne of teas · a flavour you remember','Direct trade · farmers paid 2-3× more'];
+    else pool=['Garden-fresh · plucked & sealed within 48 hrs','Single-estate origin · zero artificial flavours','Loved by 50,000+ daily drinkers · 4.8/5 rated','Direct from farmers · cuts 12 middlemen'];
+    return pool.slice(0,4);
   }
-  if(scLine)ctx.fillText(truncate(scLine,26),20,scY);
-  // CTA button
-  var btnY=y+heroH-46;
-  fillRR(16,btnY,leftW-8,26,4,theme.accent);
-  ctx.fillStyle='#FBF5EA';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText(cta.toUpperCase().substring(0,18),16+(leftW-8)/2,btnY+13);
-  if(oc){ctx.fillStyle='#AB8743';ctx.font='bold 8px Arial';ctx.textAlign='left';ctx.fillText('USE CODE: '+oc,20,btnY+30);}
-  // Right: hero product image
-  const rX=W/2+4,rW=W/2-4;
-  ctx.fillStyle=theme.accent;ctx.fillRect(rX,y,rW,heroH);
-  if(hero.i){
-    const hImg=new Image();hImg.crossOrigin='anonymous';
-    await new Promise(function(r){hImg.onload=r;hImg.onerror=r;hImg.src=hero.i;setTimeout(r,3000);});
-    drawImg(hImg,rX,y,rW,heroH-24);
+  const benefits=_benefitsFor();
+  // Discount headline — concrete and specific, not "EXCLUSIVE OFFER"
+  function _offerHeadline(){
+    if(sig.pct && oc) return 'Save '+sig.pct+'% — code '+oc;
+    if(sig.pct)       return 'Save '+sig.pct+'% Today';
+    if(ot)            return ot;
+    return 'Free Shipping on Orders $49+';
   }
-  ctx.fillStyle='rgba(0,74,43,0.85)';ctx.fillRect(rX,y+heroH-24,rW,24);
-  ctx.fillStyle='#FBF5EA';ctx.font='8px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText(truncate(hero.n.split(',')[0],22),rX+rW/2,y+heroH-12);
+  function _offerSub(){
+    if(sig.pct && oc) return 'Use '+oc+' at checkout · Free shipping over $49 · Ends Sunday';
+    if(oc)            return 'Use '+oc+' at checkout · Free shipping over $49';
+    return 'Free shipping over $49 · 30-day satisfaction guarantee · Ships in 48 hrs';
+  }
+  // Urgency line — specific to campaign type
+  function _urgencyLine(){
+    if(_t==='Sale') return '⚡ Ends Sunday · Stock running low on bestsellers';
+    if(_t==='Launch') return '✨ Just landed · First batch — limited supply';
+    if(_t==='Gift') return '🎁 Ships in time · Order by Tuesday for guaranteed delivery';
+    if(_t==='Seasonal') return '🍃 Seasonal favourites · Available only this season';
+    return '⚡ Trusted by 50,000+ customers · Free shipping over $49';
+  }
+  // Currency for prices
+  const curr={US:'$',UK:'£',IN:'₹',EU:'€',AU:'A$',Global:'$',ME:'$'}[market]||'$';
 
-  // S4 — Feature pillars
-  y+=heroH;
-  ctx.fillStyle=theme.accent;ctx.fillRect(0,y,W,36);
-  ctx.fillStyle='#FBF5EA';ctx.font='bold 7.5px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-  feats.forEach(function(f,i){ctx.fillText(truncate(f,14),W/8+i*(W/4),y+18);});
+  // ── Pre-load all images in parallel (hero + product cards) ────────────────
+  async function loadImg(src){
+    return new Promise(function(r){
+      if(!src){r(null);return;}
+      var img=new Image();img.crossOrigin='anonymous';
+      img.onload=function(){r(img);};img.onerror=function(){r(null);};
+      img.src=src; setTimeout(function(){r(null);},3500);
+    });
+  }
+  const heroImgEl = await loadImg(hero&&hero.i);
+  const prodImgs  = await Promise.all(prods.slice(0,6).map(function(p){return loadImg(p&&p.i);}));
 
-  // S5 — Social proof bar
-  y+=36;
-  ctx.fillStyle='#004A2B';ctx.fillRect(0,y,W,30);
-  ctx.fillStyle='#9fd6b5';ctx.font='8.5px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText('★★★★★  Rated 4.8/5 by 50,000+ tea lovers · 100% Natural · Ships Worldwide',W/2,y+15);
+  if(variant==='B') return _drawVariantB();
+  return _drawVariantA();
 
-  // S6 — Section label
-  y+=30;
-  ctx.fillStyle='#f8f4ee';ctx.fillRect(0,y,W,28);
-  ctx.fillStyle='#AB8743';ctx.font='bold 8px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText('— '+productSectionTitle(prompt).toUpperCase()+' —',W/2,y+14);
+  // ════════════════════════════════════════════════════════════════════════
+  // VARIANT A — CONVERSION-LED EDITORIAL
+  // Order: ann → brand → 3-pillar trust → split hero → benefits-bullets →
+  //        social-proof → product grid (4) → urgency strip → BIG offer banner → footer
+  // ════════════════════════════════════════════════════════════════════════
+  function _drawVariantA(){
+    // Compute total height up-front so we can size the canvas correctly.
+    const H = 32 /*ann*/ + 86 /*brand*/ + 32 /*pillar*/ + 280 /*hero*/
+            + 130 /*benefits*/ + 32 /*proof*/ + 28 /*sec lbl*/ + 320 /*products*/
+            + 36 /*urgency*/ + 130 /*offer*/ + 70 /*footer*/;
+    canvas.width=W; canvas.height=H;
 
-  // S7 — Product grid
-  y+=28;
-  const gridBgH=PROD_ROWS*PROD_CARD_H+32;
-  ctx.fillStyle='#fff';ctx.fillRect(0,y,W,gridBgH);
-  const cw=Math.floor(W/PROD_COLS);
+    // Background
+    ctx.fillStyle='#f0ebe0'; ctx.fillRect(0,0,W,H);
 
-  // Load all product images in parallel
-  const prodImgs=prods.map(function(){return new Image();});
-  await Promise.all(prodImgs.map(function(img,i){
-    img.crossOrigin='anonymous';
-    return new Promise(function(r){img.onload=r;img.onerror=r;img.src=prods[i]&&prods[i].i?prods[i].i:'';setTimeout(r,3000);});
-  }));
+    // S1 — Announcement bar (offer-forward)
+    let y=0;
+    ctx.fillStyle=GREEN; ctx.fillRect(0,y,W,32);
+    ctx.fillStyle=CREAM; ctx.font='bold 10px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    var annText = (sig.pct?('SAVE '+sig.pct+'% · '):'') + (oc?('USE '+oc+' · '):'') + 'FREE SHIPPING $49+ · GARDEN-FRESH FROM INDIA';
+    ctx.save(); ctx.translate(W/2,y+16); _drawWrappedCenter(annText,W-40,1,11); ctx.restore();
+    y+=32;
 
-  prods.forEach(function(prod,i){
-    const row=Math.floor(i/PROD_COLS),col=i%PROD_COLS;
-    const px=col*cw+4,py=y+row*PROD_CARD_H+6,pw=cw-8,ph=PROD_CARD_H-8;
-    // Card background
-    fillRR(px,py,pw,ph,6,'#fff');
-    ctx.strokeStyle='#ede5d8';ctx.lineWidth=1;roundRect(px,py,pw,ph,6);ctx.stroke();
-    // Product image
-    const imgH=Math.floor(ph*0.58);
-    ctx.fillStyle='#eef2ee';roundRect(px,py,pw,imgH,6);ctx.fill();
-    if(prodImgs[i]&&prodImgs[i].complete&&prodImgs[i].naturalWidth>0){
-      ctx.save();roundRect(px,py,pw,imgH,6);ctx.clip();
-      drawImg(prodImgs[i],px,py,pw,imgH);
+    // S2 — Brand header
+    ctx.fillStyle=PAPER; ctx.fillRect(0,y,W,86);
+    ctx.fillStyle=GOLD; ctx.font='8px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('EST. 2015 · NEW DELHI, INDIA',W/2,y+14);
+    ctx.fillStyle=GREEN; ctx.font='bold 28px Georgia';
+    ctx.fillText('VAHDAM®',W/2,y+44);
+    ctx.fillStyle=GOLD; ctx.font='8px Arial';
+    ctx.fillText('PREMIUM INDIAN TEAS · DIRECT FROM SOURCE',W/2,y+66);
+    y+=86;
+
+    // S3 — 3-pillar trust strip
+    ctx.fillStyle=CREAM; ctx.fillRect(0,y,W,32);
+    ['🌿  100% PURE INDIAN','🤝  ETHICALLY SOURCED','🚚  SHIPS IN 48 HRS'].forEach(function(t,i){
+      ctx.fillStyle=GREEN; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(t, i*(W/3)+(W/6), y+16);
+    });
+    y+=32;
+
+    // S4 — Split hero (LEFT: copy + offer + CTA · RIGHT: hero product image)
+    const heroH=280;
+    ctx.fillStyle=CREAM; ctx.fillRect(0,y,W,heroH);
+    const leftW=W/2; const rightX=W/2;
+    // Right: hero image with cream bg + dark overlay + product name
+    ctx.fillStyle=CREAM; ctx.fillRect(rightX,y,leftW,heroH);
+    if(heroImgEl){
+      ctx.save(); ctx.beginPath(); ctx.rect(rightX+10,y+10,leftW-20,heroH-50); ctx.clip();
+      _drawContain(heroImgEl, rightX+10, y+10, leftW-20, heroH-50);
       ctx.restore();
-    } else {
-      ctx.fillStyle='#c8d8c8';ctx.font='7px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText(truncate(prod.n.split(',')[0],14),px+pw/2,py+imgH/2);
     }
-    // Name
-    ctx.fillStyle='#171717';ctx.font='bold 8px Arial';ctx.textAlign='center';ctx.textBaseline='top';
-    ctx.fillText(truncate(prod.n.split(',')[0],18),px+pw/2,py+imgH+4);
-    // Stars
-    ctx.fillStyle='#AB8743';ctx.font='8px Arial';ctx.textBaseline='top';
-    ctx.fillText('★★★★★',px+pw/2,py+imgH+15);
-    // Shop Now
-    const btnY2=py+ph-18;
-    fillRR(px+6,btnY2,pw-12,14,3,theme.accent);
-    ctx.fillStyle='#FBF5EA';ctx.font='bold 7px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('SHOP NOW',px+pw/2,btnY2+7);
-  });
+    // "Limited time" pill on hero
+    if(ot || sig.pct){
+      var pillTxt = (sig.pct?(sig.pct+'% OFF · '):'') + 'LIMITED TIME';
+      ctx.font='bold 9px Arial'; var pw=ctx.measureText(pillTxt).width+22;
+      fillRR(rightX+(leftW-pw)/2, y+heroH-44, pw, 22, 11, GOLD);
+      ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(pillTxt, rightX+leftW/2, y+heroH-33);
+    }
+    // Hero product label
+    ctx.fillStyle=GREEN; ctx.font='bold 11px Georgia'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText((hero.n||'').split(',')[0], rightX+leftW/2, y+heroH-14);
 
-  // S8 — Offer banner
-  y+=gridBgH;
-  ctx.fillStyle=theme.accent;ctx.fillRect(0,y,W,90);
-  ctx.fillStyle='#AB8743';ctx.font='bold 8px Arial';ctx.textAlign='center';ctx.textBaseline='top';
-  ctx.fillText('LIMITED TIME OFFER',W/2,y+12);
-  ctx.fillStyle='#FBF5EA';ctx.font='bold 24px Georgia';ctx.textBaseline='top';
-  ctx.fillText(truncate(ot||'EXCLUSIVE OFFER',24),W/2,y+26);
-  if(oc){
-    ctx.strokeStyle='#AB8743';ctx.lineWidth=1;roundRect(W/2-50,y+56,100,22,4);ctx.stroke();
-    ctx.fillStyle='#AB8743';ctx.font='bold 11px Georgia';ctx.textBaseline='middle';
-    ctx.fillText(oc,W/2,y+67);
+    // Left: offer eyebrow + headline (wrapped) + sub-copy + CTA + code
+    let lx=24, ly=y+22;
+    if(ot){
+      ctx.fillStyle=GOLD; ctx.font='bold 10px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
+      ly = wrapText(ot.toUpperCase(), lx, ly, leftW-40, 13, 1) + 6;
+    }
+    ctx.fillStyle=GREEN; ctx.font='bold 24px Georgia'; ctx.textAlign='left'; ctx.textBaseline='top';
+    ly = wrapText(hl[0], lx, ly, leftW-40, 28, 2) + 2;
+    if(hl[1]){
+      ctx.fillStyle=GOLD; ctx.font='italic bold 20px Georgia';
+      ly = wrapText(hl[1], lx, ly, leftW-40, 24, 2) + 8;
+    }
+    // Gold rule
+    ctx.fillStyle=GOLD; ctx.fillRect(lx,ly,32,2); ly+=10;
+    // Sub-copy
+    ctx.fillStyle='#444'; ctx.font='11px Arial';
+    ly = wrapText(sc, lx, ly, leftW-40, 15, 4) + 12;
+    // CTA button
+    var ctaTxt = (cta||'SHOP NOW').toUpperCase();
+    ctx.font='bold 11px Arial'; var btnW = Math.min(leftW-40, ctx.measureText(ctaTxt).width+44);
+    fillRR(lx, ly, btnW, 36, 4, GREEN);
+    ctx.fillStyle=CREAM; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(ctaTxt, lx+btnW/2, ly+18); ly+=42;
+    // Code line
+    if(oc){ ctx.fillStyle=GOLD; ctx.font='bold 10px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
+      ctx.fillText('USE CODE: '+oc, lx, ly); }
+    y+=heroH;
+
+    // S5 — Benefits bullets (4 items, 2-col)
+    const benH=130;
+    ctx.fillStyle=PAPER; ctx.fillRect(0,y,W,benH);
+    ctx.fillStyle=GREEN; ctx.font='bold 10px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('— WHY YOU WILL LOVE IT —', W/2, y+14);
+    benefits.forEach(function(b,i){
+      var col=i%2, row=Math.floor(i/2);
+      var bx=24+col*(W/2-12), by=y+38+row*40;
+      // Gold check
+      ctx.fillStyle=GOLD; ctx.font='bold 14px Arial'; ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText('✓', bx, by+10);
+      // Text
+      ctx.fillStyle=INK; ctx.font='10.5px Arial';
+      wrapText(b, bx+18, by, W/2-50, 14, 2);
+    });
+    y+=benH;
+
+    // S6 — Social proof bar
+    ctx.fillStyle=GREEN; ctx.fillRect(0,y,W,32);
+    ctx.fillStyle=GOLD; ctx.font='bold 11px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('★★★★★', W/2-130, y+16);
+    ctx.fillStyle=CREAM; ctx.font='10px Arial';
+    ctx.fillText('Rated 4.8/5 by 50,000+ tea lovers worldwide', W/2+30, y+16);
+    y+=32;
+
+    // S7 — Product section label
+    ctx.fillStyle=CREAM; ctx.fillRect(0,y,W,28);
+    ctx.fillStyle=GOLD; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('— '+(productSectionTitle(prompt)||'OUR PICKS').toUpperCase()+' —', W/2, y+14);
+    y+=28;
+
+    // S8 — Product grid (4 cols)
+    const gridH=320;
+    ctx.fillStyle=PAPER; ctx.fillRect(0,y,W,gridH);
+    var cols=Math.min(prods.length,4)||1, cw=Math.floor((W-32)/cols);
+    var visible=prods.slice(0,4);
+    visible.forEach(function(prod,i){
+      var px=16+i*cw+4, py=y+10, pw=cw-8, ph=gridH-20;
+      // Card
+      fillRR(px,py,pw,ph,8,'#fff'); strokeRR(px,py,pw,ph,8,'#ede5d8',1.2);
+      // Image (cream bg, contain-fit)
+      var imgH=Math.floor(ph*0.5);
+      ctx.fillStyle=CREAM; roundRect(px+1,py+1,pw-2,imgH,8); ctx.fill();
+      if(prodImgs[i]){
+        ctx.save(); ctx.beginPath(); ctx.rect(px+6,py+6,pw-12,imgH-12); ctx.clip();
+        _drawContain(prodImgs[i], px+6, py+6, pw-12, imgH-12);
+        ctx.restore();
+      }
+      // Hero ribbon on first
+      if(i===0){
+        fillRR(px+8,py+8,52,16,8,GOLD);
+        ctx.fillStyle='#fff'; ctx.font='bold 7.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('★ HERO', px+34, py+16);
+      }
+      // Name (wrapped, 2 lines)
+      ctx.fillStyle=INK; ctx.font='bold 10.5px Georgia'; ctx.textAlign='left'; ctx.textBaseline='top';
+      var nameY = py+imgH+8;
+      var endY = wrapText((prod.n||'').split(',')[0], px+10, nameY, pw-20, 13, 2);
+      // Price
+      var priceY = endY+4;
+      if(prod.price){
+        ctx.fillStyle=GREEN; ctx.font='bold 12px Arial';
+        ctx.fillText(curr+prod.price, px+10, priceY);
+        if(prod.compare_at && parseFloat(prod.compare_at)>parseFloat(prod.price)){
+          var pwidth=ctx.measureText(curr+prod.price).width;
+          ctx.fillStyle='#999'; ctx.font='10px Arial';
+          ctx.fillText(curr+prod.compare_at, px+14+pwidth, priceY+1);
+          // Strikethrough
+          var swidth=ctx.measureText(curr+prod.compare_at).width;
+          ctx.strokeStyle='#999'; ctx.lineWidth=1; ctx.beginPath();
+          ctx.moveTo(px+14+pwidth, priceY+6); ctx.lineTo(px+14+pwidth+swidth, priceY+6); ctx.stroke();
+        }
+      }
+      // Stars + review count
+      ctx.fillStyle=GOLD; ctx.font='10px Arial'; ctx.textAlign='left';
+      ctx.fillText('★★★★★', px+10, priceY+18);
+      ctx.fillStyle='#888'; ctx.font='8.5px Arial';
+      ctx.fillText('(1,200+)', px+62, priceY+19);
+      // ADD TO CART button
+      var btn2Y = py+ph-30;
+      fillRR(px+8, btn2Y, pw-16, 22, 4, GREEN);
+      ctx.fillStyle=CREAM; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('🛒 ADD TO CART', px+pw/2, btn2Y+11);
+    });
+    y+=gridH;
+
+    // S9 — Urgency strip
+    ctx.fillStyle=INK; ctx.fillRect(0,y,W,36);
+    ctx.fillStyle=GOLD; ctx.font='bold 11px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(_urgencyLine(), W/2, y+18);
+    y+=36;
+
+    // S10 — BIG offer banner (full-width, big offer headline + code badge + sub)
+    ctx.fillStyle=GOLD; ctx.fillRect(0,y,W,130);
+    ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('— LIMITED TIME OFFER —', W/2, y+14);
+    ctx.fillStyle='#fff'; ctx.font='bold 32px Georgia';
+    ctx.save(); ctx.translate(W/2, y+34); _drawWrappedCenter(_offerHeadline(), W-60, 1, 36); ctx.restore();
+    if(oc){
+      ctx.font='bold 13px Arial'; var cwid=ctx.measureText(oc).width+34;
+      strokeRR(W/2-cwid/2, y+78, cwid, 26, 4, '#fff', 1.5);
+      ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(oc, W/2, y+91);
+    }
+    ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.font='10px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText(_offerSub(), W/2, y+110);
+    y+=130;
+
+    // S11 — Footer
+    ctx.fillStyle=GREEN; ctx.fillRect(0,y,W,70);
+    ctx.fillStyle=CREAM; ctx.font='bold 11px Georgia'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('MAKE EVERY CUP COUNT', W/2, y+18);
+    ctx.fillStyle=CREAM; ctx.font='9px Arial';
+    ctx.fillText('VAHDAM India Pvt. Ltd. · New Delhi · vahdamteas.com', W/2, y+38);
+    ctx.fillStyle='rgba(251,245,234,0.6)'; ctx.font='8px Arial';
+    ctx.fillText('Instagram · Facebook · YouTube · Unsubscribe · Privacy', W/2, y+55);
   }
-  ctx.fillStyle='rgba(255,255,255,0.5)';ctx.font='7.5px Arial';ctx.textBaseline='top';
-  ctx.fillText('Free Shipping on Orders $49+',W/2,oc?y+82:y+62);
 
-  // S9 — Footer
-  y+=90;
-  ctx.fillStyle='#004A2B';ctx.fillRect(0,y,W,60);
-  ctx.fillStyle='#FBF5EA';ctx.font='bold 10px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText('MAKE EVERY CUP COUNT',W/2,y+18);
-  ctx.fillStyle='#555';ctx.font='8px Arial';
-  ctx.fillText('VAHDAM India Pvt. Ltd.  ·  New Delhi, India  ·  vahdamteas.com',W/2,y+34);
-  ctx.fillStyle='#444';ctx.font='7.5px Arial';
-  ctx.fillText('© 2025 VAHDAM®  ·  Unsubscribe  ·  Privacy Policy',W/2,y+50);
+  // ════════════════════════════════════════════════════════════════════════
+  // VARIANT B — NARRATIVE STORYTELLING
+  // Order: ann → brand → cinematic full-width hero w/ overlay headline →
+  //        editorial paragraph block → pull quote → single product spotlight →
+  //        2-up product cards → benefits row → offer (smaller, at bottom) → footer
+  // ════════════════════════════════════════════════════════════════════════
+  function _drawVariantB(){
+    const H = 32 + 86 + 360 /*hero*/ + 160 /*editorial*/ + 90 /*quote*/
+            + 220 /*spotlight*/ + 200 /*2-up*/ + 90 /*benefits-row*/
+            + 110 /*offer*/ + 70 /*footer*/;
+    canvas.width=W; canvas.height=H;
+
+    ctx.fillStyle='#f0ebe0'; ctx.fillRect(0,0,W,H);
+    let y=0;
+
+    // S1 — Quiet announcement bar
+    ctx.fillStyle=INK; ctx.fillRect(0,y,W,32);
+    ctx.fillStyle=GOLD; ctx.font='9px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('— A SLOWER STORY · GARDEN-FRESH FROM INDIA —', W/2, y+16);
+    y+=32;
+
+    // S2 — Brand header (cream)
+    ctx.fillStyle=CREAM; ctx.fillRect(0,y,W,86);
+    ctx.fillStyle=GOLD; ctx.font='8px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('EST. 2015 · NEW DELHI, INDIA', W/2, y+14);
+    ctx.fillStyle=GREEN; ctx.font='bold 28px Georgia';
+    ctx.fillText('VAHDAM®', W/2, y+44);
+    ctx.fillStyle=GOLD; ctx.font='8px Arial';
+    ctx.fillText('SINGLE-ESTATE TEAS · STRAIGHT FROM THE HILLS', W/2, y+66);
+    y+=86;
+
+    // S3 — Cinematic full-width hero with overlay headline
+    const heroH=360;
+    ctx.fillStyle=GREEN; ctx.fillRect(0,y,W,heroH);
+    if(heroImgEl){
+      // Cover-fit hero image
+      ctx.save(); ctx.beginPath(); ctx.rect(0,y,W,heroH); ctx.clip();
+      _drawCover(heroImgEl, 0, y, W, heroH);
+      ctx.restore();
+    }
+    // Bottom dark gradient overlay for text legibility
+    var grad=ctx.createLinearGradient(0,y+heroH-180,0,y+heroH);
+    grad.addColorStop(0,'rgba(0,74,43,0)'); grad.addColorStop(1,'rgba(0,74,43,0.92)');
+    ctx.fillStyle=grad; ctx.fillRect(0,y+heroH-180,W,180);
+    // Eyebrow
+    ctx.fillStyle=GOLD; ctx.font='bold 10px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('— '+(_t.toUpperCase())+' · A NEW CHAPTER —', W/2, y+heroH-150);
+    // Headline (wrapped, 2 lines)
+    ctx.fillStyle=CREAM; ctx.font='bold 30px Georgia';
+    ctx.save(); ctx.translate(W/2,y+heroH-126); _drawWrappedCenter(hl[0], W-80, 2, 36); ctx.restore();
+    if(hl[1]){
+      ctx.fillStyle=GOLD; ctx.font='italic 22px Georgia';
+      ctx.save(); ctx.translate(W/2,y+heroH-58); _drawWrappedCenter(hl[1], W-80, 1, 26); ctx.restore();
+    }
+    y+=heroH;
+
+    // S4 — Editorial paragraph block (cream)
+    const edH=160;
+    ctx.fillStyle=CREAM; ctx.fillRect(0,y,W,edH);
+    ctx.fillStyle=GREEN; ctx.font='italic 12px Georgia'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('— A note from the source —', W/2, y+18);
+    ctx.fillStyle=INK; ctx.font='12px Georgia';
+    ctx.save(); ctx.translate(W/2,y+44); _drawWrappedCenter(sc, W-80, 5, 20); ctx.restore();
+    y+=edH;
+
+    // S5 — Pull quote
+    const pqH=90;
+    ctx.fillStyle=GREEN; ctx.fillRect(0,y,W,pqH);
+    ctx.fillStyle=GOLD; ctx.font='bold 36px Georgia'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('“', W/2, y+8);
+    ctx.fillStyle=CREAM; ctx.font='italic 14px Georgia';
+    var pq = (audience && audience.length>40)
+      ? 'There is a moment when the right cup of tea does more than warm your hands.'
+      : 'Every sip reminds me that the small things matter — the steam, the scent, the quiet.';
+    ctx.save(); ctx.translate(W/2,y+44); _drawWrappedCenter(pq, W-80, 2, 18); ctx.restore();
+    y+=pqH;
+
+    // S6 — Single product spotlight (large)
+    const sp = prods[0]||{n:'',i:''};
+    const spH=220;
+    ctx.fillStyle=PAPER; ctx.fillRect(0,y,W,spH);
+    // Image left (square)
+    ctx.fillStyle=CREAM; ctx.fillRect(20,y+15,200,190);
+    if(prodImgs[0]){
+      ctx.save(); ctx.beginPath(); ctx.rect(28,y+22,184,176); ctx.clip();
+      _drawContain(prodImgs[0], 28, y+22, 184, 176);
+      ctx.restore();
+    }
+    // Right copy
+    var spX=240, spY=y+24;
+    ctx.fillStyle=GOLD; ctx.font='bold 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillText('— THE SPOTLIGHT —', spX, spY); spY+=14;
+    ctx.fillStyle=GREEN; ctx.font='bold 18px Georgia';
+    spY = wrapText((sp.n||'').split(',')[0], spX, spY, W-spX-20, 22, 2)+8;
+    ctx.fillStyle=INK; ctx.font='10.5px Arial';
+    spY = wrapText(benefits[0]||'Garden-fresh, single-estate, hand-picked.', spX, spY, W-spX-20, 14, 2)+8;
+    if(sp.price){
+      ctx.fillStyle=GREEN; ctx.font='bold 16px Arial';
+      ctx.fillText(curr+sp.price, spX, spY); spY+=22;
+    }
+    // CTA
+    var bw=Math.min(W-spX-30,160);
+    fillRR(spX, spY, bw, 30, 4, GOLD);
+    ctx.fillStyle='#fff'; ctx.font='bold 10px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('READ THE STORY →', spX+bw/2, spY+15);
+    y+=spH;
+
+    // S7 — 2-up product cards
+    const tpH=200;
+    ctx.fillStyle=CREAM; ctx.fillRect(0,y,W,tpH);
+    var twoups=prods.slice(1,3); var tcw=Math.floor((W-48)/Math.max(twoups.length,1));
+    twoups.forEach(function(prod,i){
+      var px=16+i*(tcw+8), py=y+12, pw=tcw, ph=tpH-24;
+      fillRR(px,py,pw,ph,8,'#fff'); strokeRR(px,py,pw,ph,8,GOLD,1.5);
+      // Image
+      var imgH=Math.floor(ph*0.55);
+      ctx.fillStyle=CREAM; roundRect(px+1,py+1,pw-2,imgH,8); ctx.fill();
+      if(prodImgs[i+1]){
+        ctx.save(); ctx.beginPath(); ctx.rect(px+8,py+8,pw-16,imgH-16); ctx.clip();
+        _drawContain(prodImgs[i+1], px+8, py+8, pw-16, imgH-16);
+        ctx.restore();
+      }
+      // Name
+      ctx.fillStyle=INK; ctx.font='bold 12px Georgia'; ctx.textAlign='left'; ctx.textBaseline='top';
+      var pny=wrapText((prod.n||'').split(',')[0], px+12, py+imgH+10, pw-24, 14, 2);
+      // Price
+      if(prod.price){ ctx.fillStyle=GREEN; ctx.font='bold 13px Arial'; ctx.fillText(curr+prod.price, px+12, pny+4);}
+      // CTA
+      fillRR(px+10, py+ph-32, pw-20, 24, 4, GREEN);
+      ctx.fillStyle=CREAM; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('EXPLORE →', px+pw/2, py+ph-20);
+    });
+    y+=tpH;
+
+    // S8 — Benefits row (3 columns, condensed)
+    const brH=90;
+    ctx.fillStyle=PAPER; ctx.fillRect(0,y,W,brH);
+    benefits.slice(0,3).forEach(function(b,i){
+      var bx=i*(W/3), bw=W/3;
+      ctx.fillStyle=GOLD; ctx.font='bold 14px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.fillText('✓', bx+bw/2, y+14);
+      ctx.fillStyle=INK; ctx.font='10px Arial';
+      ctx.save(); ctx.translate(bx+bw/2,y+34); _drawWrappedCenter(b, bw-30, 3, 13); ctx.restore();
+    });
+    y+=brH;
+
+    // S9 — Offer banner (smaller, gold border, less aggressive than Variant A)
+    ctx.fillStyle=CREAM; ctx.fillRect(0,y,W,110);
+    ctx.strokeStyle=GOLD; ctx.lineWidth=2; ctx.strokeRect(20,y+12,W-40,86);
+    ctx.fillStyle=GOLD; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('— FOR THIS COLLECTION —', W/2, y+22);
+    ctx.fillStyle=GREEN; ctx.font='bold 22px Georgia';
+    ctx.save(); ctx.translate(W/2,y+38); _drawWrappedCenter(_offerHeadline(), W-60, 1, 26); ctx.restore();
+    ctx.fillStyle='#444'; ctx.font='10px Arial';
+    ctx.fillText(_offerSub(), W/2, y+72);
+    // CTA
+    fillRR(W/2-80, y+86, 160, 22, 4, GREEN);
+    ctx.fillStyle=CREAM; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('BEGIN THE RITUAL →', W/2, y+97);
+    y+=110;
+
+    // S10 — Footer
+    ctx.fillStyle=GREEN; ctx.fillRect(0,y,W,70);
+    ctx.fillStyle=CREAM; ctx.font='bold 11px Georgia'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('VAHDAM® · A SLOWER STORY', W/2, y+18);
+    ctx.fillStyle=CREAM; ctx.font='9px Arial';
+    ctx.fillText('VAHDAM India Pvt. Ltd. · New Delhi · vahdamteas.com', W/2, y+38);
+    ctx.fillStyle='rgba(251,245,234,0.6)'; ctx.font='8px Arial';
+    ctx.fillText('Instagram · Facebook · YouTube · Unsubscribe · Privacy', W/2, y+55);
+  }
+
+  // Center-aligned wrapped text helper. Caller sets fillStyle + font;
+  // x is the centerline (since translate() was used). Does NOT translate again.
+  function _drawWrappedCenter(text,maxWidth,maxLines,lineHeight){
+    if(!text) return 0;
+    var prevAlign=ctx.textAlign; ctx.textAlign='center';
+    var words=String(text).split(' '),line='',lines=[],ml=maxLines||999;
+    for(var i=0;i<words.length;i++){
+      var test=line?line+' '+words[i]:words[i];
+      if(ctx.measureText(test).width>maxWidth && line){lines.push(line);line=words[i];}
+      else line=test;
+      if(lines.length>=ml-1 && i<words.length-1){
+        var tail=words.slice(i+1).join(' ');
+        var combined=line+' '+tail;
+        while(ctx.measureText(combined+'…').width>maxWidth && combined.length>20){combined=combined.slice(0,-1);}
+        if(ctx.measureText(combined).width>maxWidth) combined+='…';
+        lines.push(combined); line=''; break;
+      }
+    }
+    if(line) lines.push(line);
+    for(var k=0;k<lines.length;k++){ ctx.fillText(lines[k],0,k*lineHeight); }
+    ctx.textAlign=prevAlign;
+    return lines.length*lineHeight;
+  }
+  // object-fit:contain (whole image visible, padding around)
+  function _drawContain(img,x,y,w,h){
+    if(!img||!img.naturalWidth) return;
+    var ar=img.naturalWidth/img.naturalHeight,tr=w/h,dw,dh,dx,dy;
+    if(ar>tr){dw=w;dh=dw/ar;dx=x;dy=y+(h-dh)/2;}
+    else{dh=h;dw=dh*ar;dx=x+(w-dw)/2;dy=y;}
+    ctx.drawImage(img,dx,dy,dw,dh);
+  }
+  // object-fit:cover (fills the box, image cropped if needed)
+  function _drawCover(img,x,y,w,h){
+    if(!img||!img.naturalWidth) return;
+    var ar=img.naturalWidth/img.naturalHeight,tr=w/h,dw,dh,dx,dy;
+    if(ar>tr){dh=h;dw=dh*ar;dx=x+(w-dw)/2;dy=y;}
+    else{dw=w;dh=dw/ar;dx=x;dy=y+(h-dh)/2;}
+    ctx.drawImage(img,dx,dy,dw,dh);
+  }
 }
 
 const STAGE_LABELS=['Analysing campaign brief...','Selecting products from catalog...','Building image generation prompt...','Rendering layout preview...','Campaign ready for review...'];
@@ -5688,22 +6045,42 @@ function previewBothSideBySide(){
   var htmlA=entry.A||'';
   var htmlB=entry.B||'';
   if(!htmlA||!htmlB){showCopyToast('One variant is missing — generate again');return;}
-  var encA=encodeURIComponent(htmlA),encB=encodeURIComponent(htmlB);
-  var pageHtml='<!DOCTYPE html><html><head><title>VAHDAM® A vs B — '+S.activeMarket+'</title><style>'+
+  var mt=S.activeMarket||'US';
+  var mktFlags={US:'🇺🇸',UK:'🇬🇧',IN:'🇮🇳',Global:'🌍',ME:'🇦🇪',AU:'🇦🇺',EU:'🇪🇺'};
+  var mktNames={US:'United States',UK:'United Kingdom',IN:'India',Global:'Global / International',ME:'Middle East',AU:'Australia',EU:'Europe'};
+  var mktCurr={US:'USD ($)',UK:'GBP (£)',IN:'INR (₹)',EU:'EUR (€)',AU:'AUD (A$)',ME:'AED (Dh)',Global:'USD ($)'};
+  var mktBase={US:'vahdamteas.com',UK:'uk.vahdamteas.com',IN:'vahdamindia.com',EU:'eu.vahdamteas.com',AU:'au.vahdamteas.com',ME:'vahdamteas.com',Global:'vahdamteas.com'};
+  var pageHtml='<!DOCTYPE html><html><head><title>VAHDAM® A vs B — '+mt+'</title><style>'+
     'body{margin:0;padding:0;background:#004A2B;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;display:flex;flex-direction:column;height:100vh}'+
-    '.bar{background:#004A2B;color:#FBF5EA;padding:10px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid rgba(255,255,255,0.1);flex-shrink:0}'+
-    '.bar h1{margin:0;font-size:13px;font-weight:700;letter-spacing:0.04em}'+
-    '.bar span{font-size:10.5px;color:#9fd6b5;font-weight:600;letter-spacing:0.06em;text-transform:uppercase}'+
+    '.bar{background:linear-gradient(180deg,#004A2B,#003d23);color:#FBF5EA;padding:14px 22px;display:flex;align-items:center;gap:18px;border-bottom:2px solid #AB8743;flex-shrink:0;flex-wrap:wrap}'+
+    '.bar .brand{font-family:Lao MN,Georgia,serif;font-size:22px;font-weight:bold;letter-spacing:0.16em;color:#FBF5EA}'+
+    '.bar .mkt{display:flex;align-items:center;gap:10px;background:rgba(171,135,67,0.18);border:1.5px solid #AB8743;border-radius:8px;padding:8px 14px}'+
+    '.bar .mkt-flag{font-size:24px;line-height:1}'+
+    '.bar .mkt-meta{display:flex;flex-direction:column;gap:1px}'+
+    '.bar .mkt-name{font-size:13px;font-weight:800;color:#FBF5EA;letter-spacing:0.04em;line-height:1.2}'+
+    '.bar .mkt-sub{font-size:10px;color:#AB8743;font-weight:700;letter-spacing:0.08em;text-transform:uppercase}'+
+    '.bar .ttl{font-size:12px;color:#9fd6b5;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-left:auto}'+
     '.split{display:flex;flex:1;overflow:hidden}'+
     '.col{flex:1;border-right:1px solid #004A2B;display:flex;flex-direction:column;background:#f0ebe0}'+
     '.col:last-child{border-right:0}'+
-    '.lbl{background:#AB8743;color:#fff;padding:8px 14px;font-size:11px;font-weight:800;letter-spacing:0.18em;text-align:center;flex-shrink:0}'+
+    '.lbl{background:#AB8743;color:#fff;padding:10px 14px;font-size:11px;font-weight:800;letter-spacing:0.2em;text-align:center;flex-shrink:0;text-transform:uppercase}'+
     '.col iframe{flex:1;width:100%;border:0;background:#fff}'+
+    '@media(max-width:600px){.bar{padding:10px 14px;gap:10px}.bar .brand{font-size:16px}.bar .ttl{display:none}.split{flex-direction:column}.col{flex:1}}'+
     '</style></head><body>'+
-    '<div class="bar"><h1>VAHDAM® · '+S.activeMarket+' Mailer · A vs B Comparison</h1><span>· Editorial Hero (A) vs Narrative Story (B)</span></div>'+
+    '<div class="bar">'+
+      '<div class="brand">VAHDAM<span style="font-size:12px;vertical-align:super">&reg;</span></div>'+
+      '<div class="mkt">'+
+        '<span class="mkt-flag">'+(mktFlags[mt]||'🌍')+'</span>'+
+        '<div class="mkt-meta">'+
+          '<span class="mkt-name">'+(mktNames[mt]||mt)+' Mailer</span>'+
+          '<span class="mkt-sub">'+(mktCurr[mt]||'USD')+' &middot; '+(mktBase[mt]||'vahdamteas.com')+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="ttl">A vs B Comparison</div>'+
+    '</div>'+
     '<div class="split">'+
-      '<div class="col"><div class="lbl">VARIANT A — EDITORIAL HERO</div><iframe srcdoc="'+htmlA.replace(/"/g,'&quot;')+'"></iframe></div>'+
-      '<div class="col"><div class="lbl">VARIANT B — NARRATIVE STORY</div><iframe srcdoc="'+htmlB.replace(/"/g,'&quot;')+'"></iframe></div>'+
+      '<div class="col"><div class="lbl">VARIANT A &mdash; EDITORIAL HERO &middot; CONVERSION-LED</div><iframe srcdoc="'+htmlA.replace(/"/g,'&quot;')+'"></iframe></div>'+
+      '<div class="col"><div class="lbl">VARIANT B &mdash; NARRATIVE STORY &middot; STORY-LED</div><iframe srcdoc="'+htmlB.replace(/"/g,'&quot;')+'"></iframe></div>'+
     '</div></body></html>';
   var w=window.open('','_blank');
   if(!w){showCopyToast('Pop-up blocked — allow pop-ups and try again');return;}
@@ -5932,16 +6309,25 @@ function _arch_pdpUrl(prod,mt){ try{ return pdpUrl(prod,mt); } catch(e){ return 
 
 // ── Section renderers — each returns a single <tr>...</tr> ──────────────────
 function _sec_annBar(s,c){
-  return '<tr><td style="background:'+_ARCH_GREEN+';padding:10px 22px;text-align:center"><p style="font-family:'+_ARCH_FB+';font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:'+_ARCH_CREAM+';margin:0;font-weight:600">'+(s.annBar||'')+'</p></td></tr>';
+  // Inject the offer + the market currency hint directly so recipients in
+  // every region see prices in their currency context from the very first row.
+  var mktHints={US:'$ USD',UK:'£ GBP',IN:'₹ INR',EU:'€ EUR',AU:'A$ AUD',ME:'AED',Global:'$ USD'};
+  var hint=mktHints[c.mt]||'$';
+  var bar=(s.annBar||'').replace(/\s*\|\s*/g,' &middot; ');
+  return '<tr><td style="background:'+_ARCH_GREEN+';padding:10px 22px;text-align:center"><p style="font-family:'+_ARCH_FB+';font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:'+_ARCH_CREAM+';margin:0;font-weight:600">'+bar+' &middot; <span style="color:'+_ARCH_GOLD+'">PRICED IN '+hint+'</span></p></td></tr>';
 }
 function _sec_annBarUrgent(s,c){
   return '<tr><td style="background:'+_ARCH_INK+';padding:11px 22px;text-align:center"><p style="font-family:'+_ARCH_FB+';font-size:10.5px;letter-spacing:0.24em;text-transform:uppercase;color:'+_ARCH_GOLD+';margin:0;font-weight:800">&#9889; '+(s.annBar||'LIMITED OFFER')+' &#9889;</p></td></tr>';
 }
 function _sec_logo(s,c){
   var base=c.base, sub=c.subline||'PREMIUM INDIAN TEAS · DIRECT FROM SOURCE';
-  return '<tr><td style="background:'+_ARCH_PAPER+';padding:18px 22px 12px;text-align:center;border-left:1px solid '+_ARCH_BORDER+';border-right:1px solid '+_ARCH_BORDER+'">'+
-    '<a href="'+base+'" target="_blank" rel="noopener noreferrer"><img src="'+VAHDAM_LOGO_URL+'" alt="VAHDAM" width="180" border="0" style="width:180px;height:auto;display:inline-block;border:0;outline:none;text-decoration:none"></a>'+
-    '<p style="font-family:'+_ARCH_FB+';font-size:8.5px;color:#888;letter-spacing:0.2em;margin:8px 0 0;text-transform:uppercase">'+sub+'</p>'+
+  // Wordmark rendered as text — guaranteed visible even if remote logo image
+  // is blocked by the email client (Outlook / Gmail "show images" rule).
+  return '<tr><td style="background:'+_ARCH_PAPER+';padding:20px 22px 14px;text-align:center;border-left:1px solid '+_ARCH_BORDER+';border-right:1px solid '+_ARCH_BORDER+'">'+
+    '<a href="'+base+'" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-block">'+
+      '<span style="font-family:'+_ARCH_FH+';font-size:32px;font-weight:bold;color:'+_ARCH_GREEN+';letter-spacing:0.18em;line-height:1;display:inline-block">VAHDAM<span style="font-size:15px;vertical-align:super;letter-spacing:0;margin-left:2px">&reg;</span></span>'+
+    '</a>'+
+    '<p style="font-family:'+_ARCH_FB+';font-size:9px;color:'+_ARCH_GOLD+';letter-spacing:0.22em;margin:8px 0 0;text-transform:uppercase;font-weight:700">'+sub+'</p>'+
   '</td></tr>';
 }
 function _sec_heroSplit(s,c){
@@ -6169,10 +6555,18 @@ function _sec_urgencyQuote(s,c){
 }
 function _sec_footer(s,c){
   var base=c.base;
-  return '<tr><td style="background:'+_ARCH_GREEN+';padding:22px 24px;text-align:center;border-radius:0 0 6px 6px">'+
-    '<a href="'+base+'" target="_blank" rel="noopener noreferrer"><img src="'+VAHDAM_LOGO_URL+'" alt="VAHDAM" width="120" border="0" style="width:120px;height:auto;display:inline-block;border:0;outline:none;text-decoration:none;margin-bottom:10px"></a>'+
-    '<p style="font-family:'+_ARCH_FB+';font-size:9.5px;color:'+_ARCH_CREAM+';margin:0 0 8px;opacity:0.85"><a href="https://www.instagram.com/vahdamteas" target="_blank" rel="noopener noreferrer" style="color:'+_ARCH_CREAM+';text-decoration:none">Instagram</a> &middot; <a href="https://www.facebook.com/vahdamteas" target="_blank" rel="noopener noreferrer" style="color:'+_ARCH_CREAM+';text-decoration:none">Facebook</a> &middot; <a href="https://www.youtube.com/@vahdamteas" target="_blank" rel="noopener noreferrer" style="color:'+_ARCH_CREAM+';text-decoration:none">YouTube</a></p>'+
-    '<p style="font-family:'+_ARCH_FB+';font-size:8.5px;color:'+_ARCH_CREAM+';margin:0;line-height:1.7;opacity:0.7">VAHDAM India Pvt. Ltd. &middot; New Delhi<br><a href="'+base+'/pages/unsubscribe" style="color:'+_ARCH_CREAM+'">Unsubscribe</a> &middot; <a href="'+base+'/pages/privacy-policy" style="color:'+_ARCH_CREAM+'">Privacy Policy</a></p>'+
+  var mktLabels={US:'United States',UK:'United Kingdom',IN:'India',Global:'Global',ME:'Middle East',AU:'Australia',EU:'Europe'};
+  var mktName=mktLabels[c.mt]||c.mt;
+  // Cream wordmark rendered as TEXT — guaranteed visible against the dark green
+  // footer regardless of CDN image availability or email-client image blocking.
+  return '<tr><td style="background:'+_ARCH_GREEN+';padding:26px 24px 22px;text-align:center;border-radius:0 0 6px 6px">'+
+    '<a href="'+base+'" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-block;margin-bottom:10px">'+
+      '<span style="font-family:'+_ARCH_FH+';font-size:30px;font-weight:bold;color:'+_ARCH_CREAM+';letter-spacing:0.18em;line-height:1;display:inline-block">VAHDAM<span style="font-size:14px;vertical-align:super;letter-spacing:0;margin-left:2px">&reg;</span></span>'+
+      '<div style="font-family:'+_ARCH_FB+';font-size:9px;color:'+_ARCH_GOLD+';letter-spacing:0.24em;text-transform:uppercase;margin-top:5px;font-weight:700">Premium Indian Teas &middot; Direct from Source</div>'+
+    '</a>'+
+    '<div style="height:1px;background:rgba(171,135,67,0.35);margin:14px auto 12px;max-width:240px"></div>'+
+    '<p style="font-family:'+_ARCH_FB+';font-size:10px;color:'+_ARCH_CREAM+';margin:0 0 8px"><a href="https://www.instagram.com/vahdamteas" target="_blank" rel="noopener noreferrer" style="color:'+_ARCH_CREAM+';text-decoration:none;font-weight:600">Instagram</a> &middot; <a href="https://www.facebook.com/vahdamteas" target="_blank" rel="noopener noreferrer" style="color:'+_ARCH_CREAM+';text-decoration:none;font-weight:600">Facebook</a> &middot; <a href="https://www.youtube.com/@vahdamteas" target="_blank" rel="noopener noreferrer" style="color:'+_ARCH_CREAM+';text-decoration:none;font-weight:600">YouTube</a></p>'+
+    '<p style="font-family:'+_ARCH_FB+';font-size:9px;color:rgba(251,245,234,0.75);margin:0;line-height:1.75">VAHDAM India Pvt. Ltd. &middot; New Delhi, India &middot; '+mktName+' edition<br><a href="'+base+'/pages/unsubscribe" style="color:'+_ARCH_CREAM+';text-decoration:underline">Unsubscribe</a> &middot; <a href="'+base+'/pages/privacy-policy" style="color:'+_ARCH_CREAM+';text-decoration:underline">Privacy Policy</a> &middot; <a href="'+base+'" style="color:'+_ARCH_CREAM+';text-decoration:underline">'+(base.replace(/^https?:\/\//,'')||'vahdamteas.com')+'</a></p>'+
   '</td></tr>';
 }
 // ── Archetype-specific sections ─────────────────────────────────────────────
@@ -7465,6 +7859,30 @@ function switchMainTab(tab){
     window.scrollTo({top:0,behavior:'instant'});
     renderDashboard();
   } else {
+    // ── HARD RESET on "Create Mailer" click when a previous campaign exists ──
+    // If the user already has a generated mailer in state (any step beyond 1
+    // OR a non-empty prompt), we do a full page reload so they land on a
+    // genuinely fresh Step 1 — no stale brief text, no stale chip state, only
+    // the "Create Brief with AI" CTA visible (never both Enhance + New Brief).
+    // The internal flag prevents an infinite reload loop if a prior session
+    // had state set in the URL fragment.
+    // Only post-generation state triggers a reload — typing a brief in Step 1
+    // and tabbing to Dashboard then back must NOT wipe your unsubmitted work.
+    var hasGeneratedMailer = !!(window.S && (
+      (S.finalHTML && String(S.finalHTML).length > 0) ||
+      (S.marketMailers && Object.keys(S.marketMailers).length > 0)
+    ));
+    var hasCampaignInProgress = hasGeneratedMailer;
+    var alreadyReloaded = (typeof sessionStorage!=='undefined') &&
+                          sessionStorage.getItem('vhd_just_reloaded')==='1';
+    if(hasCampaignInProgress && !alreadyReloaded){
+      try{ sessionStorage.setItem('vhd_just_reloaded','1'); }catch(_){}
+      // Hard reload — guarantees a clean slate (textarea, chips, S, button states).
+      window.location.reload();
+      return;
+    }
+    // Clear the "just reloaded" guard once we actually render the create view.
+    try{ sessionStorage.removeItem('vhd_just_reloaded'); }catch(_){}
     if(dash){dash.style.display='none';dash.style.visibility='hidden';}
     if(create){create.style.display='block';create.style.visibility='visible';}
     // Restore the active step (whatever it was) — ensure at least p1 is shown if state is fresh
@@ -7472,6 +7890,12 @@ function switchMainTab(tab){
     if(!anyVisible){var p1=document.getElementById('p1');if(p1)p1.style.display='block';}
     allCreate.forEach(function(b){b.classList.add('on');});
     allDash.forEach(function(b){b.classList.remove('on');});
+    // Belt-and-suspenders: re-sync the smart-AI button to whatever the
+    // textarea actually contains (handles edge cases where state and DOM drift).
+    try{
+      var ta=document.getElementById('promptIn');
+      _updateSmartAIBtn(!!(ta && ta.value && ta.value.trim().length>0));
+    }catch(_){}
   }
 }
 function showDashboard(){switchMainTab('dashboard');}
