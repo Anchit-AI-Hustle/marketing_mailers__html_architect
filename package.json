@@ -9,6 +9,12 @@
   "scripts": {
     "build": "node scripts/build-catalog.js",
     "dev": "node -e \"require('http').createServer().listen(3001)\"",
-    "deploy": "vercel --prod"
+    "deploy": "vercel --prod",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:install": "playwright install"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
   }
 }

@@ -33,7 +33,14 @@ REGENERATE DIVERGENCE: if regenerate_counter > 0, force divergence on hero angle
 
 First char of output MUST be { · last char }. No markdown, no commentary.`;
 
-const SYSTEM_PROMPT_CREATE_BRIEF = `You are the Creative Director at VAHDAM India — a $100M premium D2C Indian heritage tea brand. Write a COMPLETE, PRODUCTION-READY campaign brief that gives everything needed to build a high-converting email mailer. The downstream system renders this brief DIRECTLY into a final HTML email — so every detail matters.
+const SYSTEM_PROMPT_CREATE_BRIEF = `You are simultaneously the Head of Growth and the Creative Director at VAHDAM India — a $100M premium D2C Indian heritage tea brand. You are writing a COMPLETE, PRODUCTION-READY campaign brief whose ONLY job is to bring revenue when this email is sent. Every line of the brief should answer the question: "what is the specific behaviour we want from the reader, and what is the most concrete thing we can put on the page to trigger it?"
+
+GROWTH-LEADER LENS (apply to every section):
+- Open-rate driver = subject line specificity. Vague subject = no open = no revenue. Subject lines must reference a benefit, a number, a name, or an occasion — never "Tea you will love".
+- Click-through driver = a single dominant proposition above the fold. One offer, one CTA, one hero. Multiple competing offers tank CTR.
+- Conversion driver = price-anchoring + scarcity + reorder ease. Show price + strikethrough + % OFF, name the deadline, make ADD TO CART one tap.
+- LTV driver = the brief should always carry a soft post-purchase hook (subscription, bundle save, free-shipping threshold) so even a single conversion lifts AOV or repeat rate.
+- Anti-pattern: emotional copy with no reason-to-act. Beautiful prose that does not move the reader to click is a failed brief.
 
 BRAND IDENTITY:
 - VAHDAM India. Single-estate teas, wellness blends, gift sets. B-Corp. Garden-fresh within 72 hours of harvest.
@@ -343,6 +350,20 @@ module.exports = async function handler(req, res) {
     response_format = { type: 'json_object' };
     const productsBlock = selected_products.slice(0, 5).map(p => `- name:"${p.name||p.n||''}" | url:"${p.url||p.pdp_url||''}" | price:"${p.price||''}" | compare_price:"${p.compare_at||p.compare_price||''}" | image:"${p.image_url||p.i||''}"`).join('\n');
     userMessage = `INPUTS:\nmarket: ${market}\ntheme: ${theme}\ncampaign_brief: ${campaign_brief.substring(0, 1000)}\nvariant: ${variant}\nregenerate_counter: ${regenerate_counter}\n${previous_outputs_summary ? 'previous_outputs_summary: ' + previous_outputs_summary + '\n' : ''}selected_products:\n${productsBlock || '(none)'}\n\nReturn the strict JSON now.`;
+  } else if (mode === 'audience_segment') {
+    // Target User Segment generator — director-grade, growth-leader thinking.
+    // Output is a paragraph of 60-120 words describing WHO will open this mailer
+    // and convert. No bullet points. Plain text only.
+    systemPrompt = `You are the Head of Growth at VAHDAM India, a $100M premium D2C Indian heritage tea brand. Given a campaign brief, market, and campaign type, write a precise Target User Segment description that the creative team will use to anchor copy, imagery, and CTAs.
+WRITE 60–120 WORDS, plain text only (no bullets, no headers, no markdown). Cover, in this order:
+1. WHO they are — age band, income/AOV bracket, role/lifestyle, key tea behaviour (daily drinker / gifter / discoverer / lapsed).
+2. WHERE they live — anchor 1–2 specific cities/regions in the target market.
+3. WHAT they value — provenance, ritual, gift-giving, convenience, savings — pick 1–2 that align with the brief.
+4. WHY they will convert on THIS specific brief — name the conversion trigger explicitly (offer ends Sunday / new harvest just dropped / under $50 gift / 3-month subscription saves 15%).
+5. ANTI-SEGMENT — one sentence on who NOT to target (so the creative team avoids generic copy).
+The segment must be SPECIFIC enough that another marketer reading it could write a different mailer for a different segment. Avoid platitudes ("tea lovers"). Reference the actual brief language.
+Return ONLY the segment text. No preamble, no quotes around it, no JSON.`;
+    userMessage = `MARKET: ${market}\nCAMPAIGN TYPE: ${theme || 'Bestseller'}\nCAMPAIGN BRIEF:\n${(campaign_brief || '').substring(0, 1200)}\n${body.seed_segment ? 'SEED (refine, do not discard): ' + String(body.seed_segment).substring(0, 400) + '\n' : ''}\nWrite the Target User Segment now.`;
   } else {
     // create_brief mode (default)
     // Market context — informs audience psychology and visual direction

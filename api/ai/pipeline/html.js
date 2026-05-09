@@ -544,6 +544,7 @@ module.exports = async function handler(req, res) {
   const plan         = body.plan || {};
   const strategy     = body.strategy || {};
   const brief        = (body.brief || '').toString().substring(0, 500);
+  const audience     = (body.audience || strategy.audience || '').toString().substring(0, 500);
   const market       = (body.market || 'US').toString();
   const regen        = Number(body.regenerate_counter) || 0;
   const clientProducts = Array.isArray(body.products) ? body.products : [];  // enriched product data from client
@@ -637,7 +638,7 @@ module.exports = async function handler(req, res) {
 
 CAMPAIGN: ${campaignName}
 MARKET: ${market}
-STRATEGY TYPE: ${strategy.strategy_type || ''}
+${audience ? 'TARGET USER SEGMENT (write FOR this person — every line of copy, every visual, every CTA must speak to them; do not write for a generic shopper):\n' + audience + '\n' : ''}STRATEGY TYPE: ${strategy.strategy_type || ''}
 STRATEGY: ${strategy.strategy || ''}
 VARIANT: ${variant} — ${variant === 'B'
   ? 'EXPERIMENTAL: story-first, editorial, NO product in first 2 sections, sensory/poetic copy, ghost CTA, 64px+ padding, DARK OPENING SECTIONS'
