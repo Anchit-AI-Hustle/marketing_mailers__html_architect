@@ -428,6 +428,14 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   /* Extra tight phones — keep preview readable */
   .preview-wrap{height:500px!important}
 }
+/* ── Landscape on phones (≤ 480px height) — compress the stepper so it
+   doesn't push the active step's content below the fold ─────────────── */
+@media(max-height:480px){
+  .step-n{width:22px;height:22px;font-size:10px}
+  .step-l{display:none}
+  .step-line{margin-bottom:10px}
+  .app{padding-top:10px}
+}
 /* ── Tablet: 769–1200px ─────────────────────────────────────────────── */
 @media(min-width:769px) and (max-width:1200px){
   .app{max-width:820px;padding:24px 28px 80px}
