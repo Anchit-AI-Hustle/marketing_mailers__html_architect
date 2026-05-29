@@ -52,3 +52,4 @@ supabase/.temp/
 *.token
 .tokens/
 .env*.local
+.vercel
