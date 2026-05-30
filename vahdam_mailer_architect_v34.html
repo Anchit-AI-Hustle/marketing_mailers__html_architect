@@ -1597,37 +1597,65 @@ var PROD_HANDLES={
   "herbal tea variety pack, 36 infusion bags":"herbal-tea-variety-pack-36-infusion-bags"
 };
 function pdpUrl(n,m){
-  // n can be a string (product name) or an object (product with .h handle)
-  if(typeof n==='object'&&n.h)return getBase(m)+'/products/'+n.h;
+  // n can be a string (product name) or an object (product with .h handle or .handle)
+  var mkt=m||(window.S&&S.market)||'US';
+  var b=getBase(mkt);
+  
+  // 1. If object with handle, return immediately
+  if(typeof n==='object' && (n.h||n.handle)) return b+'/products/'+(n.h||n.handle);
+  
   var name=typeof n==='string'?n:'';
-  // Try PROD_HANDLES lookup first
-  var handle=PROD_HANDLES[name.toLowerCase()];
-  // Then try finding the product in CAT to get the real Shopify handle
-  if(!handle&&window.CAT){
-    var found=CAT.find(function(c){return c.n===name;});
-    if(found&&found.h)handle=found.h;
+  var handle=null;
+
+  // 2. Try Knowledge Base (Supabase) first — most accurate
+  if(window.KB && window.KB.products && window.KB.products.length){
+    var kbMatch=window.KB.products.find(function(p){
+      return (p.market===mkt) && (p.name===name || p.handle===name || p.sku===name);
+    });
+    if(kbMatch && kbMatch.handle) handle=kbMatch.handle;
   }
-  if(!handle)handle=toHandle(name);
-  return getBase(m)+'/products/'+handle;
+
+  // 3. Fallback to hard-coded handle map
+  if(!handle) handle=PROD_HANDLES[name.toLowerCase()];
+
+  // 4. Fallback to hard-coded CAT array
+  if(!handle && window.CAT){
+    var found=CAT.find(function(c){return c.n===name;});
+    if(found && found.h) handle=found.h;
+  }
+
+  // 5. Last resort: slugify the name
+  if(!handle) handle=toHandle(name);
+  
+  return b+'/products/'+handle;
 }
 function collectionUrl(theme,m){
-  var b=getBase(m);var p=(theme||'').toLowerCase();
-  // Hero product category wins (most reliable signal — what's actually in the mailer)
+  var mkt=m||(window.S&&S.market)||'US';
+  var b=getBase(mkt);
+  var p=(theme||'').toLowerCase();
+  
+  // 1. Try Knowledge Base (Supabase) collections first
+  if(window.KB && window.KB.collections && window.KB.collections.length){
+    // Match by title or handle keyword
+    var kbMatch=window.KB.collections.find(function(c){
+      if(c.market!==mkt) return false;
+      var t=(c.title||'').toLowerCase();
+      var h=(c.handle||'').toLowerCase();
+      return p.includes(t) || t.includes(p) || p.includes(h) || h.includes(p);
+    });
+    if(kbMatch && kbMatch.handle) return b+'/collections/'+kbMatch.handle;
+  }
+
+  // 2. Fallback to category-based logic
   var heroCat=window.S&&categoryFromHero(S.finalProds&&S.finalProds.length?S.finalProds:S.manualProds);
   var heroMap={
-    'Masala Chai':'chai-teas',
-    'Detox Teas':'herbal-teas',
-    'Immunity Teas':'herbal-teas',
-    'Sleep & Calm Teas':'caffeine-free',
-    'Tea Gift Sets':'gifts',
-    'Tea Samplers':'samplers',
-    'Darjeeling Teas':'black-teas',
-    'Green Teas':'green-teas',
-    'Iced Teas':'iced-tea',
-    'Assam & Black Teas':'black-teas'
+    'Masala Chai':'chai-teas','Detox Teas':'herbal-teas','Immunity Teas':'herbal-teas',
+    'Sleep & Calm Teas':'caffeine-free','Tea Gift Sets':'gifts','Tea Samplers':'samplers',
+    'Darjeeling Teas':'black-teas','Green Teas':'green-teas','Iced Teas':'iced-tea','Assam & Black Teas':'black-teas'
   };
-  if(heroCat&&heroMap[heroCat])return b+'/collections/'+heroMap[heroCat];
-  // Fallback to prompt-keyword matching when no hero set
+  if(heroCat && heroMap[heroCat]) return b+'/collections/'+heroMap[heroCat];
+
+  // 3. Keyword matching
   if(has(p,'iced tea','iced','cold brew','hibiscus','lychee','summer'))return b+'/collections/iced-tea';
   if(has(p,'gift set','gifting','hamper','corporate'))return b+'/collections/gifts';
   if(has(p,'sampler','variety pack','discovery'))return b+'/collections/samplers';
@@ -1640,6 +1668,7 @@ function collectionUrl(theme,m){
   if(has(p,'premium','luxury','single estate','reserve','oolong'))return b+'/collections/oolong-teas';
   if(has(p,'bestseller','best seller','popular','best-selling'))return b+'/collections/best-sellers';
   if(has(p,'herbal','tisane'))return b+'/collections/herbal-teas';
+  
   var t=detectType(p);
   var typeMap={Sale:'best-sellers',Launch:'all',Seasonal:'gifts',Bestseller:'best-sellers',Gift:'gifts',Discovery:'samplers',Routine:'herbal-teas',Story:'all'};
   return b+'/collections/'+(typeMap[t]||'all');
@@ -5451,15 +5480,21 @@ function renderCanvasFilterPanel(){
           }).join('')+
         '</div></div>':'')+
       // Variant tabs
-      '<div style="padding:12px 16px;background:#fafaf6">'+
-        '<div style="font-size:8.5px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#888;margin-bottom:8px">'+(mkts.length>1?'2. ':'')+'Variant for '+(mktLabels[aMkt]||aMkt)+'</div>'+
-        '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+      '<div style="padding:16px;background:#fafaf6">'+
+        '<div style="font-size:9px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#888;margin-bottom:12px">'+(mkts.length>1?'2. ':'')+'Choose Layout Variant for '+(mktLabels[aMkt]||aMkt)+'</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
           ['A','B'].map(function(v){
             var meta=variantMeta[v];
             var act=v===aVar;
-            return '<button onclick="selectCanvasCell(\''+aMkt+'\',\''+v+'\')" style="text-align:left;padding:9px 14px;background:'+(act?meta.accent:'#fff')+';color:'+(act?'#fff':'#374151')+';border:1.5px solid '+(act?meta.accent:'#ede5d8')+';border-radius:7px;cursor:pointer;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;flex:1;min-width:200px">'+
-              '<div style="font-size:11px;font-weight:700;letter-spacing:0.04em;margin-bottom:2px">Variant '+v+' · '+meta.name+'</div>'+
-              '<div style="font-size:9.5px;font-weight:400;line-height:1.4;'+(act?'opacity:0.9':'color:#888')+'">'+meta.sub+'</div>'+
+            var border=act?(v==='A'?'#004A2B':'#AB8743'):'#ede5d8';
+            var shadow=act?'0 4px 12px rgba(0,0,0,0.1)':'none';
+            return '<button onclick="selectCanvasCell(\''+aMkt+'\',\''+v+'\')" style="text-align:left;padding:14px;background:#fff;color:#374151;border:2px solid '+border+';border-radius:10px;cursor:pointer;font-family:Proxima Nova,Helvetica Neue,Arial,sans-serif;transition:all 0.2s;box-shadow:'+shadow+'">'+
+              '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'+
+                '<div style="font-size:12px;font-weight:800;letter-spacing:0.04em;color:'+(act?meta.accent:'#374151')+'">Variant '+v+'</div>'+
+                (act?'<div style="width:16px;height:16px;border-radius:50%;background:'+meta.accent+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px">&#10003;</div>':'')+
+              '</div>'+
+              '<div style="font-size:11px;font-weight:700;margin-bottom:4px">'+meta.name+'</div>'+
+              '<div style="font-size:10px;font-weight:400;line-height:1.4;color:#666">'+meta.sub+'</div>'+
             '</button>';
           }).join('')+
         '</div>'+
