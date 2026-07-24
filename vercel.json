@@ -43,18 +43,43 @@
   "rewrites": [
     {
       "source": "/",
-      "destination": "/vahdam_mailer_architect_v34.html"
+      "destination": "/mailer_studio_shell.html"
     },
     {
       "source": "/studio",
-      "destination": "/vahdam_mailer_architect_v34.html"
+      "destination": "/mailer_studio_shell.html"
     },
     {
       "source": "/app",
-      "destination": "/vahdam_mailer_architect_v34.html"
+      "destination": "/mailer_studio_shell.html"
+    },
+    {
+      "source": "/vahdam_mailer_architect_v23",
+      "destination": "/mailer_studio_shell.html"
+    },
+    {
+      "source": "/vahdam_mailer_architect_v34",
+      "destination": "/mailer_studio_shell.html"
     }
   ],
   "headers": [
+    {
+      "source": "/mailer_studio_shell.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
     {
       "source": "/vahdam_mailer_architect_v34.html",
       "headers": [
